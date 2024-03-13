@@ -1,9 +1,9 @@
-package com.stars.bigbang.dto;
+package com.stars.bigbang.dto.RawgDto;
 
 import lombok.Data;
 
 @Data
-public class RawgPlateformDetailDto {
+public class RawgGenreDto {
 
     private int id;
     private String name;

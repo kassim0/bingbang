@@ -1,6 +1,6 @@
 package com.stars.bigbang.rest;
 
-import com.stars.bigbang.dto.RawgResponseDto;
+import com.stars.bigbang.dto.RawgDto.RawgResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
