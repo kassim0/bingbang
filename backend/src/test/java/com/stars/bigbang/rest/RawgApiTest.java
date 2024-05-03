@@ -19,5 +19,8 @@ public class RawgApiTest {
     @Test
     void methodeTest(){
         RawgResponseDto rawgResponseDto = rawgApi.searchGamesByName("The Legend of Zelda","d4df6345d7fb4a4e842849ef2bf16ba7");
+        rawgResponseDto.getResults().forEach(result->{
+            System.out.println("name: "+result.getName());
+        });
     }
 }
