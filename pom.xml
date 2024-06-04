@@ -12,8 +12,17 @@
 		<java.version>17</java.version>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+	</dependencies>
+
 	<modules>
 		<module>backend</module>
+		<module>openApi</module>
 	</modules>
 
 </project>
