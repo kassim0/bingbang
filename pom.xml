@@ -14,7 +14,6 @@
 
 	<modules>
 		<module>backend</module>
-		<module>openApi</module>
 	</modules>
 
 </project>

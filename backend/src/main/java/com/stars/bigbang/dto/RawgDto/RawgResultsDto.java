@@ -10,5 +10,6 @@ public class RawgResultsDto {
     private String name;
     private String released;
     private boolean tba;
+    private String background_image;
 
 }

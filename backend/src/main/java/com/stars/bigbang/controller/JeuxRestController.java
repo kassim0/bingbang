@@ -17,12 +17,12 @@ public class JeuxRestController {
 
     private RawgApi rawgApi;
 
-    @GetMapping()
+    @GetMapping(produces="application/json")
     public RawgResponseDto getJeuxZelda(){
         return rawgApi.searchGamesByName("the legend of zelda","d4df6345d7fb4a4e842849ef2bf16ba7");
     }
 
-    @GetMapping("/{gameName}")
+    @GetMapping(value="/{gameName}", produces="application/json")
     public RawgResponseDto getJeuxByName(@PathVariable String gameName){
         return rawgApi.searchGamesByName(gameName,"d4df6345d7fb4a4e842849ef2bf16ba7");
     }
