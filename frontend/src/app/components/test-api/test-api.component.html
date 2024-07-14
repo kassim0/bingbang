@@ -1,5 +1,14 @@
 <h1>test de l'appel à l'API</h1>
 
-<button (click)="test()">
-  Recevoir le liste de tout les jeux vidéos
-</button>
+<div style="display: flex;flex-direction:column">
+  <input matInput [(ngModel)]="gameName">
+  <button (click)="test()">
+    Recevoir le liste de tout les jeux vidéos
+  </button>
+
+  <div class="listResultGames" *ngFor="let game of reponse">
+    <img src="{{game.background_image}}" style="width: 50px; height: 50px">
+    <h5>{{game.name}}</h5>
+  </div>
+</div>
+
