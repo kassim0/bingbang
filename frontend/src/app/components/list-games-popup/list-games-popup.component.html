@@ -1,0 +1,14 @@
+<div>
+  <app-search-bar (dataToParent)="receiveData($event)"></app-search-bar>
+
+  <mat-list>
+    <div *ngFor="let game of reponse">
+      <mat-list-item>
+        <app-game-item class="game-item" [game]="game"></app-game-item>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </div>
+  </mat-list>
+
+</div>
+

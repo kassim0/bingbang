@@ -1,0 +1,5 @@
+<mat-form-field appearance="outline">
+  <mat-label>Search your game</mat-label>
+  <input matInput placeholder="ex: 'Outer wilds'" [(ngModel)]="inputResult" (keydown.enter)="sendInput()">
+  <mat-icon matSuffix fontIcon="search" (click)="sendInput()"></mat-icon>
+</mat-form-field>
