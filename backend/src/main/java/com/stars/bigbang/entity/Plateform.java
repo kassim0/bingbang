@@ -2,11 +2,13 @@ package com.stars.bigbang.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter @Setter
 @Entity
 @Table(name="plateform")
 public class Plateform {
@@ -19,4 +21,10 @@ public class Plateform {
 
     @ManyToMany(mappedBy = "plateforms")
     private Set<Game> game = new HashSet<>();
+
+    public Plateform(){}
+
+    public Plateform(String plateform){
+        this.plateform = plateform;
+    }
 }
