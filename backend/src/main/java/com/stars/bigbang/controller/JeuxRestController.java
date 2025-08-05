@@ -1,6 +1,6 @@
 package com.stars.bigbang.controller;
 
-import com.stars.bigbang.dto.RawgDto.RawgResponseDto;
+import com.stars.bigbang.rest.dto.RawgDto.RawgResponseDto;
 import com.stars.bigbang.rest.RawgApi;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;

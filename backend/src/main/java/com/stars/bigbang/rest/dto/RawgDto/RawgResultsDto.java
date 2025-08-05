@@ -1,4 +1,4 @@
-package com.stars.bigbang.dto.RawgDto;
+package com.stars.bigbang.rest.dto.RawgDto;
 
 import lombok.Data;
 
