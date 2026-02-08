@@ -1,2 +1,7 @@
-<h5><img src="{{game?.background_image}}" style="width: 50px; height: 50px"></h5>
-<h5>{{game?.name}}</h5>
+<div class="game-item-container">
+  <img src="{{game?.background_image}}" style="width: 50px; height: 50px">
+  <span class="game-name">{{game?.name}}</span>
+  <button mat-icon-button color="primary" (click)="onAddGame()" title="Ajouter le jeu">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
