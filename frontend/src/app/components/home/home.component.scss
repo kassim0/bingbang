@@ -1,0 +1,33 @@
+.home-container {
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  text-align: center;
+  padding: 60px 0 40px;
+
+  h1 {
+    font-size: 3.5rem;
+    margin: 0;
+    background: linear-gradient(45deg, #e94560, #0f3460);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    color: #a0a0a0;
+  }
+}
+
+.action-section {
+  margin-top: 60px;
+}

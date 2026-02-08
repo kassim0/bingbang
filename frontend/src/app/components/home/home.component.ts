@@ -1,39 +1,27 @@
-import {Component, OnInit} from '@angular/core';
-import {SearchBarComponent} from "../share/search-bar/search-bar.component";
-import {ListGamesPopupComponent} from "../list-games-popup/list-games-popup.component";
-import {MatDialog} from "@angular/material/dialog";
-import {MatList, MatListItem} from "@angular/material/list";
-import {MatDivider} from "@angular/material/divider";
+import {Component} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatDialog} from '@angular/material/dialog';
+import {GameSearchDialogComponent} from '../game-search-dialog/game-search-dialog.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
-    SearchBarComponent,
-    ListGamesPopupComponent,
-    MatListItem,
-    MatDivider,
-    MatList
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent {
 
-  constructor(public dialog:MatDialog) {
+  constructor(private dialog: MatDialog) {}
+
+  openSearchDialog() {
+    this.dialog.open(GameSearchDialogComponent, {
+      width: '600px',
+      maxHeight: '80vh'
+    });
   }
-
-  ngOnInit(): void {
-    this.OpenPopup();
-  }
-
-  OpenPopup() {
-    this.dialog.open(ListGamesPopupComponent,{
-      width: '40%',
-      height:'90%',
-      data: {}
-    })
-  }
-
-
 }

@@ -1,0 +1,11 @@
+<mat-card class="game-card" *ngIf="game">
+  <img mat-card-image
+       [src]="game.background_image || getDefaultImage()"
+       [alt]="game.name">
+  <mat-card-content>
+    <h3 class="game-title">{{ game.name }}</h3>
+    <p class="game-info" *ngIf="game.released">
+      <span class="label">Date de sortie:</span> {{ game.released }}
+    </p>
+  </mat-card-content>
+</mat-card>

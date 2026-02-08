@@ -1,0 +1,104 @@
+::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+:host {
+  display: block;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+h2[mat-dialog-title] {
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #e94560, #0f3460);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.game-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  height: auto !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .game-image {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .game-name {
+    font-size: 14px;
+    color: white;
+    flex: 1;
+  }
+
+  .add-button {
+    color: #4caf50;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(76, 175, 80, 0.2);
+    }
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #a0a0a0;
+}
+
+::ng-deep .mat-mdc-dialog-actions {
+  button {
+    color: #e94560;
+  }
+}
+
+::ng-deep .mat-mdc-list {
+  background: transparent !important;
+
+  .mat-mdc-list-item {
+    color: white;
+  }
+}
+
+::ng-deep .mat-mdc-dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e94560;
+    border-radius: 4px;
+  }
+}

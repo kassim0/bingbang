@@ -1,0 +1,12 @@
+<div class="search-container">
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Rechercher un jeu</mat-label>
+    <input matInput
+           [(ngModel)]="searchQuery"
+           (keypress)="onKeyPress($event)"
+           placeholder="Ex: Zelda, Mario, Final Fantasy...">
+    <button mat-icon-button matSuffix (click)="onSearch()" aria-label="Rechercher">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+</div>

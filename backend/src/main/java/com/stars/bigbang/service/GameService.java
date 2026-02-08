@@ -30,12 +30,4 @@ public class GameService {
         return gameRepository.findByRawgId(rawgId);
     }
 
-    public Optional<Game> findBySlug(String slug) {
-        return gameRepository.findBySlug(slug);
-    }
-
-    public void deleteById(Long id) {
-        gameRepository.deleteById(id);
-    }
-
 }
