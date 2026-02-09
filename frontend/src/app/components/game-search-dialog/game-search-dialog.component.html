@@ -11,9 +11,19 @@
     <mat-list-item *ngFor="let game of games" class="game-item">
       <img [src]="game.background_image" [alt]="game.name" class="game-image">
       <span class="game-name">{{ game.name }}</span>
-      <button mat-icon-button class="add-button" (click)="onAddGame(game)" title="Ajouter à ma collection">
+      <button mat-icon-button class="add-button"
+              [matMenuTriggerFor]="listMenu"
+              title="Ajouter à une liste">
         <mat-icon>add</mat-icon>
       </button>
+      <mat-menu #listMenu="matMenu">
+        <button mat-menu-item *ngFor="let list of gameLists" (click)="addGameToList(game, list)">
+          {{ list.name }}
+        </button>
+        <button mat-menu-item disabled *ngIf="gameLists.length === 0">
+          Aucune liste disponible
+        </button>
+      </mat-menu>
     </mat-list-item>
     <mat-divider></mat-divider>
   </mat-list>

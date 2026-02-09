@@ -9,7 +9,27 @@
       <mat-icon>search</mat-icon>
       Rechercher un jeu
     </button>
+    <button mat-fab extended color="accent" (click)="openCreateListDialog()">
+      <mat-icon>playlist_add</mat-icon>
+      New List
+    </button>
+  </div>
+
+  <div class="lists-section" *ngIf="gameLists.length > 0">
+    <div class="list-card" *ngFor="let list of gameLists">
+      <h2 class="list-title">{{ list.name }}</h2>
+      <div class="list-games">
+        <div class="game-card" *ngFor="let game of list.games">
+          <img [src]="game.backgroundImage || 'https://via.placeholder.com/300x200?text=No+Image'"
+               [alt]="game.name"
+               class="game-card-image">
+          <div class="game-card-info">
+            <h3 class="game-card-title">{{ game.name }}</h3>
+            <p class="game-card-date" *ngIf="game.released">{{ game.released }}</p>
+          </div>
+        </div>
+      </div>
+      <p class="empty-list" *ngIf="list.games.length === 0">Aucun jeu dans cette liste.</p>
+    </div>
   </div>
 </div>
-
-

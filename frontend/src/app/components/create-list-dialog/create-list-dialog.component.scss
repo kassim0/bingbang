@@ -1,0 +1,155 @@
+::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+:host {
+  display: block;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: white;
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+}
+
+h2[mat-dialog-title] {
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #e94560, #0f3460);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.list-name-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.game-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  height: auto !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .game-image {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .game-name {
+    font-size: 14px;
+    color: white;
+    flex: 1;
+  }
+
+  .add-button {
+    color: #4caf50;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(76, 175, 80, 0.2);
+    }
+
+    &.added {
+      color: #a0a0a0;
+    }
+  }
+
+  .remove-button {
+    color: #e94560;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(233, 69, 96, 0.2);
+    }
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.added-games-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px solid rgba(233, 69, 96, 0.3);
+
+  h3 {
+    color: #e94560;
+    font-size: 1rem;
+    margin: 0 0 8px 0;
+  }
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #a0a0a0;
+}
+
+::ng-deep .mat-mdc-dialog-actions {
+  button {
+    color: #e94560;
+  }
+}
+
+::ng-deep .mat-mdc-list {
+  background: transparent !important;
+
+  .mat-mdc-list-item {
+    color: white;
+  }
+}
+
+::ng-deep .mat-mdc-dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e94560;
+    border-radius: 4px;
+  }
+}
+
+::ng-deep {
+  .mat-mdc-form-field {
+    .mdc-text-field--outlined {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: rgba(255, 255, 255, 0.3) !important;
+      }
+    }
+
+    .mat-mdc-input-element {
+      color: white !important;
+    }
+
+    .mat-mdc-form-field-label,
+    .mdc-floating-label {
+      color: #a0a0a0 !important;
+    }
+  }
+}

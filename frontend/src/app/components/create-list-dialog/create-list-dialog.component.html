@@ -1,0 +1,56 @@
+<h2 mat-dialog-title>Nouvelle liste</h2>
+
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="list-name-field">
+    <mat-label>Nom de la liste</mat-label>
+    <input matInput [(ngModel)]="listName" placeholder="Ex: Mes favoris, À jouer...">
+  </mat-form-field>
+
+  <app-search-bar (search)="onSearch($event)"></app-search-bar>
+
+  <div class="loading" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <mat-list *ngIf="!isLoading && games.length > 0">
+    <mat-list-item *ngFor="let game of games" class="game-item">
+      <img [src]="game.background_image" [alt]="game.name" class="game-image">
+      <span class="game-name">{{ game.name }}</span>
+      <button mat-icon-button class="add-button"
+              [class.added]="isGameAdded(game)"
+              (click)="onAddGame(game)"
+              [disabled]="isGameAdded(game)"
+              title="Ajouter à la liste">
+        <mat-icon>{{ isGameAdded(game) ? 'check' : 'add' }}</mat-icon>
+      </button>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+  </mat-list>
+
+  <div class="no-results" *ngIf="!isLoading && hasSearched && games.length === 0">
+    <p>Aucun jeu trouvé.</p>
+  </div>
+
+  <div class="added-games-section" *ngIf="addedGames.length > 0">
+    <h3>Jeux ajoutés ({{ addedGames.length }})</h3>
+    <mat-list>
+      <mat-list-item *ngFor="let game of addedGames" class="game-item added-game-item">
+        <img [src]="game.background_image" [alt]="game.name" class="game-image">
+        <span class="game-name">{{ game.name }}</span>
+        <button mat-icon-button class="remove-button" (click)="removeGame(game)" title="Retirer de la liste">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-list-item>
+    </mat-list>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Annuler</button>
+  <button mat-raised-button color="primary"
+          (click)="createList()"
+          [disabled]="!listName.trim() || addedGames.length === 0 || isCreating">
+    <mat-spinner diameter="20" *ngIf="isCreating"></mat-spinner>
+    <span *ngIf="!isCreating">Créer</span>
+  </button>
+</mat-dialog-actions>

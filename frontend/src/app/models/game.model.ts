@@ -13,3 +13,18 @@ export interface RawgResponseDto {
   previous?: string;
   results?: RawgResultsDto[];
 }
+
+export interface Game {
+  id: number;
+  name: string;
+  slug: string;
+  released: string;
+  backgroundImage: string;
+  rawgId: number;
+}
+
+export interface GameList {
+  id: number;
+  name: string;
+  games: Game[];
+}

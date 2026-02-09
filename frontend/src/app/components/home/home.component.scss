@@ -30,4 +30,80 @@
 
 .action-section {
   margin-top: 60px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lists-section {
+  margin-top: 60px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.list-card {
+  margin-bottom: 40px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .list-title {
+    font-size: 1.5rem;
+    margin: 0 0 20px 0;
+    background: linear-gradient(45deg, #e94560, #0f3460);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .empty-list {
+    color: #a0a0a0;
+    font-style: italic;
+  }
+}
+
+.list-games {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.game-card {
+  width: 200px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .game-card-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+
+  .game-card-info {
+    padding: 12px;
+
+    .game-card-title {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .game-card-date {
+      margin: 4px 0 0;
+      font-size: 0.8rem;
+      color: #a0a0a0;
+    }
+  }
 }

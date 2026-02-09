@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {MatDialogRef, MatDialogModule} from '@angular/material/dialog';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -6,10 +6,12 @@ import {MatListModule} from '@angular/material/list';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatMenuModule} from '@angular/material/menu';
 import {NgForOf, NgIf} from '@angular/common';
 import {SearchBarComponent} from '../search-bar/search-bar.component';
 import {GameService} from '../../services/game.service';
-import {RawgResultsDto} from '../../models/game.model';
+import {GameListService} from '../../services/game-list.service';
+import {GameList, RawgResultsDto} from '../../models/game.model';
 
 @Component({
   selector: 'app-game-search-dialog',
@@ -22,6 +24,7 @@ import {RawgResultsDto} from '../../models/game.model';
     MatDividerModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatMenuModule,
     NgForOf,
     NgIf,
     SearchBarComponent
@@ -29,17 +32,26 @@ import {RawgResultsDto} from '../../models/game.model';
   templateUrl: './game-search-dialog.component.html',
   styleUrl: './game-search-dialog.component.scss'
 })
-export class GameSearchDialogComponent {
+export class GameSearchDialogComponent implements OnInit {
 
   games: RawgResultsDto[] = [];
+  gameLists: GameList[] = [];
   isLoading = false;
   hasSearched = false;
 
   constructor(
     public dialogRef: MatDialogRef<GameSearchDialogComponent>,
     private gameService: GameService,
+    private gameListService: GameListService,
     private snackBar: MatSnackBar
   ) {}
+
+  ngOnInit() {
+    this.gameListService.getAllLists().subscribe({
+      next: (lists) => this.gameLists = lists,
+      error: (err) => console.error('Erreur lors du chargement des listes:', err)
+    });
+  }
 
   onSearch(query: string) {
     this.isLoading = true;
@@ -58,10 +70,10 @@ export class GameSearchDialogComponent {
     });
   }
 
-  onAddGame(game: RawgResultsDto) {
-    this.gameService.saveGame(game).subscribe({
+  addGameToList(game: RawgResultsDto, list: GameList) {
+    this.gameListService.addGameToList(list.id, game).subscribe({
       next: () => {
-        this.snackBar.open(`"${game.name}" ajouté avec succès!`, 'OK', {
+        this.snackBar.open(`"${game.name}" ajouté à "${list.name}"!`, 'OK', {
           duration: 3000
         });
       },
