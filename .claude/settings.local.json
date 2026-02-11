@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd.exe /c \"mvn --version\")",
+      "Bash(powershell.exe -Command \"cd backend; mvn clean install\")",
+      "Bash(powershell.exe -Command \"refreshenv; Get-Command mvn -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem -Path ''C:\\\\ProgramData\\\\chocolatey\\\\lib'' -Filter ''mvn*'' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 5 -ExpandProperty FullName\")",
+      "Bash(powershell.exe -Command \"cd backend; & ''C:\\\\ProgramData\\\\chocolatey\\\\lib\\\\maven\\\\apache-maven-3.9.12\\\\bin\\\\mvn.cmd'' clean install\")",
+      "Bash(mvn clean install:*)",
+      "Bash(java:*)",
+      "WebFetch(domain:api.rawg.io)",
+      "WebSearch",
+      "Bash(npx ng build:*)",
+      "Bash(mvn compile:*)",
+      "Bash(git stash:*)"
+    ]
+  }
+}

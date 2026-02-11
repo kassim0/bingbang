@@ -1,0 +1,77 @@
+Parfait, je vois bien votre stack. Voici une roadmap adaptée à votre projet Angular 17 + Spring Boot 3 + PostgreSQL :
+
+  ---
+  Roadmap : Authentification & Gestion Utilisateurs
+
+  Phase 1 — Backend : Les fondations
+
+  1. Ajouter Spring Security + JWT
+  - Ajouter les dépendances Maven : spring-boot-starter-security et une librairie JWT (ex: jjwt)
+  - Spring Security est le standard en Spring Boot pour gérer l'authentification
+
+  2. Créer l'entité User
+  - Table en base avec : id, username, email, password (hashé), createdAt
+  - Utiliser BCryptPasswordEncoder pour ne jamais stocker le mot de passe en clair
+
+  3. Créer le Repository + Service
+  - UserRepository (Spring Data JPA)
+  - UserService avec la logique d'inscription et de recherche
+
+  4. Créer les endpoints Auth
+  - POST /api/auth/register — Création de compte
+  - POST /api/auth/login — Connexion (retourne un token JWT)
+  - Le JWT est la pratique standard pour les API REST : le client stocke le token et l'envoie à chaque requête
+
+  5. Configurer Spring Security
+  - Créer un SecurityFilterChain pour définir quelles routes sont publiques (/api/auth/**) et lesquelles nécessitent un token
+  - Créer un filtre JWT qui intercepte les requêtes et vérifie le token
+
+  ---
+  Phase 2 — Frontend : Pages & Authentification
+
+  6. Page d'inscription (/register)
+  - Formulaire : username, email, mot de passe, confirmation
+  - Validation côté client (Angular Reactive Forms)
+
+  7. Page de connexion (/login)
+  - Formulaire : email + mot de passe
+  - Appel API, stockage du JWT en localStorage
+
+  8. Service AuthService (Angular)
+  - Méthodes login(), register(), logout(), isLoggedIn()
+  - HttpInterceptor pour ajouter automatiquement le token JWT dans le header Authorization de chaque requête
+
+  9. Guards de route
+  - AuthGuard pour protéger les routes qui nécessitent une connexion
+
+  ---
+  Phase 3 — Profil utilisateur
+
+  10. Page profil (/profile)
+  - Afficher les infos de l'utilisateur
+  - Permettre la modification (username, email, avatar...)
+
+  11. Lier les données existantes à l'utilisateur
+  - Ajouter une relation User dans vos entités GameList pour que chaque liste appartienne à un utilisateur
+
+  ---
+  Concepts clés à retenir
+  ┌──────────────────────┬─────────────────────────────────────────────────────────────────────────────────┐
+  │       Concept        │                                      Rôle                                       │
+  ├──────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ JWT (JSON Web Token) │ Token signé envoyé par le client à chaque requête pour prouver son identité     │
+  ├──────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ BCrypt               │ Algorithme de hachage pour stocker les mots de passe de façon sécurisée         │
+  ├──────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ Spring Security      │ Framework qui gère l'authentification et l'autorisation côté Java               │
+  ├──────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ HttpInterceptor      │ Mécanisme Angular pour injecter le token dans les requêtes HTTP automatiquement │
+  ├──────────────────────┼─────────────────────────────────────────────────────────────────────────────────┤
+  │ AuthGuard            │ Protection des routes Angular pour rediriger les utilisateurs non connectés     │
+  └──────────────────────┴─────────────────────────────────────────────────────────────────────────────────┘
+  ---
+  Ordre recommandé
+
+  Commencez par le backend (phases 1), testez vos endpoints avec Postman, puis attaquez le frontend (phase 2). La phase 3 vient ensuite naturellement.
+
+  Voulez-vous que je rentre dans le détail d'une phase en particulier, ou que je vous aide à démarrer sur l'une d'entre elles ?
