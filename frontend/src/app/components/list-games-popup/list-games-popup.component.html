@@ -4,7 +4,7 @@
   <mat-list>
     <div *ngFor="let game of reponse">
       <mat-list-item>
-        <app-game-item class="game-item" [game]="game"></app-game-item>
+        <app-game-item class="game-item" [game]="game" (addGame)="onAddGame($event)"></app-game-item>
       </mat-list-item>
       <mat-divider></mat-divider>
     </div>

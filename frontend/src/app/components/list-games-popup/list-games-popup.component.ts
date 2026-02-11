@@ -1,9 +1,7 @@
-import {Component, Inject, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {MatButton, MatButtonModule} from "@angular/material/button";
 import {
-  MAT_DIALOG_DATA,
   MatDialogRef,
-  MatDialog,
   MatDialogTitle,
   MatDialogContent,
   MatDialogActions, MatDialogClose
@@ -17,6 +15,8 @@ import {NgForOf} from "@angular/common";
 import {MatList, MatListItem} from "@angular/material/list";
 import {MatDivider} from "@angular/material/divider";
 import {GameItemComponent} from "../share/game-item/game-item.component";
+import {HttpClient} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-list-games-popup',
@@ -43,7 +43,9 @@ export class ListGamesPopupComponent{
 
   constructor(
     public dialogRef: MatDialogRef<ListGamesPopupComponent>,
-    private jeuxRestControllerService: JeuxRestControllerService) {
+    private jeuxRestControllerService: JeuxRestControllerService,
+    private http: HttpClient,
+    private snackBar: MatSnackBar) {
   }
 
   close() {
@@ -55,5 +57,21 @@ export class ListGamesPopupComponent{
     this.jeuxRestControllerService.getJeuxByName(this.gameNameSearch).subscribe((reponse)=>{
       this.reponse=reponse.results;
     })
+  }
+
+  onAddGame(game: RawgResultsDto) {
+    this.http.post('/api/games', game).subscribe({
+      next: () => {
+        this.snackBar.open(`"${game.name}" ajouté avec succès!`, 'OK', {
+          duration: 3000
+        });
+      },
+      error: (err) => {
+        this.snackBar.open(`Erreur lors de l'ajout du jeu`, 'OK', {
+          duration: 3000
+        });
+        console.error('Erreur lors de l\'ajout du jeu:', err);
+      }
+    });
   }
 }
