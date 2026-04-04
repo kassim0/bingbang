@@ -1,0 +1,4 @@
+Je veux une nouvelle fonctionnalité qui permet à l'utilisateur de créer des list de jeux.
+Pour créer une liste, il faudra appuyer sur un bouton "new list". Une pop up s'affiche une fois qu'on appuie dessus. la même pop up que s'affiche quand on appuie sur "Rechercher un jeu"
+Pour ajouter un jeu sur sa liste, il faudra qu'il appuie sur le bouton "+" du jeu.
+Et quand il l'ajoute un toast le notifie.

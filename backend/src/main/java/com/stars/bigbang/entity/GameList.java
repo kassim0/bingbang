@@ -17,6 +17,10 @@ public class GameList {
 
     private String name;
 
+    private Long userId;
+
+    private String deviceId;
+
     @ManyToMany
     @JoinTable(
             name = "game_list_games",

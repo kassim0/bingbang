@@ -4,8 +4,12 @@ import com.stars.bigbang.dto.RawgDto.RawgResultsDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GameList;
 import com.stars.bigbang.service.GameListService;
+import com.stars.bigbang.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,16 +21,21 @@ import java.util.Map;
 public class GameListController {
 
     private final GameListService gameListService;
+    private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<GameList> createList(@RequestBody Map<String, String> body) {
+    public ResponseEntity<GameList> createList(@RequestBody Map<String, String> body, HttpServletRequest request) {
         String name = body.get("name");
-        return ResponseEntity.ok(gameListService.createList(name));
+        Long userId = getCurrentUserId();
+        String deviceId = userId == null ? request.getHeader("X-Device-Id") : null;
+        return ResponseEntity.ok(gameListService.createList(name, userId, deviceId));
     }
 
     @GetMapping
-    public ResponseEntity<List<GameList>> getAllLists() {
-        return ResponseEntity.ok(gameListService.findAll());
+    public ResponseEntity<List<GameList>> getAllLists(HttpServletRequest request) {
+        Long userId = getCurrentUserId();
+        String deviceId = userId == null ? request.getHeader("X-Device-Id") : null;
+        return ResponseEntity.ok(gameListService.findAll(userId, deviceId));
     }
 
     @PostMapping("/{listId}/games")
@@ -40,4 +49,13 @@ public class GameListController {
         return ResponseEntity.ok(gameListService.addGameToList(listId, game));
     }
 
+    private Long getCurrentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return userService.findByEmail(auth.getName())
+                    .map(user -> user.getId())
+                    .orElse(null);
+        }
+        return null;
+    }
 }

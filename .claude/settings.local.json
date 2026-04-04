@@ -12,7 +12,8 @@
       "WebSearch",
       "Bash(npx ng build:*)",
       "Bash(mvn compile:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(find /c/Projets/bingbang/backend/src/main/java -type f -name \"*.java\" | xargs grep -l \"Security\\\\|Auth\\\\|JWT\\\\|Password\\\\|Login\" 2>/dev/null)"
     ]
   }
 }

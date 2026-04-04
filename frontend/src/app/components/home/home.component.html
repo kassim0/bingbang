@@ -1,4 +1,16 @@
 <div class="home-container">
+  <nav class="navbar">
+    <div class="navbar-left">
+      <button mat-icon-button class="auth-btn" (click)="goToLogin()" *ngIf="!isLoggedIn" title="Se connecter">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <button mat-button class="auth-btn" (click)="logout()" *ngIf="isLoggedIn">
+        <mat-icon>logout</mat-icon>
+        Déconnexion
+      </button>
+    </div>
+  </nav>
+
   <header class="header">
     <h1>BingBang</h1>
     <p class="subtitle">Gérez votre collection de jeux vidéo</p>

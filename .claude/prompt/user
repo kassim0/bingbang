@@ -1,0 +1,7 @@
+Connexion/inscription
+la page de connexion/inscrption ne doit pas être la premiere page à s'afficher.
+Un bouton en haut à gauche permettra à l'utilisateur d'acceder à la page de connexion/inscription
+l'utilisateur peut gerer des gameList sans pour autant être connecté
+
+1er cas : Si l'utilisateur est connecté alors les gamelist sont lié à son compte. ainsi il pourra les gerer via n'importe quelle appareils en se connectant.
+2eme cas, dis moi si c'est possible : Si l'utilisateur n'est pas connecté alors il doit quand même pouvoir gerer des gameList. en liant les gameList avec l'id de son appareils ?

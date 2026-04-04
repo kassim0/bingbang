@@ -17,14 +17,22 @@ public class GameListService {
     private final GameListRepository gameListRepository;
     private final GameRepository gameRepository;
 
-    public GameList createList(String name) {
+    public GameList createList(String name, Long userId, String deviceId) {
         GameList gameList = new GameList();
         gameList.setName(name);
+        gameList.setUserId(userId);
+        gameList.setDeviceId(deviceId);
         return gameListRepository.save(gameList);
     }
 
-    public List<GameList> findAll() {
-        return gameListRepository.findAll();
+    public List<GameList> findAll(Long userId, String deviceId) {
+        if (userId != null) {
+            return gameListRepository.findByUserId(userId);
+        }
+        if (deviceId != null) {
+            return gameListRepository.findByDeviceId(deviceId);
+        }
+        return List.of();
     }
 
     public GameList addGameToList(Long listId, Game game) {

@@ -8,6 +8,26 @@
   align-items: center;
 }
 
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+  .auth-btn {
+    color: white;
+  }
+}
+
 .header {
   text-align: center;
   padding: 60px 0 40px;
