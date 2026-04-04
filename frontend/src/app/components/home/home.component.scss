@@ -4,4 +4,22 @@
   margin-top: -8px;
   height: 60vh;
   border: solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 0.2s;
+
+  &.drag-over {
+    opacity: 0.7;
+    border: 2px dashed #666;
+  }
+
+  .drop-hint {
+    color: #aaa;
+    font-size: 1.2rem;
+    pointer-events: none;
+  }
 }

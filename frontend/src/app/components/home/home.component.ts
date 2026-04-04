@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import {NgIf} from "@angular/common";
 import {SearchBarComponent} from "../share/search-bar/search-bar.component";
 import {ListGamesPopupComponent} from "../list-games-popup/list-games-popup.component";
 import {MatDialog} from "@angular/material/dialog";
@@ -13,17 +14,44 @@ import {MatDivider} from "@angular/material/divider";
     ListGamesPopupComponent,
     MatListItem,
     MatDivider,
-    MatList
+    MatList,
+    NgIf
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit{
 
+  backgroundImage: string | null = null;
+  isDragging = false;
+
   constructor(public dialog:MatDialog) {
   }
 
   ngOnInit(): void {
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    this.isDragging = false;
+
+    const file = event.dataTransfer?.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.backgroundImage = `url('${reader.result}')`;
+    };
+    reader.readAsDataURL(file);
   }
 
   OpenPopup() {

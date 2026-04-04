@@ -1,4 +1,12 @@
-<div class="hero-banner"></div>
+<div
+  class="hero-banner"
+  [style.background-image]="backgroundImage"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDrop($event)"
+  [class.drag-over]="isDragging">
+  <span class="drop-hint" *ngIf="!backgroundImage">Glissez une image ici</span>
+</div>
 
 <button mat-raised-button (click)="OpenPopup()">Chercher des jeux</button>
 
