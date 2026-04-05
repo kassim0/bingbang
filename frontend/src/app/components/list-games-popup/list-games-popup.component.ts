@@ -10,13 +10,13 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {SearchBarComponent} from "../share/search-bar/search-bar.component";
-import {JeuxRestControllerService, RawgResultsDto} from "../../openApi";
+import {RawgResultsDto} from "../../models/rawg.models";
 import {NgForOf} from "@angular/common";
 import {MatList, MatListItem} from "@angular/material/list";
 import {MatDivider} from "@angular/material/divider";
 import {GameItemComponent} from "../share/game-item/game-item.component";
-import {HttpClient} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {GameApiService} from "../../services/game-api.service";
 
 @Component({
   selector: 'app-list-games-popup',
@@ -43,8 +43,7 @@ export class ListGamesPopupComponent{
 
   constructor(
     public dialogRef: MatDialogRef<ListGamesPopupComponent>,
-    private jeuxRestControllerService: JeuxRestControllerService,
-    private http: HttpClient,
+    private gameApiService: GameApiService,
     private snackBar: MatSnackBar) {
   }
 
@@ -52,15 +51,15 @@ export class ListGamesPopupComponent{
     this.dialogRef.close();
   }
 
-  receiveData(data:string){
-    this.gameNameSearch=data;
-    this.jeuxRestControllerService.getJeuxByName(this.gameNameSearch).subscribe((reponse)=>{
-      this.reponse=reponse.results;
-    })
+  receiveData(data: string) {
+    this.gameNameSearch = data;
+    this.gameApiService.searchGames(this.gameNameSearch).subscribe((reponse) => {
+      this.reponse = reponse.results;
+    });
   }
 
   onAddGame(game: RawgResultsDto) {
-    this.http.post('/api/games', game).subscribe({
+    this.gameApiService.saveGame(game).subscribe({
       next: () => {
         this.snackBar.open(`"${game.name}" ajouté avec succès!`, 'OK', {
           duration: 3000

@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {RawgResultsDto} from "../../../../../.src/app/openApi";
+import {RawgResultsDto} from "../../../models/rawg.models";
 import {MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
 

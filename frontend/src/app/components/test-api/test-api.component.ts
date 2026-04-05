@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {JeuxRestControllerService, RawgResponseDto,RawgResultsDto} from "../../openApi";
+import {RawgResultsDto} from "../../models/rawg.models";
+import {GameApiService} from "../../services/game-api.service";
 import {NgFor} from "@angular/common";
 import {MatFormField} from "@angular/material/form-field";
 import {FormsModule} from "@angular/forms";
@@ -16,15 +17,15 @@ export class TestApiComponent {
   reponse : RawgResultsDto[] | undefined;
   gameName : string='';
 
-  constructor(private jeuxRestControllerService: JeuxRestControllerService) {
+  constructor(private gameApiService: GameApiService) {
   }
 
   public test(){
     console.log("nom du jeu: "+this.gameName);
-    this.jeuxRestControllerService.getJeuxByName(this.gameName).subscribe((response)=> {
+    this.gameApiService.searchGames(this.gameName).subscribe((response) => {
       this.reponse = response.results;
       console.log("bouton test appuyé: ",response.results);
-    })
+    });
   }
 
 }
