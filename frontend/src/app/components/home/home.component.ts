@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {NgIf} from "@angular/common";
 import {SearchBarComponent} from "../share/search-bar/search-bar.component";
 import {ListGamesPopupComponent} from "../list-games-popup/list-games-popup.component";
 import {MatDialog} from "@angular/material/dialog";
@@ -15,15 +14,15 @@ import {MatDivider} from "@angular/material/divider";
     MatListItem,
     MatDivider,
     MatList,
-    NgIf
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit{
 
-  backgroundImage: string | null = null;
+  backgroundImage: string = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
   isDragging = false;
+  hasCustomImage = false;
 
   constructor(public dialog:MatDialog) {
   }
@@ -50,6 +49,7 @@ export class HomeComponent implements OnInit{
     const reader = new FileReader();
     reader.onload = () => {
       this.backgroundImage = `url('${reader.result}')`;
+      this.hasCustomImage = true;
     };
     reader.readAsDataURL(file);
   }

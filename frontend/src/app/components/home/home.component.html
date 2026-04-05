@@ -5,7 +5,10 @@
   (dragleave)="onDragLeave($event)"
   (drop)="onDrop($event)"
   [class.drag-over]="isDragging">
-  <span class="drop-hint" *ngIf="!backgroundImage">Glissez une image ici</span>
+  <div class="drop-overlay" [class.dragging]="isDragging">
+    <span class="drop-overlay__icon">🖼️</span>
+    <span class="drop-overlay__text">{{ isDragging ? 'Relâchez pour changer l\'image' : 'Glissez une image pour personnaliser' }}</span>
+  </div>
 </div>
 
 <!--<button mat-raised-button (click)="OpenPopup()">Chercher des jeux</button>-->
