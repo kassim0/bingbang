@@ -2,9 +2,8 @@
   <span class="spacer"></span>
 
   @if (currentUser()) {
-    <button mat-button [matMenuTriggerFor]="userMenu">
+    <button mat-icon-button [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
-      {{ currentUser()!.username }}
     </button>
     <mat-menu #userMenu>
       <button mat-menu-item (click)="logout()">
@@ -13,6 +12,8 @@
       </button>
     </mat-menu>
   } @else {
-    <button mat-stroked-button (click)="openAuthDialog()">Se connecter</button>
+    <button mat-icon-button (click)="openAuthDialog()">
+      <mat-icon>account_circle</mat-icon>
+    </button>
   }
 </mat-toolbar>
