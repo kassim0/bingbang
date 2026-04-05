@@ -1,0 +1,18 @@
+<mat-toolbar color="primary">
+  <span class="spacer"></span>
+
+  @if (currentUser()) {
+    <button mat-button [matMenuTriggerFor]="userMenu">
+      <mat-icon>account_circle</mat-icon>
+      {{ currentUser()!.username }}
+    </button>
+    <mat-menu #userMenu>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Se déconnecter
+      </button>
+    </mat-menu>
+  } @else {
+    <button mat-stroked-button (click)="openAuthDialog()">Se connecter</button>
+  }
+</mat-toolbar>
