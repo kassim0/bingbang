@@ -9,13 +9,11 @@ import {BrowserModule} from "@angular/platform-browser";
 import {FormsModule} from '@angular/forms';
 import {MatInputModule} from "@angular/material/input";
 import {MatIconModule} from "@angular/material/icon";
-import {TestApiComponent} from './components/test-api/test-api.component';
 import {HomeComponent} from './components/home/home.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: 'home', pathMatch: 'full'},
-  {path: 'home', component: HomeComponent},
-  {path: 'api', component: TestApiComponent}
+  {path: 'home', component: HomeComponent}
 ];
 
 @NgModule({

@@ -73,20 +73,4 @@ export class ListGamesPopupComponent{
       }
     });
   }
-
-  onAddGame(game: RawgResultsDto) {
-    this.http.post('/api/games', game).subscribe({
-      next: () => {
-        this.snackBar.open(`"${game.name}" ajouté avec succès!`, 'OK', {
-          duration: 3000
-        });
-      },
-      error: (err) => {
-        this.snackBar.open(`Erreur lors de l'ajout du jeu`, 'OK', {
-          duration: 3000
-        });
-        console.error('Erreur lors de l\'ajout du jeu:', err);
-      }
-    });
-  }
 }
