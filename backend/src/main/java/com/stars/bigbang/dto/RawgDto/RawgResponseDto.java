@@ -1,10 +1,12 @@
 package com.stars.bigbang.dto.RawgDto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RawgResponseDto {
 
     private int count;
@@ -17,6 +19,6 @@ public class RawgResponseDto {
     private boolean noindex;
     private boolean nofollow;
     private String description;
-    private String filters; //TODO modifier la nature de l'attribut
-    private String nofollow_collections; //TODO modifier la nature de l'attribut
+    private Object filters;
+    private Object nofollow_collections;
 }
