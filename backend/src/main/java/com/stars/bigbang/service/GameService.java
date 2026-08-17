@@ -8,6 +8,7 @@ import com.stars.bigbang.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,15 +50,20 @@ public class GameService {
 
     public GameList saveRawgListGame(RawgResultsDto[] gameDto) {
         GameList gameList = new GameList();
-        Game[] games = new Game[gameDto.length];
-        for (int i = 0; i < gameDto.length; i++) {
-            games[i] = new Game();
-            games[i].setName(gameDto[i].getName());
-            games[i].setSlug(gameDto[i].getSlug());
-            games[i].setBackgroundImage(gameDto[i].getBackground_image());
-            games[i].setRawgId(gameDto[i].getId());
+        List<Game> savedGames = new ArrayList<>();
+        for (RawgResultsDto dto : gameDto) {
+            Game game = gameRepository.findByRawgId(dto.getId()).orElseGet(() -> {
+                Game newGame = new Game();
+                newGame.setName(dto.getName());
+                newGame.setSlug(dto.getSlug());
+                newGame.setBackgroundImage(dto.getBackground_image());
+                newGame.setRawgId(dto.getId());
+                return gameRepository.save(newGame);
+            });
+            savedGames.add(game);
         }
-        gameList.setListGames(List.of(games));
+        gameList.setListGames(savedGames);
+        gameList.setListOrder(gameListRepository.findMaxListOrder() + 1);
         return gameListRepository.saveAndFlush(gameList);
     }
 }

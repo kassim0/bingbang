@@ -22,6 +22,7 @@ public class Game {
 
     private String backgroundImage;
 
+    @Column(unique = true)
     private Integer rawgId;
 
 }
