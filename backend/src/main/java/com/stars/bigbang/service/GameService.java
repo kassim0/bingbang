@@ -62,8 +62,10 @@ public class GameService {
             });
             savedGames.add(game);
         }
+        Long listOrder = gameListRepository.findMaxListOrder() + 1;
         gameList.setListGames(savedGames);
-        gameList.setListOrder(gameListRepository.findMaxListOrder() + 1);
+        gameList.setListOrder(listOrder);
+        gameList.setListName("Liste N° "+listOrder);
         return gameListRepository.saveAndFlush(gameList);
     }
 }
