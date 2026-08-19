@@ -28,4 +28,9 @@ public class JeuxRestController {
     public ResponseEntity<GameList> saveListGames(@RequestBody RawgResultsDto[] gameDto) {
         return ResponseEntity.ok(gameService.saveRawgListGame(gameDto));
     }
+
+    @GetMapping(value = "/getListGames")
+    public ResponseEntity<List<GameList>> getListGames() {
+        return ResponseEntity.ok(gameService.getListGames());
+    }
 }

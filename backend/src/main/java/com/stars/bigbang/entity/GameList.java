@@ -15,7 +15,6 @@ public class GameList {
     @ManyToMany
     private List<Game> listGames;
 
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long listOrder;
 
     private String listName;

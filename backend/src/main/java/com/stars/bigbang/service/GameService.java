@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,5 +68,12 @@ public class GameService {
         gameList.setListOrder(listOrder);
         gameList.setListName("Liste N° "+listOrder);
         return gameListRepository.saveAndFlush(gameList);
+    }
+
+    public List<GameList> getListGames() {
+        return gameListRepository.findAll().stream()
+                .filter(gameList -> gameList.getListOrder() != null)
+                .sorted(Comparator.comparing(GameList::getListOrder))
+                .toList();
     }
 }
