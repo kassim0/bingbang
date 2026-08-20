@@ -1,7 +1,7 @@
 package com.stars.bigbang.mock;
 
-import com.stars.bigbang.dto.RawgDto.RawgResponseDto;
-import com.stars.bigbang.dto.RawgDto.RawgResultsDto;
+import com.stars.bigbang.dto.rawgDto.RawgResponseDto;
+import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.rest.RawgApi;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

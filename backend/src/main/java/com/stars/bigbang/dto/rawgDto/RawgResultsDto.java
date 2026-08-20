@@ -1,4 +1,4 @@
-package com.stars.bigbang.dto.RawgDto;
+package com.stars.bigbang.dto.rawgDto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

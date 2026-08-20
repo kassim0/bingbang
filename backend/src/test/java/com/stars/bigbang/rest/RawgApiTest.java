@@ -1,7 +1,7 @@
 package com.stars.bigbang.rest;
 
 
-import com.stars.bigbang.dto.RawgDto.RawgResponseDto;
+import com.stars.bigbang.dto.rawgDto.RawgResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

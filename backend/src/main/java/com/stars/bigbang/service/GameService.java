@@ -1,6 +1,6 @@
 package com.stars.bigbang.service;
 
-import com.stars.bigbang.dto.RawgDto.RawgResultsDto;
+import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GameList;
 import com.stars.bigbang.repository.GameListRepository;

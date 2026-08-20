@@ -1,6 +1,7 @@
 package com.stars.bigbang.controller;
 
 import com.stars.bigbang.dto.RawgDto.RawgResultsDto;
+import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GameList;
 import com.stars.bigbang.service.GameService;
