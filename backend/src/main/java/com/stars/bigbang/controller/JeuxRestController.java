@@ -1,7 +1,7 @@
 package com.stars.bigbang.controller;
 
-import com.stars.bigbang.dto.RawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
+import com.stars.bigbang.dto.record.NewGameList;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GameList;
 import com.stars.bigbang.service.GameService;
@@ -26,8 +26,8 @@ public class JeuxRestController {
     }
 
     @PostMapping(value = "/saveListGames")
-    public ResponseEntity<GameList> saveListGames(@RequestBody RawgResultsDto[] gameDto) {
-        return ResponseEntity.ok(gameService.saveRawgListGame(gameDto));
+    public ResponseEntity<GameList> saveListGames(@RequestBody NewGameList newGameList) {
+        return ResponseEntity.ok(gameService.saveRawgListGame(newGameList.listName(), newGameList.gameDto()));
     }
 
     @GetMapping(value = "/getListGames")

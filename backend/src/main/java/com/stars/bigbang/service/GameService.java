@@ -49,7 +49,7 @@ public class GameService {
         gameRepository.deleteById(id);
     }
 
-    public GameList saveRawgListGame(RawgResultsDto[] gameDto) {
+    public GameList saveRawgListGame(String listName,RawgResultsDto[] gameDto) {
         GameList gameList = new GameList();
         List<Game> savedGames = new ArrayList<>();
         for (RawgResultsDto dto : gameDto) {
@@ -66,7 +66,7 @@ public class GameService {
         Long listOrder = gameListRepository.findMaxListOrder() + 1;
         gameList.setListGames(savedGames);
         gameList.setListOrder(listOrder);
-        gameList.setListName("Liste N° "+listOrder);
+        gameList.setListName(listName.isEmpty() ? "Liste N° "+listOrder : listName);
         return gameListRepository.saveAndFlush(gameList);
     }
 
