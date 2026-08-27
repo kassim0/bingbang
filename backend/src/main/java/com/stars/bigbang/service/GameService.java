@@ -2,7 +2,7 @@ package com.stars.bigbang.service;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.entity.Game;
-import com.stars.bigbang.entity.GameList;
+import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.repository.GameListRepository;
 import com.stars.bigbang.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +49,8 @@ public class GameService {
         gameRepository.deleteById(id);
     }
 
-    public GameList saveRawgListGame(String listName,RawgResultsDto[] gameDto) {
-        GameList gameList = new GameList();
+    public GamesList saveRawgGamesList(String listName, RawgResultsDto[] gameDto) {
+        GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         for (RawgResultsDto dto : gameDto) {
             Game game = gameRepository.findByRawgId(dto.getId()).orElseGet(() -> {
@@ -63,17 +63,17 @@ public class GameService {
             });
             savedGames.add(game);
         }
-        Long listOrder = gameListRepository.findMaxListOrder() + 1;
-        gameList.setListGames(savedGames);
-        gameList.setListOrder(listOrder);
-        gameList.setListName(listName.isEmpty() ? "Liste N° "+listOrder : listName);
-        return gameListRepository.saveAndFlush(gameList);
+        Long position = gameListRepository.findMaxOrder() + 1;
+        gamesList.setGames(savedGames);
+        gamesList.setPosition(position);
+        gamesList.setName(listName.isEmpty() ? "Liste N° "+position : listName);
+        return gameListRepository.saveAndFlush(gamesList);
     }
 
-    public List<GameList> getListGames() {
+    public List<GamesList> getListGames() {
         return gameListRepository.findAll().stream()
-                .filter(gameList -> gameList.getListOrder() != null)
-                .sorted(Comparator.comparing(GameList::getListOrder))
+                .filter(gamesList -> gamesList.getPosition() != null)
+                .sorted(Comparator.comparing(GamesList::getPosition))
                 .toList();
     }
 }

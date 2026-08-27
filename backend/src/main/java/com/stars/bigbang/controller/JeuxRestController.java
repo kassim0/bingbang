@@ -1,9 +1,9 @@
 package com.stars.bigbang.controller;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
-import com.stars.bigbang.dto.record.NewGameList;
+import com.stars.bigbang.dto.record.NewGamesList;
 import com.stars.bigbang.entity.Game;
-import com.stars.bigbang.entity.GameList;
+import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.service.GameService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +25,13 @@ public class JeuxRestController {
         return ResponseEntity.ok(gameService.saveRawgGame(gameDto));
     }
 
-    @PostMapping(value = "/saveListGames")
-    public ResponseEntity<GameList> saveListGames(@RequestBody NewGameList newGameList) {
-        return ResponseEntity.ok(gameService.saveRawgListGame(newGameList.listName(), newGameList.gameDto()));
+    @PostMapping(value = "/saveGamesList")
+    public ResponseEntity<GamesList> saveListGames(@RequestBody NewGamesList newGamesList) {
+        return ResponseEntity.ok(gameService.saveRawgGamesList(newGamesList.name(), newGamesList.rawgGames()));
     }
 
-    @GetMapping(value = "/getListGames")
-    public ResponseEntity<List<GameList>> getListGames() {
+    @GetMapping(value = "/getGamesLists")
+    public ResponseEntity<List<GamesList>> getListGames() {
         return ResponseEntity.ok(gameService.getListGames());
     }
 }

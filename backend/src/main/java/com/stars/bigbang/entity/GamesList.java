@@ -7,15 +7,12 @@ import java.util.List;
 
 @Entity
 @Data
-public class GameList {
+public class GamesList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
+    private String name;
+    private Long position;
     @ManyToMany
-    private List<Game> listGames;
-
-    private Long listOrder;
-
-    private String listName;
+    private List<Game> games;
 }
