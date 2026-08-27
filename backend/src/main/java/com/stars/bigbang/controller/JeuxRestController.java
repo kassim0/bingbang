@@ -34,4 +34,9 @@ public class JeuxRestController {
     public ResponseEntity<List<GamesList>> getListGames() {
         return ResponseEntity.ok(gameService.getListGames());
     }
+
+    @DeleteMapping(value = "/deleteGamesFromGamesList")
+    public void deleteGamesFromGamesList(){
+
+    }
 }
