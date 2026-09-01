@@ -26,9 +26,9 @@ public class JeuxRestController {
         return ResponseEntity.ok(gameService.saveRawgGame(gameDto));
     }
 
-    @PostMapping(value = "/saveGamesList")
+    @PostMapping(value = "/newGamesList")
     public ResponseEntity<GamesList> saveListGames(@RequestBody NewGamesListDto newGamesListDto) {
-        return ResponseEntity.ok(gameService.saveRawgGamesList(newGamesListDto.name(), newGamesListDto.rawgGames()));
+        return ResponseEntity.ok(gameService.createGamesList(newGamesListDto.name(), newGamesListDto.rawgGames()));
     }
 
     @GetMapping(value = "/getGamesLists")
@@ -36,7 +36,7 @@ public class JeuxRestController {
         return ResponseEntity.ok(gameService.getListGames());
     }
 
-    @DeleteMapping(value = "/updateGameList")
+    @DeleteMapping(value = "/updateGamesList")
     public void updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto){
         gameService.updateGamesList(updateGamesListDto);
     }

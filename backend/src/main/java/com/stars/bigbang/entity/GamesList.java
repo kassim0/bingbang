@@ -2,6 +2,7 @@ package com.stars.bigbang.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -13,6 +14,6 @@ public class GamesList {
     private int id;
     private String name;
     private Long position;
-    @ManyToMany
-    private List<Game> games;
+    @OneToMany(mappedBy = "gamesList", cascade = CascadeType.ALL)
+    private List<GamesListEntry> games;
 }

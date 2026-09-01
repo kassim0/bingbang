@@ -4,6 +4,7 @@ import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.record.UpdateGamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
+import com.stars.bigbang.entity.GamesListEntry;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -50,9 +52,14 @@ public class GameService {
         gamesRepository.deleteById(id);
     }
 
-    public GamesList saveRawgGamesList(String listName, RawgResultsDto[] gameDto) {
+    /**
+     * Create a new GamesList from Rawg games
+     * */
+    public GamesList createGamesList(String listName, RawgResultsDto[] gameDto) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
+        List<GamesListEntry>  savedGamesListEntry = new ArrayList<>();
+
         for (RawgResultsDto dto : gameDto) {
             Game game = gamesRepository.findByRawgId(dto.getId()).orElseGet(() -> {
                 Game newGame = new Game();
@@ -64,8 +71,13 @@ public class GameService {
             });
             savedGames.add(game);
         }
+
+        savedGamesListEntry = IntStream.range(0,savedGames.size())
+                            .mapToObj(i-> new GamesListEntry(gamesList,savedGames.get(i),i))
+                            .toList();
+
         Long position = gamesListRepository.findMaxOrder() + 1;
-        gamesList.setGames(savedGames);
+        gamesList.setGames(savedGamesListEntry);
         gamesList.setPosition(position);
         gamesList.setName(listName.isEmpty() ? "Liste N° "+position : listName);
         return gamesListRepository.saveAndFlush(gamesList);
