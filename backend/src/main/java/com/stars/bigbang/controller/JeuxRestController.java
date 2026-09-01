@@ -1,7 +1,8 @@
 package com.stars.bigbang.controller;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
-import com.stars.bigbang.dto.record.NewGamesList;
+import com.stars.bigbang.dto.record.NewGamesListDto;
+import com.stars.bigbang.dto.record.UpdateGamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.service.GameService;
@@ -26,8 +27,8 @@ public class JeuxRestController {
     }
 
     @PostMapping(value = "/saveGamesList")
-    public ResponseEntity<GamesList> saveListGames(@RequestBody NewGamesList newGamesList) {
-        return ResponseEntity.ok(gameService.saveRawgGamesList(newGamesList.name(), newGamesList.rawgGames()));
+    public ResponseEntity<GamesList> saveListGames(@RequestBody NewGamesListDto newGamesListDto) {
+        return ResponseEntity.ok(gameService.saveRawgGamesList(newGamesListDto.name(), newGamesListDto.rawgGames()));
     }
 
     @GetMapping(value = "/getGamesLists")
@@ -35,8 +36,8 @@ public class JeuxRestController {
         return ResponseEntity.ok(gameService.getListGames());
     }
 
-    @DeleteMapping(value = "/deleteGamesFromGamesList")
-    public void deleteGamesFromGamesList(){
-
+    @DeleteMapping(value = "/updateGameList")
+    public void updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto){
+        gameService.updateGamesList(updateGamesListDto);
     }
 }

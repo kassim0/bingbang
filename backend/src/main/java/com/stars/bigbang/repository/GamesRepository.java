@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface GameRepository extends JpaRepository<Game, Long> {
+public interface GamesRepository extends JpaRepository<Game, Long> {
 
     Optional<Game> findByRawgId(Integer rawgId);
 

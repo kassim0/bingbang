@@ -1,10 +1,11 @@
 package com.stars.bigbang.service;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
+import com.stars.bigbang.dto.record.UpdateGamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
-import com.stars.bigbang.repository.GameListRepository;
-import com.stars.bigbang.repository.GameRepository;
+import com.stars.bigbang.repository.GamesListRepository;
+import com.stars.bigbang.repository.GamesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GameService {
 
-    private final GameRepository gameRepository;
-    private final GameListRepository gameListRepository;
+    private final GamesRepository gamesRepository;
+    private final GamesListRepository gamesListRepository;
 
     public Game saveRawgGame(RawgResultsDto gameDto) {
         Game game = new Game();
@@ -26,54 +27,66 @@ public class GameService {
         game.setSlug(gameDto.getSlug());
         game.setBackgroundImage(gameDto.getBackground_image());
         game.setRawgId(gameDto.getId());
-        return gameRepository.save(game);
+        return gamesRepository.save(game);
     }
 
     public List<Game> findAll() {
-        return gameRepository.findAll();
+        return gamesRepository.findAll();
     }
 
     public Optional<Game> findById(Long id) {
-        return gameRepository.findById(id);
+        return gamesRepository.findById(id);
     }
 
     public Optional<Game> findByRawgId(Integer rawgId) {
-        return gameRepository.findByRawgId(rawgId);
+        return gamesRepository.findByRawgId(rawgId);
     }
 
     public Optional<Game> findBySlug(String slug) {
-        return gameRepository.findBySlug(slug);
+        return gamesRepository.findBySlug(slug);
     }
 
     public void deleteById(Long id) {
-        gameRepository.deleteById(id);
+        gamesRepository.deleteById(id);
     }
 
     public GamesList saveRawgGamesList(String listName, RawgResultsDto[] gameDto) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         for (RawgResultsDto dto : gameDto) {
-            Game game = gameRepository.findByRawgId(dto.getId()).orElseGet(() -> {
+            Game game = gamesRepository.findByRawgId(dto.getId()).orElseGet(() -> {
                 Game newGame = new Game();
                 newGame.setName(dto.getName());
                 newGame.setSlug(dto.getSlug());
                 newGame.setBackgroundImage(dto.getBackground_image());
                 newGame.setRawgId(dto.getId());
-                return gameRepository.save(newGame);
+                return gamesRepository.save(newGame);
             });
             savedGames.add(game);
         }
-        Long position = gameListRepository.findMaxOrder() + 1;
+        Long position = gamesListRepository.findMaxOrder() + 1;
         gamesList.setGames(savedGames);
         gamesList.setPosition(position);
         gamesList.setName(listName.isEmpty() ? "Liste N° "+position : listName);
-        return gameListRepository.saveAndFlush(gamesList);
+        return gamesListRepository.saveAndFlush(gamesList);
     }
 
     public List<GamesList> getListGames() {
-        return gameListRepository.findAll().stream()
+        return gamesListRepository.findAll().stream()
                 .filter(gamesList -> gamesList.getPosition() != null)
                 .sorted(Comparator.comparing(GamesList::getPosition))
                 .toList();
+    }
+
+    public void updateGamesList(UpdateGamesListDto updateGamesListDto) {
+        if(updateGamesListDto.newName() != null) {
+            gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
+        }
+        if(updateGamesListDto.removeGameId() != null) {
+            gamesListRepository.deleteGame(updateGamesListDto.gamesListId(),updateGamesListDto.removeGameId());
+        }
+        if(updateGamesListDto.newGameId() != null) {
+            gamesListRepository.saveGame(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId().toArray(Long[]::new));
+        }
     }
 }
