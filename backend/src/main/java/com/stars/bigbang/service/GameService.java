@@ -73,7 +73,7 @@ public class GameService {
         }
 
         savedGamesListEntry = IntStream.range(0,savedGames.size())
-                            .mapToObj(i-> new GamesListEntry(gamesList,savedGames.get(i),i))
+                            .mapToObj(i-> new GamesListEntry(savedGames.get(i),i))
                             .toList();
 
         Long position = gamesListRepository.findMaxOrder() + 1;
