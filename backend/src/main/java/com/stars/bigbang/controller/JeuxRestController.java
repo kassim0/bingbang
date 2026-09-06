@@ -3,6 +3,7 @@ package com.stars.bigbang.controller;
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.record.NewGamesListDto;
 import com.stars.bigbang.dto.record.UpdateGamesListDto;
+import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.service.GameService;
@@ -32,7 +33,7 @@ public class JeuxRestController {
     }
 
     @GetMapping(value = "/getGamesLists")
-    public ResponseEntity<List<GamesList>> getListGames() {
+    public ResponseEntity<List<GamesListDto>> getListGames() {
         return ResponseEntity.ok(gameService.getListGames());
     }
 

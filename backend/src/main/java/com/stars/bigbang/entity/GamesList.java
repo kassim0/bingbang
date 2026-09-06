@@ -16,7 +16,6 @@ public class GamesList {
     private int id;
     private String name;
     private Long position;
-    @OneToMany(mappedBy = "gamesList", cascade = CascadeType.ALL)
-    @JsonManagedReference
+    @OneToMany(cascade = CascadeType.ALL)
     private List<GamesListEntry> games;
 }

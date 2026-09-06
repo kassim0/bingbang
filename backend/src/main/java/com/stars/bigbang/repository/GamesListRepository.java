@@ -16,6 +16,15 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
     @Query("SELECT COALESCE(MAX(g.position), 0) FROM GamesList g")
     Long findMaxOrder();
 
+    @Query("""
+            SELECT DISTINCT gl FROM GamesList gl
+            LEFT JOIN FETCH gl.games entry
+            LEFT JOIN FETCH entry.game
+            WHERE gl.position IS NOT NULL
+            ORDER BY gl.position
+            """)
+    List<GamesList> findAllWithGamesOrderByPosition();
+
     @Modifying(clearAutomatically = true)
     @Query(value = "DELETE FROM games_list_games WHERE games_list_id = :gamesListId AND game_id IN :gameIds", nativeQuery = true)
     void deleteGame(@Param("gamesListId") long gamesListId, @Param("gameIds") List<Long> gameIds);

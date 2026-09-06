@@ -2,6 +2,7 @@ package com.stars.bigbang.service;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.record.UpdateGamesListDto;
+import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.GamesListEntry;
@@ -9,9 +10,9 @@ import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -83,10 +84,11 @@ public class GameService {
         return gamesListRepository.saveAndFlush(gamesList);
     }
 
-    public List<GamesList> getListGames() {
-        return gamesListRepository.findAll().stream()
-                .filter(gamesList -> gamesList.getPosition() != null)
-                .sorted(Comparator.comparing(GamesList::getPosition))
+    @Transactional(readOnly = true)
+    public List<GamesListDto> getListGames() {
+
+        return gamesListRepository.findAllWithGamesOrderByPosition().stream()
+                .map(GamesListDto::from)
                 .toList();
     }
 
