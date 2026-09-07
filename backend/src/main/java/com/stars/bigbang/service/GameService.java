@@ -26,10 +26,10 @@ public class GameService {
 
     public Game saveRawgGame(RawgResultsDto gameDto) {
         Game game = new Game();
-        game.setName(gameDto.getName());
-        game.setSlug(gameDto.getSlug());
-        game.setBackgroundImage(gameDto.getBackground_image());
-        game.setRawgId(gameDto.getId());
+        game.setName(gameDto.name());
+        game.setSlug(gameDto.slug());
+        game.setBackgroundImage(gameDto.background_image());
+        game.setRawgId(gameDto.id());
         return gamesRepository.save(game);
     }
 
@@ -59,17 +59,10 @@ public class GameService {
     public GamesList createGamesList(String listName, RawgResultsDto[] gameDto) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
-        List<GamesListEntry>  savedGamesListEntry = new ArrayList<>();
+        List<GamesListEntry>  savedGamesListEntry;
 
         for (RawgResultsDto dto : gameDto) {
-            Game game = gamesRepository.findByRawgId(dto.getId()).orElseGet(() -> {
-                Game newGame = new Game();
-                newGame.setName(dto.getName());
-                newGame.setSlug(dto.getSlug());
-                newGame.setBackgroundImage(dto.getBackground_image());
-                newGame.setRawgId(dto.getId());
-                return gamesRepository.save(newGame);
-            });
+            Game game = gamesRepository.findByRawgId(dto.id()).orElseGet(() -> saveRawgGame(dto));
             savedGames.add(game);
         }
 

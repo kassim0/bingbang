@@ -1,17 +1,8 @@
 package com.stars.bigbang.dto.rawgDto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
+import com.stars.bigbang.entity.Game;
 
-@Data
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class RawgResultsDto {
+public record RawgResultsDto(int id, String slug, String name, String released, boolean tba, String background_image) {
 
-    private int id;
-    private String slug;
-    private String name;
-    private String released;
-    private boolean tba;
-    private String background_image;
 
 }
