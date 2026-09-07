@@ -25,18 +25,8 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
             """)
     List<GamesList> findAllWithGamesOrderByPosition();
 
-    @Modifying(clearAutomatically = true)
-    @Query(value = "DELETE FROM games_list_games WHERE games_list_id = :gamesListId AND game_id IN :gameIds", nativeQuery = true)
-    void deleteGame(@Param("gamesListId") long gamesListId, @Param("gameIds") List<Long> gameIds);
-
     @Transactional
     @Modifying
     @Query("update GamesList g set g.name = ?1 where g.id = ?2")
     int updateNameById(long id, String name);
-
-    @Modifying(clearAutomatically = true)
-    @Query(value = "INSERT INTO games_list_games (games_list_id,game_id) SELECT :gamesListId, unnest(:gameIds) ", nativeQuery = true)
-    void saveGame(@Param("gamesListId") long gamesListId, @Param("gameIds") Long[] gameIds);
-
-
 }

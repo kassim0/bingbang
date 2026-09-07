@@ -6,6 +6,7 @@ import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.GamesListEntry;
+import com.stars.bigbang.repository.GamesListEntryRepository;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 @Service
@@ -23,6 +25,7 @@ public class GameService {
 
     private final GamesRepository gamesRepository;
     private final GamesListRepository gamesListRepository;
+    private final GamesListEntryRepository gamesListEntryRepository;
 
     public Game saveRawgGame(RawgResultsDto gameDto) {
         Game game = new Game();
@@ -31,26 +34,6 @@ public class GameService {
         game.setBackgroundImage(gameDto.background_image());
         game.setRawgId(gameDto.id());
         return gamesRepository.save(game);
-    }
-
-    public List<Game> findAll() {
-        return gamesRepository.findAll();
-    }
-
-    public Optional<Game> findById(Long id) {
-        return gamesRepository.findById(id);
-    }
-
-    public Optional<Game> findByRawgId(Integer rawgId) {
-        return gamesRepository.findByRawgId(rawgId);
-    }
-
-    public Optional<Game> findBySlug(String slug) {
-        return gamesRepository.findBySlug(slug);
-    }
-
-    public void deleteById(Long id) {
-        gamesRepository.deleteById(id);
     }
 
     /**
@@ -90,10 +73,40 @@ public class GameService {
             gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
         }
         if(updateGamesListDto.removeGameId() != null) {
-            gamesListRepository.deleteGame(updateGamesListDto.gamesListId(),updateGamesListDto.removeGameId());
+            gamesListEntryRepository.deleteGameByGamesListId(updateGamesListDto.gamesListId(),updateGamesListDto.removeGameId());
+            manageGamesListEntryPosition(updateGamesListDto.gamesListId());
         }
         if(updateGamesListDto.newGameId() != null) {
-            gamesListRepository.saveGame(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId().toArray(Long[]::new));
+            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId());
         }
+    }
+
+    @Transactional
+    private void addGames(long gamesListId, List<Long> gameIds) {
+        GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
+        int nextPosition = gamesList.getGames().stream()
+                .mapToInt(GamesListEntry::getPosition)
+                .max()
+                .orElse(1);
+        for (Long gameId : gameIds) {
+            Game game = gamesRepository.findById(gameId).orElseThrow();
+            gamesList.getGames().add(new GamesListEntry(game, nextPosition++));
+        }
+        gamesListRepository.save(gamesList);
+    }
+
+    private void manageGamesListEntryPosition(long gamesListId) {
+        AtomicInteger compteur = new AtomicInteger();
+        List<GamesListEntry> gamesListEntryList = gamesListEntryRepository.findByGamesListId(gamesListId).stream()
+                .sorted(Comparator.comparingInt(GamesListEntry::getPosition))
+                .toList();
+
+        gamesListEntryList.forEach(gamesListEntry -> {
+            if(gamesListEntry.getPosition() != compteur.getAndIncrement()) {
+                gamesListEntry.setPosition(compteur.get());
+            }
+        });
+
+        gamesListEntryRepository.saveAll(gamesListEntryList);
     }
 }

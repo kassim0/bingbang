@@ -17,5 +17,7 @@ public class GamesList {
     private String name;
     private Long position;
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name="games_list_id")
+    @OrderBy("position")
     private List<GamesListEntry> games;
 }
