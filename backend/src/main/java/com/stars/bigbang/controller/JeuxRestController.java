@@ -31,8 +31,8 @@ public class JeuxRestController {
         return ResponseEntity.ok(gameService.getListGames());
     }
 
-    @DeleteMapping(value = "/updateGamesList")
-    public void updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto){
-        gameService.updateGamesList(updateGamesListDto);
+    @PostMapping(value = "/updateGamesList")
+    public ResponseEntity<String> updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto){
+       return ResponseEntity.ok(gameService.updateGamesList(updateGamesListDto));
     }
 }

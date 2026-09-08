@@ -68,7 +68,8 @@ public class GameService {
                 .toList();
     }
 
-    public void updateGamesList(UpdateGamesListDto updateGamesListDto) {
+    @Transactional
+    public String updateGamesList(UpdateGamesListDto updateGamesListDto) {
         if(updateGamesListDto.newName() != null) {
             gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
         }
@@ -79,9 +80,9 @@ public class GameService {
         if(updateGamesListDto.newGameId() != null) {
             addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId());
         }
+        return "Success";
     }
 
-    @Transactional
     private void addGames(long gamesListId, List<Long> gameIds) {
         GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
         int nextPosition = gamesList.getGames().stream()

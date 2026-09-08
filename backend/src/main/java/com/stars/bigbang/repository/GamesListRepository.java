@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface GamesListRepository extends JpaRepository<GamesList,Long> {
 
-    @Query("SELECT COALESCE(MAX(g.position), 0) FROM GamesList g")
+    @Query("SELECT COALESCE(MAX(g.position), 1) FROM GamesList g")
     Long findMaxOrder();
 
     @Query("""
