@@ -12,7 +12,8 @@ import java.util.List;
 @Repository
 public interface GamesListEntryRepository extends JpaRepository<GamesListEntry, Long> {
 
-    List<GamesListEntry> findByGamesListId(Long gamesListId);
+    @Query(value = "SELECT * FROM games_list_entry WHERE games_list_id = :gamesListId", nativeQuery = true)
+    List<GamesListEntry> findByGamesListId(@Param("gamesListId") Long gamesListId);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "DELETE FROM games_list_entry WHERE games_list_id = :gamesListId AND game_id IN :gameIds", nativeQuery = true)
