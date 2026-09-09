@@ -70,17 +70,21 @@ public class GameService {
 
     @Transactional
     public String updateGamesList(UpdateGamesListDto updateGamesListDto) {
+        String returnMessage = "Nothing to update";
         if(updateGamesListDto.newName() != null) {
             gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
+            returnMessage = "Games list updated";
         }
-        if(updateGamesListDto.removeGameId() != null) {
+        if(updateGamesListDto.removeGameId() != null && !updateGamesListDto.removeGameId().isEmpty()) {
             gamesListEntryRepository.deleteGameByGamesListId(updateGamesListDto.gamesListId(),updateGamesListDto.removeGameId());
             manageGamesListEntryPosition(updateGamesListDto.gamesListId());
+            returnMessage = "Games list updated";
         }
-        if(updateGamesListDto.newGameId() != null) {
+        if(updateGamesListDto.newGameId() != null && !updateGamesListDto.newGameId().isEmpty()) {
             addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId());
+            returnMessage = "Games list updated";
         }
-        return "Success";
+        return returnMessage;
     }
 
     private void addGames(long gamesListId, List<Long> gameIds) {
