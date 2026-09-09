@@ -27,6 +27,6 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
 
     @Transactional
     @Modifying
-    @Query("update GamesList g set g.name = ?1 where g.id = ?2")
-    int updateNameById(long id, String name);
+    @Query("update GamesList g set g.name = :name where g.id = :id")
+    int updateNameById(@Param("id") long id, @Param("name") String name);
 }
