@@ -71,18 +71,4 @@ export class MyGameListComponent {
     });
   }
 
-  OpenGamesSearchPopup() {
-    const dialogRef = this.dialog.open(GamesSearchPopupComponent,{
-      width: '40%',
-      height:'90%',
-      data: {}
-    })
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.gameApiService.getGamesList().subscribe(gamesList => {
-        this.GamesLists = gamesList;
-      })
-    })
-  }
-
 }
