@@ -3,7 +3,8 @@ import {NgForOf} from '@angular/common';
 import {GamesSearchPopupComponent} from "../games-search-popup/games-search-popup.component";
 import {MatDialog} from "@angular/material/dialog";
 import {GameApiService} from "../../services/game-api.service";
-import {GamesList} from "../../models/games.model";
+import {GamesList, GamesSearchPopupResult} from "../../models/games.model";
+import {NewGameList} from "../../models/rawg.models";
 import {ApercuGamesListComponent} from "../apercu-games-list/apercu-games-list.component";
 import {MatButton} from "@angular/material/button";
 import {MyGameListComponent} from "../my-game-list/my-game-list.component";
@@ -40,10 +41,16 @@ export class HomeComponent implements OnInit{
       data: {}
     })
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.gameApiService.getGamesList().subscribe(gamesList => {
-        this.GamesLists = gamesList;
-      })
+    dialogRef.afterClosed().subscribe((result?: GamesSearchPopupResult) => {
+      if (!result?.addedGames?.length) {
+        return;
+      }
+      const newList: NewGameList = {name: result.listName, rawgGames: result.addedGames};
+      this.gameApiService.saveGamesList(newList).subscribe(() => {
+        this.gameApiService.getGamesList().subscribe(gamesList => {
+          this.GamesLists = gamesList;
+        });
+      });
     })
   }
 

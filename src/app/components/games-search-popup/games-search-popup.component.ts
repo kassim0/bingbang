@@ -1,6 +1,7 @@
-import {Component, Input} from '@angular/core';
+import {Component, Inject, Input} from '@angular/core';
 import {MatButton, MatButtonModule} from "@angular/material/button";
 import {
+  MAT_DIALOG_DATA,
   MatDialogRef,
   MatDialogTitle,
   MatDialogContent,
@@ -10,7 +11,8 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {SearchBarComponent} from "../share/search-bar/search-bar.component";
-import {NewGameList, RawgResultsDto} from "../../models/rawg.models";
+import {RawgResultsDto} from "../../models/rawg.models";
+import {GamesList} from "../../models/games.model";
 import {NgForOf, NgIf} from "@angular/common";
 import {MatList, MatListItem} from "@angular/material/list";
 import {MatDivider} from "@angular/material/divider";
@@ -36,24 +38,27 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 export class GamesSearchPopupComponent {
 
   reponse : RawgResultsDto[] | undefined;
-  newList : NewGameList = {name: '', rawgGames: []};
   addedGames: RawgResultsDto[] = [];
   listNameInput : string = "";
   isSearching : boolean = false;
+
+  /** Liste cible quand la popup sert à ajouter des jeux à une GamesList existante. */
+  gamesList : GamesList | null;
 
   @Input()
   gameNameSearch:string='';
 
   constructor(
     public dialogRef: MatDialogRef<GamesSearchPopupComponent>,
-    private gameApiService: GameApiService) {
+    private gameApiService: GameApiService,
+    @Inject(MAT_DIALOG_DATA) public data: { gamesList?: GamesList }) {
+    this.gamesList = data?.gamesList ?? null;
   }
 
   close() {
     if(this.addedGames.length > 0){
-      this.newList.rawgGames = this.addedGames;
-      this.newList.name = this.listNameInput;
-      this.saveListGames(this.newList);
+      this.dialogRef.close({addedGames: this.addedGames, listName: this.listNameInput});
+      return;
     }
     this.dialogRef.close();
   }
@@ -78,10 +83,6 @@ export class GamesSearchPopupComponent {
 
   onRemoveGame(game: RawgResultsDto){
     this.addedGames = this.addedGames.filter(g=>g.id!==game.id);
-  }
-
-  saveListGames(newList : NewGameList) {
-    this.gameApiService.saveGamesList(newList).subscribe({});
   }
 
 }

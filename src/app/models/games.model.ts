@@ -1,3 +1,5 @@
+import {RawgResultsDto} from "./rawg.models";
+
 export interface Game{
   id: number;
   slug?: string;
@@ -23,7 +25,13 @@ export interface GamesListEntry {
 
 export interface UpdateGamesList{
   gamesListId : number;
-  newGameId : number[] | null;
+  newRawgGames : RawgResultsDto[] | null;
   removeGameId : number [] | null;
   newName : string | null;
+}
+
+/** Résultat renvoyé par GamesSearchPopupComponent à sa fermeture. */
+export interface GamesSearchPopupResult {
+  addedGames : RawgResultsDto[];
+  listName : string;
 }

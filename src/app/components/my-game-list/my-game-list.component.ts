@@ -1,7 +1,7 @@
 import {Component, Inject} from '@angular/core';
-import {Game, GamesList, UpdateGamesList} from "../../models/games.model";
+import {Game, GamesList, GamesSearchPopupResult, UpdateGamesList} from "../../models/games.model";
 import {NgClass, NgForOf} from "@angular/common";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatIconButton} from "@angular/material/button";
 import {GameApiService} from "../../services/game-api.service";
@@ -35,15 +35,44 @@ export class MyGameListComponent {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: { gamesList: GamesList },
               private gameApiService: GameApiService,
+              private dialog: MatDialog,
               private dialogRef: MatDialogRef<MyGameListComponent>) {
     this.gamesList = data.gamesList;
     this.editedName = data.gamesList.name;
     this.updateGamesList = {
       gamesListId: this.gamesList.id,
-      newGameId: null,
+      newRawgGames: null,
       removeGameId: null,
       newName: null,
     };
+  }
+
+  openGamesSearchPopup() {
+    const dialogRef = this.dialog.open(GamesSearchPopupComponent, {
+      width: '40%',
+      height: '90%',
+      data: {gamesList: this.gamesList}
+    });
+
+    dialogRef.afterClosed().subscribe((result?: GamesSearchPopupResult) => {
+      if (!result?.addedGames?.length) {
+        return;
+      }
+      const updateGamesList: UpdateGamesList = {
+        gamesListId: this.gamesList.id,
+        newRawgGames: result.addedGames,
+        removeGameId: null,
+        newName: null,
+      };
+      this.gameApiService.updateGamesList(updateGamesList).subscribe(() => {
+        this.gameApiService.getGamesList().subscribe(gamesLists => {
+          const refreshed = gamesLists.find(gl => gl.id === this.gamesList.id);
+          if (refreshed) {
+            this.gamesList = refreshed;
+          }
+        });
+      });
+    });
   }
 
   onDeleteGame(game: Game) {
@@ -65,7 +94,6 @@ export class MyGameListComponent {
     this.gameApiService.updateGamesList(this.updateGamesList).subscribe({
       next: res => {
         console.log('updateGamesList ok', res);
-        this.dialogRef.close();
       },
       error: err => console.error('updateGamesList error', err),
     });
