@@ -27,7 +27,7 @@ public class GameService {
     private final GamesListRepository gamesListRepository;
     private final GamesListEntryRepository gamesListEntryRepository;
 
-    public Game saveRawgGame(RawgResultsDto gameDto) {
+    private Game saveRawgGame(RawgResultsDto gameDto) {
         Game game = new Game();
         game.setName(gameDto.name());
         game.setSlug(gameDto.slug());
@@ -80,21 +80,21 @@ public class GameService {
             manageGamesListEntryPosition(updateGamesListDto.gamesListId());
             returnMessage = "Games list updated";
         }
-        if(updateGamesListDto.newGameId() != null && !updateGamesListDto.newGameId().isEmpty()) {
-            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGameId());
+        if(updateGamesListDto.newRawgGames() != null && !updateGamesListDto.newRawgGames().isEmpty()) {
+            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newRawgGames());
             returnMessage = "Games list updated";
         }
         return returnMessage;
     }
 
-    private void addGames(long gamesListId, List<Long> gameIds) {
+    private void addGames(long gamesListId, List<RawgResultsDto> rawgGamesDto) {
         GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
         int nextPosition = gamesList.getGames().stream()
                 .mapToInt(GamesListEntry::getPosition)
                 .max()
                 .orElse(1);
-        for (Long gameId : gameIds) {
-            Game game = gamesRepository.findById(gameId).orElseThrow();
+        for (RawgResultsDto gameId : rawgGamesDto) {
+            Game game = gamesRepository.findByRawgId(gameId.id()).orElseGet(() -> saveRawgGame(gameId));
             gamesList.getGames().add(new GamesListEntry(game, nextPosition++));
         }
         gamesListRepository.save(gamesList);

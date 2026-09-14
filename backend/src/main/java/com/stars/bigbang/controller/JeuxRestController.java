@@ -1,9 +1,7 @@
 package com.stars.bigbang.controller;
 
-import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.record.NewGamesListDto;
 import com.stars.bigbang.dto.record.UpdateGamesListDto;
-import com.stars.bigbang.dto.response.GameDto;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.service.GameService;
 import lombok.AllArgsConstructor;
