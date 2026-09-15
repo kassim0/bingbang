@@ -103,4 +103,13 @@ export class MyGameListComponent {
     });
   }
 
+  deleteGamesList(){
+    this.gameApiService.deleteGamesList(this.gamesList.id).subscribe({
+      next: res => {
+        this.dialogRef.close();
+      },
+      error: err => console.error('deleteGamesList error', err),
+    })
+  }
+
 }

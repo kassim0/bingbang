@@ -25,4 +25,8 @@ export class GameApiService {
   updateGamesList(updateGamesList : UpdateGamesList){
     return this.http.post(`${this.base}/updateGamesList`,updateGamesList, {responseType: 'text'});
   }
+
+  deleteGamesList(id: number) {
+    return this.http.delete(`${this.base}/deleteGamesList/${id}`, {responseType: 'text'});
+  }
 }
