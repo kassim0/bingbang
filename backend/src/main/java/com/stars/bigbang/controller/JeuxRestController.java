@@ -33,4 +33,9 @@ public class JeuxRestController {
     public ResponseEntity<String> updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto){
        return ResponseEntity.ok(gameService.updateGamesList(updateGamesListDto));
     }
+
+    @DeleteMapping(value = "/deleteGamesList/{GamesListId}")
+    public ResponseEntity<String> deleteGamesList(@PathVariable Long GamesListId) {
+        return ResponseEntity.ok(gameService.deleteGamesList(GamesListId));
+    }
 }

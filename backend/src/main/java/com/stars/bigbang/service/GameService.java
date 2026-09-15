@@ -114,4 +114,12 @@ public class GameService {
 
         gamesListEntryRepository.saveAll(gamesListEntryList);
     }
+
+    public String deleteGamesList(Long gamesListId) {
+        if(gamesListId == null) {
+            return "ERROR : Nothing to delete";
+        }
+        gamesListRepository.deleteById(gamesListId);
+        return "GamesList deleted";
+    }
 }
