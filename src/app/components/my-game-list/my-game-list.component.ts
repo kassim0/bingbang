@@ -88,6 +88,10 @@ export class MyGameListComponent {
     return this.selectedGames.some(g => g.id === game?.id);
   }
 
+  close() {
+    this.dialogRef.close();
+  }
+
   saveModifGamesList(){
     this.updateGamesList.removeGameId = this.selectedGames?.map(g => g.id);
     this.updateGamesList.newName = this.editedName !== this.gamesList.name ? this.editedName : null;

@@ -1,11 +1,11 @@
 <div>
-  <button style="float:right; background-color: red;" (click)="close()"><mat-icon>close</mat-icon></button>
+  <button data-testid="popup-close" style="float:right; background-color: red;" (click)="close()"><mat-icon>close</mat-icon></button>
 
   <h3 *ngIf="gamesList">Ajouter des jeux à « {{ gamesList.name }} »</h3>
 
   <mat-form-field *ngIf="!gamesList" appearance="outline">
     <mat-label>list name</mat-label>
-    <input matInput placeholder="List N°" [(ngModel)]="listNameInput">
+    <input matInput data-testid="list-name-input" placeholder="List N°" [(ngModel)]="listNameInput">
   </mat-form-field>
 
   <app-search-bar style=" display: block;margin: 20px 10px;" (dataToParent)="receiveData($event)"

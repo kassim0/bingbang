@@ -1,5 +1,5 @@
 <mat-form-field appearance="outline">
   <mat-label>{{label}}</mat-label>
-  <input matInput [placeholder]=placeholder [(ngModel)]="inputResult" (keydown.enter)="sendInput()">
+  <input matInput data-testid="search-bar-input" [placeholder]=placeholder [(ngModel)]="inputResult" (keydown.enter)="sendInput()">
   <mat-icon matSuffix fontIcon="search" (click)="sendInput()"></mat-icon>
 </mat-form-field>

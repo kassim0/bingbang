@@ -55,11 +55,16 @@ export class HomeComponent implements OnInit{
   }
 
   openMyGaleListPopup(gameList : GamesList){
-    console.log(gameList);
     const dialogRef = this.dialog.open(MyGameListComponent,{
       width: '40%',
       height:'90%',
       data: {gamesList : gameList}
+    })
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.gameApiService.getGamesList().subscribe(gamesLists => {
+        this.GamesLists = gamesLists;
+      })
     })
   }
 

@@ -1,6 +1,6 @@
 <div class="dashboard border">
 
-<div *ngFor="let gamesList of GamesLists" class="case-dashboard border">
+<div *ngFor="let gamesList of GamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">
   <app-apercu-games-list
     (click)="openMyGaleListPopup(gamesList)"
     [gamesList] = gamesList
@@ -8,7 +8,7 @@
 </div>
 
 <div class="case-dashboard border">
-  <button mat-raised-button (click)="OpenGamesSearchPopup()">+</button>
+  <button mat-raised-button data-testid="open-search-popup" (click)="OpenGamesSearchPopup()">+</button>
 </div>
 
 </div>
