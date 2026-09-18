@@ -6,12 +6,15 @@ import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.GamesListEntry;
+import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.GamesListEntryRepository;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,7 +42,7 @@ public class GameService {
     /**
      * Create a new GamesList from Rawg games
      * */
-    public GamesList createGamesList(String listName, RawgResultsDto[] gameDto) {
+    public GamesList createGamesList(String listName, RawgResultsDto[] gameDto, User owner) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         List<GamesListEntry>  savedGamesListEntry;
@@ -57,19 +60,23 @@ public class GameService {
         gamesList.setGames(savedGamesListEntry);
         gamesList.setPosition(position);
         gamesList.setName(listName.isEmpty() ? "Liste N° "+position : listName);
+        gamesList.setUser(owner);
         return gamesListRepository.saveAndFlush(gamesList);
     }
 
     @Transactional(readOnly = true)
-    public List<GamesListDto> getListGames() {
+    public List<GamesListDto> getListGames(User owner) {
 
-        return gamesListRepository.findAllWithGamesOrderByPosition().stream()
+        return gamesListRepository.findAllWithGamesOrderByPositionAndUser(owner).stream()
                 .map(GamesListDto::from)
                 .toList();
     }
 
     @Transactional
-    public String updateGamesList(UpdateGamesListDto updateGamesListDto) {
+    public String updateGamesList(UpdateGamesListDto updateGamesListDto, User owner) {
+        gamesListRepository.findByIdAndUser(updateGamesListDto.gamesListId(), owner)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Games list not found"));
+
         String returnMessage = "Nothing to update";
         if(updateGamesListDto.newName() != null) {
             gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
@@ -115,11 +122,13 @@ public class GameService {
         gamesListEntryRepository.saveAll(gamesListEntryList);
     }
 
-    public String deleteGamesList(Long gamesListId) {
+    public String deleteGamesList(Long gamesListId, User owner) {
         if(gamesListId == null) {
             return "ERROR : Nothing to delete";
         }
-        gamesListRepository.deleteById(gamesListId);
+        GamesList gamesList = gamesListRepository.findByIdAndUser(gamesListId, owner)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Games list not found"));
+        gamesListRepository.delete(gamesList);
         return "GamesList deleted";
     }
 }
