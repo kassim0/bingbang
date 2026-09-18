@@ -1,8 +1,9 @@
-import {Component, OnInit} from '@angular/core';
-import {NgForOf} from '@angular/common';
+import {Component, effect} from '@angular/core';
+import {NgForOf, NgIf} from '@angular/common';
 import {GamesSearchPopupComponent} from "../games-search-popup/games-search-popup.component";
 import {MatDialog} from "@angular/material/dialog";
 import {GameApiService} from "../../services/game-api.service";
+import {AuthService} from "../../services/auth.service";
 import {GamesList, GamesSearchPopupResult} from "../../models/games.model";
 import {NewGameList} from "../../models/rawg.models";
 import {ApercuGamesListComponent} from "../apercu-games-list/apercu-games-list.component";
@@ -14,21 +15,31 @@ import {MyGameListComponent} from "../my-game-list/my-game-list.component";
   standalone: true,
   imports: [
     NgForOf,
+    NgIf,
     ApercuGamesListComponent,
     MatButton,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent {
 
   GamesLists : GamesList[] = [];
 
   constructor(public dialog:MatDialog,
-              private gameApiService: GameApiService) {
+              private gameApiService: GameApiService,
+              public authService: AuthService) {
+    /** Les listes de jeux appartiennent à un compte : on les (re)charge à chaque connexion/déconnexion. */
+    effect(() => {
+      if (this.authService.currentUser()) {
+        this.refreshGamesLists();
+      } else {
+        this.GamesLists = [];
+      }
+    });
   }
 
-  ngOnInit(): void {
+  refreshGamesLists() {
     this.gameApiService.getGamesList().subscribe(gamesLists => {
       this.GamesLists = gamesLists;
     });
@@ -47,9 +58,7 @@ export class HomeComponent implements OnInit{
       }
       const newList: NewGameList = {name: result.listName, rawgGames: result.addedGames};
       this.gameApiService.saveGamesList(newList).subscribe(() => {
-        this.gameApiService.getGamesList().subscribe(gamesList => {
-          this.GamesLists = gamesList;
-        });
+        this.refreshGamesLists();
       });
     })
   }
@@ -62,9 +71,7 @@ export class HomeComponent implements OnInit{
     })
 
     dialogRef.afterClosed().subscribe(() => {
-      this.gameApiService.getGamesList().subscribe(gamesLists => {
-        this.GamesLists = gamesLists;
-      })
+      this.refreshGamesLists();
     })
   }
 

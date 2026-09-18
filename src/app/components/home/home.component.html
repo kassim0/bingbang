@@ -1,14 +1,20 @@
 <div class="dashboard border">
 
-<div *ngFor="let gamesList of GamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">
-  <app-apercu-games-list
-    (click)="openMyGaleListPopup(gamesList)"
-    [gamesList] = gamesList
-  ></app-apercu-games-list>
-</div>
+<ng-container *ngIf="authService.currentUser(); else loggedOut">
+  <div *ngFor="let gamesList of GamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">
+    <app-apercu-games-list
+      (click)="openMyGaleListPopup(gamesList)"
+      [gamesList] = gamesList
+    ></app-apercu-games-list>
+  </div>
 
-<div class="case-dashboard border">
-  <button mat-raised-button data-testid="open-search-popup" (click)="OpenGamesSearchPopup()">+</button>
-</div>
+  <div class="case-dashboard border">
+    <button mat-raised-button data-testid="open-search-popup" (click)="OpenGamesSearchPopup()">+</button>
+  </div>
+</ng-container>
+
+<ng-template #loggedOut>
+  <p data-testid="login-required-message">Connecte-toi pour voir et créer tes listes de jeux.</p>
+</ng-template>
 
 </div>
