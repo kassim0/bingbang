@@ -1,20 +1,20 @@
 <mat-toolbar color="primary">
   <span class="spacer"></span>
 
-<!--  @if (currentUser()) {-->
-<!--    <button mat-icon-button [matMenuTriggerFor]="userMenu">-->
-<!--      <mat-icon>account_circle</mat-icon>-->
-<!--    </button>-->
-<!--    <mat-menu #userMenu>-->
-<!--      <button mat-menu-item (click)="logout()">-->
-<!--        <mat-icon>logout</mat-icon>-->
-<!--        Se déconnecter-->
-<!--      </button>-->
-<!--    </mat-menu>-->
-<!--  } @else {-->
-<!--    <button mat-icon-button (click)="openAuthDialog()">-->
-<!--      <mat-icon>account_circle</mat-icon>-->
-<!--    </button>-->
-<!--  }-->
+  @if (currentUser()) {
+    <button mat-icon-button [matMenuTriggerFor]="userMenu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #userMenu>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Se déconnecter
+      </button>
+    </mat-menu>
+  } @else {
+    <button mat-icon-button (click)="openAuthDialog()">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+  }
   <div style="flex: 1;text-align: center;"><h1>BINGBANG</h1></div>
 </mat-toolbar>
