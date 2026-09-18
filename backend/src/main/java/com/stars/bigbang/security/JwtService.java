@@ -15,19 +15,31 @@ public class JwtService {
 
     private final SecretKey key;
     private final long expirationMs;
+    private final long guestExpirationMs;
 
     public JwtService(@Value("${jwt.secret}") String secret,
-                       @Value("${jwt.expiration-ms}") long expirationMs) {
+                       @Value("${jwt.expiration-ms}") long expirationMs,
+                       @Value("${jwt.guest-expiration-ms}") long guestExpirationMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
+        this.guestExpirationMs = guestExpirationMs;
     }
 
     public String generateToken(UserDetails userDetails) {
+        return buildToken(userDetails, expirationMs);
+    }
+
+    /** Token longue durée pour un compte invité : pas de mot de passe à protéger, mais aussi aucun moyen de s'y reconnecter s'il expire. */
+    public String generateGuestToken(UserDetails userDetails) {
+        return buildToken(userDetails, guestExpirationMs);
+    }
+
+    private String buildToken(UserDetails userDetails, long ttlMs) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + expirationMs))
+                .expiration(new Date(now.getTime() + ttlMs))
                 .signWith(key)
                 .compact();
     }

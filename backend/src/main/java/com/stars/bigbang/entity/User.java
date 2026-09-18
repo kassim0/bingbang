@@ -30,6 +30,10 @@ public class User {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    /** Compte créé automatiquement pour un visiteur sans inscription (email/mot de passe générés, non communiqués). */
+    @Column(nullable = false)
+    private boolean guest = false;
+
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;

@@ -16,7 +16,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService(SECRET, 60_000);
+        jwtService = new JwtService(SECRET, 60_000, 120_000);
         principal = new UserPrincipal(new User("alice", "alice@example.com", "hashed"));
     }
 
@@ -44,9 +44,17 @@ class JwtServiceTest {
 
     @Test
     void rejectsExpiredToken() {
-        JwtService shortLivedJwtService = new JwtService(SECRET, -1);
+        JwtService shortLivedJwtService = new JwtService(SECRET, -1, 120_000);
         String token = shortLivedJwtService.generateToken(principal);
 
         assertThrows(ExpiredJwtException.class, () -> shortLivedJwtService.isTokenValid(token, principal));
+    }
+
+    @Test
+    void guestTokenUsesTheGuestExpiration() {
+        JwtService shortLivedGuestJwtService = new JwtService(SECRET, 120_000, -1);
+        String guestToken = shortLivedGuestJwtService.generateGuestToken(principal);
+
+        assertThrows(ExpiredJwtException.class, () -> shortLivedGuestJwtService.isTokenValid(guestToken, principal));
     }
 }

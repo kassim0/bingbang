@@ -41,6 +41,22 @@ class AuthServiceTest {
     }
 
     @Test
+    void registerGuestCreatesGuestUserAndReturnsGuestToken() {
+        authService = service();
+        when(passwordEncoder.encode(any())).thenReturn("hashed-random-password");
+        when(jwtService.generateGuestToken(any())).thenReturn("guest-jwt-token");
+
+        AuthResponseDto response = authService.registerGuest();
+
+        ArgumentCaptor<User> savedUser = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(savedUser.capture());
+        assertTrue(savedUser.getValue().isGuest());
+        assertEquals("guest-jwt-token", response.token());
+        assertTrue(response.user().guest());
+        verify(jwtService, never()).generateToken(any());
+    }
+
+    @Test
     void registerHashesPasswordAndReturnsToken() {
         authService = service();
         RegisterRequestDto request = new RegisterRequestDto("alice", "alice@example.com", "password123");

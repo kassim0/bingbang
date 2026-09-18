@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -25,6 +27,24 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+
+    /**
+     * Crée un compte invité (sans email/mot de passe choisis par le visiteur) pour lui permettre
+     * de créer des GamesList sans inscription, retrouvées tant qu'il garde son token (localStorage).
+     */
+    public AuthResponseDto registerGuest() {
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        User user = new User(
+                "Invité-" + suffix,
+                "guest-" + UUID.randomUUID() + "@bingbang.local",
+                passwordEncoder.encode(UUID.randomUUID().toString())
+        );
+        user.setGuest(true);
+        userRepository.save(user);
+
+        String token = jwtService.generateGuestToken(new UserPrincipal(user));
+        return new AuthResponseDto(token, UserDto.from(user));
+    }
 
     public AuthResponseDto register(RegisterRequestDto request) {
         if (userRepository.existsByEmail(request.email())) {
