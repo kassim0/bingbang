@@ -1,7 +1,7 @@
 <mat-toolbar color="primary">
   <span class="spacer"></span>
 
-  @if (currentUser()) {
+  @if (isRealAccount()) {
     <button mat-icon-button [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
     </button>
@@ -12,7 +12,7 @@
       </button>
     </mat-menu>
   } @else {
-    <button mat-icon-button (click)="openAuthDialog()">
+    <button mat-icon-button data-testid="open-auth-dialog" (click)="openAuthDialog()">
       <mat-icon>account_circle</mat-icon>
     </button>
   }

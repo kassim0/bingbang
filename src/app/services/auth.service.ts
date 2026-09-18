@@ -16,6 +16,16 @@ export class AuthService {
   currentUser = signal<User | null>(this.readStoredUser());
 
   constructor(private http: HttpClient) {
+    if (this.isBrowser && !this.getToken()) {
+      // Premier visiteur (ou storage vidé) : lui crée un compte invité pour qu'il puisse créer des listes
+      // sans inscription, et les retrouve à sa prochaine visite (token invité valable ~3 ans).
+      this.continueAsGuest().subscribe();
+    }
+  }
+
+  continueAsGuest() {
+    return this.http.post<AuthResponse>(`${this.base}/guest`, {})
+      .pipe(tap(response => this.storeSession(response)));
   }
 
   login(request: LoginRequest) {
