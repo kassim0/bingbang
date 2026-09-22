@@ -1,10 +1,12 @@
 import {Injectable, PLATFORM_ID, inject, signal} from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
-import {tap} from 'rxjs';
+import {catchError, of, tap} from 'rxjs';
 import {AuthResponse, LoginRequest, RegisterRequest, User} from '../models/user.model';
 
-const TOKEN_KEY = 'bingbang_token';
+/** Exportée pour que l'intercepteur HTTP lise directement le storage plutôt que d'injecter AuthService
+ * (l'injecter créerait une dépendance circulaire quand l'appel HTTP part du constructeur d'AuthService). */
+export const TOKEN_KEY = 'bingbang_token';
 const USER_KEY = 'bingbang_user';
 
 @Injectable({providedIn: 'root'})
@@ -16,13 +18,39 @@ export class AuthService {
   currentUser = signal<User | null>(this.readStoredUser());
 
   constructor(private http: HttpClient) {
-    if (this.isBrowser && !this.getToken()) {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    if (!this.getToken()) {
       // Premier visiteur (ou storage vidé) : lui crée un compte invité pour qu'il puisse créer des listes
       // sans inscription, et les retrouve à sa prochaine visite (token invité valable ~3 ans).
-      this.continueAsGuest().subscribe({
-        error: (err) => console.error('Impossible de créer une session invité (backend indisponible ?)', err)
-      });
+      this.bootstrapGuest();
+      return;
     }
+
+    if (!this.currentUser()) {
+      // Token présent mais aucun utilisateur en cache (storage incohérent, ou ancien token d'un test
+      // précédent) : on revalide le token auprès du back plutôt que de rester bloqué indéfiniment.
+      this.http.get<User>(`${this.base}/me`).pipe(
+        tap(user => {
+          this.currentUser.set(user);
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }),
+        catchError(() => {
+          // Token invalide/expiré : on repart sur un compte invité neuf.
+          this.logout();
+          this.bootstrapGuest();
+          return of(null);
+        })
+      ).subscribe();
+    }
+  }
+
+  private bootstrapGuest() {
+    this.continueAsGuest().subscribe({
+      error: (err) => console.error('Impossible de créer une session invité (backend indisponible ?)', err)
+    });
   }
 
   continueAsGuest() {

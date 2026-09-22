@@ -1,9 +1,14 @@
 import {HttpInterceptorFn} from '@angular/common/http';
-import {inject} from '@angular/core';
-import {AuthService} from '../services/auth.service';
+import {inject, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common';
+import {TOKEN_KEY} from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = inject(AuthService).getToken();
+  // Lit le storage directement plutôt que d'injecter AuthService : sinon, un appel HTTP lancé depuis
+  // le constructeur d'AuthService (bootstrap invité, revalidation du token) crée une dépendance
+  // circulaire (NG0200) puisqu'AuthService n'a pas fini de se construire.
+  const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  const token = isBrowser ? localStorage.getItem(TOKEN_KEY) : null;
 
   if (!token) {
     return next(req);
