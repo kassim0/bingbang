@@ -1,0 +1,16 @@
+<h1 class="border">{{gamesList.name}}</h1>
+<h6 *ngIf="!gamesList.games[0]?.game">empty</h6>
+
+
+  <ul class="item-apercu-list" *ngIf="gamesList.games[0]?.game">
+    <img src="{{gamesList.games[0].game.backgroundImage}}" style="width: 35px; height: 35px">
+    {{gamesList.games[0].game.name}}
+  </ul>
+  <ul class="item-apercu-list" *ngIf="gamesList.games[1]?.game">
+    <img src="{{gamesList.games[1].game.backgroundImage}}" style="width: 35px; height: 35px">
+    {{gamesList.games[1].game.name}}
+  </ul>
+  <ul class="item-apercu-list" *ngIf="gamesList.games[2]?.game">
+    <img src="{{gamesList.games[2].game.backgroundImage}}" style="width: 35px; height: 35px">
+    {{gamesList.games[2].game.name}}
+  </ul>
