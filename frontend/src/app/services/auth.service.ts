@@ -19,7 +19,9 @@ export class AuthService {
     if (this.isBrowser && !this.getToken()) {
       // Premier visiteur (ou storage vidé) : lui crée un compte invité pour qu'il puisse créer des listes
       // sans inscription, et les retrouve à sa prochaine visite (token invité valable ~3 ans).
-      this.continueAsGuest().subscribe();
+      this.continueAsGuest().subscribe({
+        error: (err) => console.error('Impossible de créer une session invité (backend indisponible ?)', err)
+      });
     }
   }
 
