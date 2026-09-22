@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/rawg/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Les ResponseStatusException sont forwardées vers /error : sans ça, Spring Security
+                        // transforme toute erreur (409, 401...) en 403 vide et le front perd le message.
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

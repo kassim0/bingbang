@@ -2,11 +2,11 @@
   <span class="spacer"></span>
 
   @if (isRealAccount()) {
-    <button mat-icon-button [matMenuTriggerFor]="userMenu">
+    <button mat-icon-button data-testid="user-menu" [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
     </button>
     <mat-menu #userMenu>
-      <button mat-menu-item (click)="logout()">
+      <button mat-menu-item data-testid="logout-button" (click)="logout()">
         <mat-icon>logout</mat-icon>
         Se déconnecter
       </button>
