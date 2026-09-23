@@ -1,6 +1,7 @@
 package com.stars.bigbang.repository;
 
 import com.stars.bigbang.entity.GamesList;
+import com.stars.bigbang.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GamesListRepository extends JpaRepository<GamesList,Long> {
@@ -20,10 +22,12 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
             SELECT DISTINCT gl FROM GamesList gl
             LEFT JOIN FETCH gl.games entry
             LEFT JOIN FETCH entry.game
-            WHERE gl.position IS NOT NULL
+            WHERE gl.position IS NOT NULL AND gl.user = :user
             ORDER BY gl.position
             """)
-    List<GamesList> findAllWithGamesOrderByPosition();
+    List<GamesList> findAllWithGamesOrderByPositionAndUser(@Param("user") User user);
+
+    Optional<GamesList> findByIdAndUser(Long id, User user);
 
     @Transactional
     @Modifying
