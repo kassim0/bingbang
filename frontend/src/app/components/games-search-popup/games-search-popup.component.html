@@ -1,0 +1,30 @@
+<div>
+  <button data-testid="popup-close" style="float:right; background-color: red;" (click)="close()"><mat-icon>close</mat-icon></button>
+
+  <h3 *ngIf="gamesList">Ajouter des jeux à « {{ gamesList.name }} »</h3>
+
+  <mat-form-field *ngIf="!gamesList" appearance="outline">
+    <mat-label>list name</mat-label>
+    <input matInput data-testid="list-name-input" placeholder="List N°" [(ngModel)]="listNameInput">
+  </mat-form-field>
+
+  <app-search-bar style=" display: block;margin: 20px 10px;" (dataToParent)="receiveData($event)"
+  [label]="'search your game'"
+  [placeholder]="'ex: \'Outer wilds\''"
+  ></app-search-bar>
+
+  <div *ngIf="isSearching" style="display: flex; justify-content: center; margin: 20px;">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <mat-list *ngIf="!isSearching">
+    <div *ngFor="let game of reponse">
+      <mat-list-item>
+        <app-game-item class="game-item" [rawgGame]="game" (addGame)="onAddGame($event)" (removeGame)="onRemoveGame($event)" [rawgGamesSelected]="addedGames" ></app-game-item>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+    </div>
+  </mat-list>
+
+</div>
+

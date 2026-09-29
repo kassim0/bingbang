@@ -1,0 +1,98 @@
+import {Injectable, PLATFORM_ID, inject, signal} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common';
+import {HttpClient} from '@angular/common/http';
+import {catchError, of, tap} from 'rxjs';
+import {AuthResponse, LoginRequest, RegisterRequest, User} from '../models/user.model';
+
+/** Exportée pour que l'intercepteur HTTP lise directement le storage plutôt que d'injecter AuthService
+ * (l'injecter créerait une dépendance circulaire quand l'appel HTTP part du constructeur d'AuthService). */
+export const TOKEN_KEY = 'bingbang_token';
+const USER_KEY = 'bingbang_user';
+
+@Injectable({providedIn: 'root'})
+export class AuthService {
+
+  private base = '/api/auth';
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  currentUser = signal<User | null>(this.readStoredUser());
+
+  constructor(private http: HttpClient) {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    if (!this.getToken()) {
+      // Premier visiteur (ou storage vidé) : lui crée un compte invité pour qu'il puisse créer des listes
+      // sans inscription, et les retrouve à sa prochaine visite (token invité valable ~3 ans).
+      this.bootstrapGuest();
+      return;
+    }
+
+    if (!this.currentUser()) {
+      // Token présent mais aucun utilisateur en cache (storage incohérent, ou ancien token d'un test
+      // précédent) : on revalide le token auprès du back plutôt que de rester bloqué indéfiniment.
+      this.http.get<User>(`${this.base}/me`).pipe(
+        tap(user => {
+          this.currentUser.set(user);
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+        }),
+        catchError(() => {
+          // Token invalide/expiré : on repart sur un compte invité neuf.
+          this.logout();
+          this.bootstrapGuest();
+          return of(null);
+        })
+      ).subscribe();
+    }
+  }
+
+  private bootstrapGuest() {
+    this.continueAsGuest().subscribe({
+      error: (err) => console.error('Impossible de créer une session invité (backend indisponible ?)', err)
+    });
+  }
+
+  continueAsGuest() {
+    return this.http.post<AuthResponse>(`${this.base}/guest`, {})
+      .pipe(tap(response => this.storeSession(response)));
+  }
+
+  login(request: LoginRequest) {
+    return this.http.post<AuthResponse>(`${this.base}/login`, request)
+      .pipe(tap(response => this.storeSession(response)));
+  }
+
+  register(request: RegisterRequest) {
+    return this.http.post<AuthResponse>(`${this.base}/register`, request)
+      .pipe(tap(response => this.storeSession(response)));
+  }
+
+  logout() {
+    this.currentUser.set(null);
+    if (this.isBrowser) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+    }
+  }
+
+  getToken(): string | null {
+    return this.isBrowser ? localStorage.getItem(TOKEN_KEY) : null;
+  }
+
+  private storeSession(response: AuthResponse) {
+    this.currentUser.set(response.user);
+    if (this.isBrowser) {
+      localStorage.setItem(TOKEN_KEY, response.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    }
+  }
+
+  private readStoredUser(): User | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    const stored = localStorage.getItem(USER_KEY);
+    return stored ? JSON.parse(stored) : null;
+  }
+}
