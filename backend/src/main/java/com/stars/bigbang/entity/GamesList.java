@@ -20,8 +20,4 @@ public class GamesList {
     @JoinColumn(name="games_list_id")
     @OrderBy("position")
     private List<GamesListEntry> games;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    private User user;
 }

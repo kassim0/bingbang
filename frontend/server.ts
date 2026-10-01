@@ -1,7 +1,6 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine } from '@angular/ssr';
 import express from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
@@ -18,13 +17,8 @@ export function app(): express.Express {
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
-  // Sans ce forwarding, tous les appels /api (y compris /api/auth/guest) tombent dans le
-  // catch-all Angular SSR ci-dessous et échouent silencieusement côté front (404).
-  // Monté sur '/' (pas '/api') avec pathFilter : express ne retire pas le préfixe /api de req.url,
-  // qui doit être transmis tel quel au backend (sinon /api/auth/guest devient /auth/guest, 403).
-  const apiTarget = process.env['API_TARGET'] || 'http://localhost:8080';
-  server.use(createProxyMiddleware({ target: apiTarget, changeOrigin: true, pathFilter: '/api' }));
-
+  // Example Express Rest API endpoints
+  // server.get('/api/**', (req, res) => { });
   // Serve static files from /browser
   server.get('*.*', express.static(browserDistFolder, {
     maxAge: '1y'
