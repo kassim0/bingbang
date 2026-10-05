@@ -1,4 +1,4 @@
-package com.stars.bigbang.dto.record;
+package com.stars.bigbang.dto.payload;
 
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 

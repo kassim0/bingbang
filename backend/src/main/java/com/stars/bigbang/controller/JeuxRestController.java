@@ -1,7 +1,7 @@
 package com.stars.bigbang.controller;
 
-import com.stars.bigbang.dto.record.NewGamesListDto;
-import com.stars.bigbang.dto.record.UpdateGamesListDto;
+import com.stars.bigbang.dto.payload.NewGamesListDto;
+import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.service.GameService;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api") //TODO changer l'endpoint (en game par exemple)
 @AllArgsConstructor
 @Validated
 public class JeuxRestController {
