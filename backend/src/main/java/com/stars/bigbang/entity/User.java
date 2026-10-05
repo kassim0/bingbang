@@ -3,6 +3,8 @@ package com.stars.bigbang.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +25,10 @@ public class User {
 
     private String password;
 
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    private LocalDateTime updateTime;
+    @UpdateTimestamp
+    private LocalDateTime updateAt;
 }

@@ -14,8 +14,8 @@ public class AuthController {
 
     private AuthService authService;
 
-    @PostMapping(value = "/createAccount")
-    public ResponseEntity<String> createAccount(@RequestBody RegisterRequestDto registerRequestDto) {
+    @PostMapping(value = "/signIn")
+    public ResponseEntity<String> signIn(@RequestBody RegisterRequestDto registerRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.createAccount(registerRequestDto));
     }
 }
