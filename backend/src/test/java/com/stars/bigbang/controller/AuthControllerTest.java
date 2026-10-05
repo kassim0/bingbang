@@ -20,7 +20,7 @@ public class AuthControllerTest {
     private TestRestTemplate restTemplate;
     @Autowired
     private UserRepository userRepository;
-    private static final String API_CREATE_ACCOUNT = "/auth/createAccount";
+    private static final String API_CREATE_ACCOUNT = "/auth/signIn";
 
     @Test
     public void createAccountTest_cas_nominal(){
