@@ -31,4 +31,14 @@ public class AuthControllerTest {
         assertEquals("test", newUser.getUsername());
         assertNotEquals("test", newUser.getPassword());
     }
+
+    @Test
+    public void createAccountTest_cas_email_existant(){
+        RegisterRequestDto registerRequestDto1 = new RegisterRequestDto("test1","test@test.com","test1");
+        RegisterRequestDto registerRequestDto2 = new RegisterRequestDto("test2","test@test.com","test2");
+        ResponseEntity<String> response1 = restTemplate.postForEntity(API_CREATE_ACCOUNT, registerRequestDto1, String.class);
+        ResponseEntity<String> response2 = restTemplate.postForEntity(API_CREATE_ACCOUNT, registerRequestDto2, String.class);
+        assertEquals(HttpStatus.CREATED,response1.getStatusCode());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,response2.getStatusCode());
+    }
 }
