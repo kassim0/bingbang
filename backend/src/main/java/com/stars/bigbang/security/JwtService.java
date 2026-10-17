@@ -1,5 +1,6 @@
 package com.stars.bigbang.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,5 +30,21 @@ public class JwtService {
                 .expiration(new Date(now.getTime()+expirationMs))
                 .signWith(key)
                 .compact();
+    }
+
+    /**
+     * Lève une exception JwtException si token invalide
+     * */
+    private Claims extractClaims(String token){
+        return  Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token) //check la signature, format, expiration
+                    .getPayload();
+    }
+
+    public String extractEmail(String token){
+        Claims tokenPayload = extractClaims(token);
+        return tokenPayload.getSubject();
     }
 }
