@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api") //TODO changer l'endpoint (en game par exemple)
+@RequestMapping("/api/game")
 @AllArgsConstructor
 @Validated
 public class JeuxRestController {
