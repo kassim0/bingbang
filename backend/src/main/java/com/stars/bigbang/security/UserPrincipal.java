@@ -1,6 +1,7 @@
 package com.stars.bigbang.security;
 
 import com.stars.bigbang.entity.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,14 +11,18 @@ import java.util.List;
 
 public class UserPrincipal implements UserDetails {
 
-    private long id;
-    private final String username;
+    @Getter
+    private final long id;
+    @Getter
+    private final String displayName;
+    private final String email;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UserPrincipal(User user) {
         this.id = user.getId();
-        this.username = user.getEmail();
+        this.email = user.getEmail();
+        this.displayName = user.getUsername();
         this.password = user.getPassword();
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
@@ -34,7 +39,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return username;
+        return email;
     }
 
     @Override
@@ -56,6 +61,5 @@ public class UserPrincipal implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 
 }

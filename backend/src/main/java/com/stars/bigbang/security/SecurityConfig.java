@@ -1,5 +1,6 @@
 package com.stars.bigbang.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,14 +33,15 @@ public class SecurityConfig {
                 .cors(cors-> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/rawg/**", "/api/newGamesList", "/api/getGamesLists",
-                                "/api/updateGamesList", "/api/deleteGamesList/**").permitAll()
+                        .requestMatchers("/api/auth/register","/api/auth/login").permitAll()
+                        .requestMatchers("/api/game/getGamesList","/api/game/newGamesList","/api/game/updateGamesList", "/api/game/deleteGamesList/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                //.authenticationProvider(authenticationProvider())
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,authException.getMessage())))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

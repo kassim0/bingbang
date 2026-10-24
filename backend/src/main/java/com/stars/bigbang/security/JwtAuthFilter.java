@@ -38,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             UserDetails userDetails = userPrincipalService.loadUserByUsername(email);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        }catch (JwtException | UsernameNotFoundException exception){
+        }catch (JwtException | UsernameNotFoundException | IllegalArgumentException exception){ //IllegalArgumentException permet de renvoyer un 401  si mauvais token
             logger.debug(exception.getMessage());
         }
         filterChain.doFilter(request, response);
