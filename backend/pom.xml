@@ -126,6 +126,21 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--Client HTTP utilisé par TestRestTemplate : celui du JDK plante sur un 401 en réponse à un POST-->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!--Faux serveur HTTP pour simuler RAWG dans les tests-->
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>3.9.1</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -2,7 +2,7 @@ package com.stars.bigbang.mock;
 
 import com.stars.bigbang.dto.rawgDto.RawgResponseDto;
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
-import com.stars.bigbang.rest.RawgApi;
+import com.stars.bigbang.rawg.RawgApi;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class RawgApiMock implements RawgApi {
 
     @Override
-    public RawgResponseDto searchGamesByName(String gameName, String token) {
+    public RawgResponseDto searchGamesByName(String gameName) {
         RawgResponseDto response = new RawgResponseDto();
         response.setCount(3);
 
