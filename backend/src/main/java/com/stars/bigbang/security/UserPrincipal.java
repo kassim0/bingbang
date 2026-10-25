@@ -15,6 +15,7 @@ public class UserPrincipal implements UserDetails {
     private final long id;
     @Getter
     private final String displayName;
+    @Getter
     private final String email;
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;

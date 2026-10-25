@@ -1,6 +1,3 @@
 package com.stars.bigbang.dto.response;
 
-public record AuthResponseDto(
-        String token
-        //, UserDto userDto
-) {}
+public record AuthResponseDto(String token, UserDto userDto) {}

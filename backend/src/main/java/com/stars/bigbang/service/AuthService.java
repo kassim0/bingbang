@@ -3,9 +3,11 @@ package com.stars.bigbang.service;
 import com.stars.bigbang.dto.payload.LoginRequestDto;
 import com.stars.bigbang.dto.payload.RegisterRequestDto;
 import com.stars.bigbang.dto.response.AuthResponseDto;
+import com.stars.bigbang.dto.response.UserDto;
 import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.UserRepository;
 import com.stars.bigbang.security.JwtService;
+import com.stars.bigbang.security.UserPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,19 +35,9 @@ public class AuthService {
     }
 
     public AuthResponseDto createAccount(RegisterRequestDto registerRequestDto) {
-        String email = normalizeEmail(registerRequestDto.email());
-        if(userRepository.existsByEmail(email))
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Email already in use");
-
-        User user = new User();
-        user.setUsername(registerRequestDto.username());
-        user.setPassword(passwordEncoder.encode(registerRequestDto.password()));
-        user.setEmail(email);
-        userRepository.save(user);
-
-        return new AuthResponseDto(jwtService.generateToken(user.getEmail()));
+        User newUser = createUser(registerRequestDto);
+        return generateAuthReponse(newUser);
     }
-
 
     //Toute cette méthode aurrait pu être remplacer par authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     public AuthResponseDto login(LoginRequestDto loginRequestDto) {
@@ -60,6 +52,31 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
         }
 
-        return new AuthResponseDto(jwtService.generateToken(user.get().getEmail()));
+        return generateAuthReponse(user.get());
+    }
+
+    public UserDto getMe(UserPrincipal principal) {
+        return new UserDto(principal.getEmail(),principal.getDisplayName());
+    }
+
+    private User createUser(RegisterRequestDto registerRequestDto) {
+        String email = normalizeEmail(registerRequestDto.email());
+        if(userRepository.existsByEmail(email))
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Email already in use");
+
+        User user = new User();
+        user.setUsername(registerRequestDto.username());
+        user.setPassword(passwordEncoder.encode(registerRequestDto.password()));
+        user.setEmail(email);
+        userRepository.saveAndFlush(user);
+
+        return user;
+    }
+
+    private AuthResponseDto generateAuthReponse(User user){
+        String token = jwtService.generateToken(user.getEmail());
+        UserDto userDto = new UserDto(user.getEmail(), user.getUsername());
+
+        return new AuthResponseDto(token, userDto);
     }
 }
