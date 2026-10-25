@@ -15,18 +15,18 @@ export class GameApiService {
   }
 
   saveGamesList(newGameList:NewGameList) {
-    return this.http.put<RawgResultsDto>(`${this.base}/newGamesList`, newGameList);
+    return this.http.put<RawgResultsDto>(`${this.base}/game/newGamesList`, newGameList);
   }
 
   getGamesList() {
-    return this.http.get<GamesList[]>(`${this.base}/getGamesLists`);
+    return this.http.get<GamesList[]>(`${this.base}/game/getGamesLists`);
   }
 
   updateGamesList(updateGamesList : UpdateGamesList){
-    return this.http.post(`${this.base}/updateGamesList`,updateGamesList, {responseType: 'text'});
+    return this.http.post(`${this.base}/game/updateGamesList`,updateGamesList, {responseType: 'text'});
   }
 
   deleteGamesList(id: number) {
-    return this.http.delete(`${this.base}/deleteGamesList/${id}`, {responseType: 'text'});
+    return this.http.delete(`${this.base}/game/deleteGamesList/${id}`, {responseType: 'text'});
   }
 }
