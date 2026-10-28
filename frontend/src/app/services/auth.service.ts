@@ -10,7 +10,11 @@ export class AuthService{
   constructor(private http: HttpClient
               ,@Inject(PLATFORM_ID) private platformId: Object) {
     if(isPlatformBrowser(this.platformId) && localStorage.getItem('token')) {
-      this.getMe().subscribe()
+      this.getMe().subscribe({
+        error : err => {
+          this.logout()
+        }
+      })
     }
   }
 

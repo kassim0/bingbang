@@ -1,8 +1,9 @@
-import {Component, computed} from '@angular/core';
+import {Component} from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
+import {AuthService} from "../../services/auth.service";
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +14,7 @@ import {MatIconModule} from '@angular/material/icon';
 })
 export class NavbarComponent {
 
-  constructor() {}
+  constructor( private authService: AuthService) {}
 
 
 }
