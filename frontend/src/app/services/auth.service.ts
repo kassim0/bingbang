@@ -10,46 +10,36 @@ export class AuthService{
   constructor(private http: HttpClient
               ,@Inject(PLATFORM_ID) private platformId: Object) {
     if(isPlatformBrowser(this.platformId) && localStorage.getItem('token')) {
-      this.getMe().subscribe({
-        error : err => {
-          this.logout()
-        }
-      })
+      this.getMe().subscribe({error : () => this.logout()})
     }
   }
 
   private base = '/api/auth';
 
-  public connectedUser = signal<AuthResponse|null>(null);
+  public connectedUser = signal<User|null>(null);
 
   register(registerRequest:RegisterRequest){
     return this.http.post<AuthResponse>(`${this.base}/register`, registerRequest).pipe(
-      tap(response=>this.connectUser(response))
+      tap(response=>this.connectUser(response.user,response.token))
     );
   }
 
   login(loginRequest:LoginRequest){
     return this.http.post<AuthResponse>(`${this.base}/login`, loginRequest).pipe(
-      tap(response=>this.connectUser(response))
+      tap(response=>this.connectUser(response.user,response.token))
     );
   }
 
   private getMe(){
     return this.http.get<User>(`${this.base}/me`).pipe(
-      tap(response=>{
-        const auth : AuthResponse = {
-          token: localStorage.getItem('token') ?? '',
-          user: response
-        };
-        this.connectUser(auth)
-      })
+      tap(response=>{this.connectUser(response)})
     );
   }
 
-  connectUser(authResponse:AuthResponse){
-    this.connectedUser.set(authResponse);
-    if(isPlatformBrowser(this.platformId)){
-      localStorage.setItem('token', authResponse.token);
+  connectUser(user:User,token?:string){
+    this.connectedUser.set(user);
+    if(token && isPlatformBrowser(this.platformId)){
+      localStorage.setItem('token', token);
     }
   }
 
@@ -61,6 +51,9 @@ export class AuthService{
   }
 
   getToken(){
-    return this.connectedUser()?.token;
+    if(isPlatformBrowser(this.platformId)){
+      return localStorage.getItem('token');
+    }
+    return null;
   }
 }

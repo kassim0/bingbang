@@ -1,9 +1,10 @@
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
 import {AuthService} from "../../services/auth.service";
+import {User} from "../../models/user.model";
 
 @Component({
   selector: 'app-navbar',
@@ -14,7 +15,13 @@ import {AuthService} from "../../services/auth.service";
 })
 export class NavbarComponent {
 
-  constructor( private authService: AuthService) {}
+  connectedUser  =  signal<User|null>(null);
 
+  constructor( private authService: AuthService) {
+    this.connectedUser=authService.connectedUser;
+  }
 
+  logout(){}
+
+  openAuthDialog(){}
 }
