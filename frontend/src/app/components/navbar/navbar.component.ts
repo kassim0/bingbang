@@ -5,6 +5,9 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
 import {AuthService} from "../../services/auth.service";
 import {User} from "../../models/user.model";
+import {AuthDialogComponent} from "../auth-dialog/auth-dialog.component";
+import {MatDialog} from "@angular/material/dialog";
+
 
 @Component({
   selector: 'app-navbar',
@@ -17,11 +20,19 @@ export class NavbarComponent {
 
   connectedUser  =  signal<User|null>(null);
 
-  constructor( private authService: AuthService) {
+  constructor( private authService: AuthService,public dialog:MatDialog) {
     this.connectedUser=authService.connectedUser;
   }
 
-  logout(){}
+  logout(){
+    this.authService.logout();
+  }
 
-  openAuthDialog(){}
+  openAuthDialog(){
+    const dialogRef = this.dialog.open(AuthDialogComponent,{
+      width: '40%',
+      height:'90%',
+      data: {}
+    })
+  }
 }

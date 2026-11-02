@@ -1,0 +1,45 @@
+<div *ngIf="page==registerPage; then registerTemplate else loginTemplate"></div>
+
+<ng-template #registerTemplate>
+  <p>REGISTER</p>
+
+  <mat-form-field appearance="outline">
+    <mat-label>username</mat-label>
+    <input matInput data-testid="username-register-input" placeholder="Xxx_black_Shadow_xxX" [(ngModel)]="usernameRegisterInput">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>email</mat-label>
+    <input matInput data-testid="email-register-input" placeholder="email@ghoo.com" [(ngModel)]="emailRegisterInput">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>password</mat-label>
+    <input matInput type="password" data-testid="password-register-input" placeholder="*****" [(ngModel)]="passwordRegisterInput">
+  </mat-form-field>
+
+  <button (click)="register()" >Register</button>
+
+  <p>Already an account ?</p>
+  <p (click)="switchPage()">login</p>
+</ng-template>
+
+
+<ng-template #loginTemplate>
+  <p>LOGIN</p>
+
+  <mat-form-field appearance="outline">
+    <mat-label>email</mat-label>
+    <input matInput data-testid="email-login-input" placeholder="email@ghoo.com" [(ngModel)]="emailLoginInput">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>password</mat-label>
+    <input matInput type="password" data-testid="password-login-input" placeholder="*****" [(ngModel)]="passwordLoginInput">
+  </mat-form-field>
+
+  <button (click)="login()" >Login</button>
+
+  <p>Don't have an account ?</p>
+  <p (click)="switchPage()">Register</p>
+</ng-template>

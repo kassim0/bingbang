@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit{
   OpenGamesSearchPopup() {
     const dialogRef = this.dialog.open(GamesSearchPopupComponent,{
       width: '40%',
-      height:'90%',
+      height:'50%',
       data: {}
     })
 
