@@ -21,11 +21,11 @@
       <p data-testid="auth-error-message">{{ errorMessage }}</p>
     }
 
-    <button type="submit" [disabled]="loading">Register</button>
+    <button type="submit" data-testid="register-submit" [disabled]="loading">Register</button>
   </form>
 
   <p>Already an account ?
-  <a (click)="switchPage()">login</a>
+  <a data-testid="switch-to-login" (click)="switchPage()">login</a>
   </p>
 
 } @else {
@@ -46,7 +46,7 @@
       <p data-testid="auth-error-message">{{ errorMessage }}</p>
     }
 
-    <button type="submit" [disabled]="loading">Login</button>
+    <button type="submit" data-testid="login-submit" [disabled]="loading">Login</button>
   </form>
 
   <p>Don't have an account ?

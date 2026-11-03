@@ -2,18 +2,18 @@
   <span class="spacer"></span>
 
   @if (connectedUser()) {
-    <button mat-icon-button [matMenuTriggerFor]="userMenu">
+    <button mat-icon-button data-testid="user-menu-trigger" [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
     </button>
     <mat-menu #userMenu>
-      <button mat-menu-item (click)="logout()">
+      <button mat-menu-item data-testid="logout-button" (click)="logout()">
         <mat-icon>logout</mat-icon>
         Se déconnecter
       </button>
     </mat-menu>
-    <h2>Hello {{ connectedUser()?.username }}</h2>
+    <h2 data-testid="connected-username">Hello {{ connectedUser()?.username }}</h2>
   } @else {
-    <button mat-icon-button (click)="openAuthDialog()">
+    <button mat-icon-button data-testid="open-auth-dialog" (click)="openAuthDialog()">
       <mat-icon>account_circle</mat-icon>
     </button>
   }
