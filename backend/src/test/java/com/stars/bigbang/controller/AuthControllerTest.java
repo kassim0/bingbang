@@ -67,8 +67,8 @@ public class AuthControllerTest {
         assertNotNull(body);
         assertNotNull(body.token());
         assertFalse(body.token().isBlank());
-        assertEquals(EMAIL, body.userDto().email());
-        assertEquals(USERNAME, body.userDto().username());
+        assertEquals(EMAIL, body.user().email());
+        assertEquals(USERNAME, body.user().username());
 
         User newUser = userRepository.findByEmail(EMAIL).orElseThrow();
         assertEquals(USERNAME, newUser.getUsername());
@@ -81,7 +81,7 @@ public class AuthControllerTest {
         ResponseEntity<AuthResponseDto> response = register(USERNAME, "TeSt@TeSt.CoM", PASSWORD);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(EMAIL, response.getBody().userDto().email());
+        assertEquals(EMAIL, response.getBody().user().email());
         assertTrue(userRepository.findByEmail(EMAIL).isPresent());
     }
 
@@ -151,8 +151,8 @@ public class AuthControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         AuthResponseDto body = response.getBody();
         assertNotNull(body.token());
-        assertEquals(EMAIL, body.userDto().email());
-        assertEquals(USERNAME, body.userDto().username());
+        assertEquals(EMAIL, body.user().email());
+        assertEquals(USERNAME, body.user().username());
         assertEquals(HttpStatus.OK, me("Bearer " + body.token(), UserDto.class).getStatusCode());
     }
 
