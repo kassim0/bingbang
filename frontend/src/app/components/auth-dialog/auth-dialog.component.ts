@@ -4,7 +4,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatButtonModule} from "@angular/material/button";
 import {FormsModule} from "@angular/forms";
 import {MatIconModule} from "@angular/material/icon";
-import {NgIf} from "@angular/common";
+import {HttpErrorResponse} from "@angular/common/http";
 import {AuthService} from "../../services/auth.service";
 import {LoginRequest, RegisterRequest} from "../../models/user.model";
 import {MatDialogRef} from "@angular/material/dialog";
@@ -16,73 +16,91 @@ import {MatDialogRef} from "@angular/material/dialog";
   MatInputModule,
   MatButtonModule,
   FormsModule,
-  MatIconModule,
-    NgIf],
+  MatIconModule],
   templateUrl: './auth-dialog.component.html',
   styleUrl: './auth-dialog.component.scss'
 })
 export class AuthDialogComponent {
 
-  usernameRegisterInput = '';
-  emailRegisterInput = '';
-  passwordRegisterInput = '';
-  emailLoginInput = '';
-  passwordLoginInput = '';
+  usernameInput = '';
+  emailInput = '';
+  passwordInput = '';
 
-  registerPage = 'register';
-  loginPage = 'login';
+  page: 'login' | 'register' = 'register';
+  errorMessage = '';
+  loading = false;
 
   constructor(private authService: AuthService,
               public dialogRef: MatDialogRef<AuthDialogComponent>) {
   }
 
-  page = this.registerPage;
-
   switchPage(){
-    if(this.page == this.registerPage){
-      this.page = this.loginPage;
-    }
-    else {this.page = this.registerPage;}
+    this.page = this.page === 'register' ? 'login' : 'register';
+    this.passwordInput = '';
+    this.errorMessage = '';
   }
 
   registerFormComplete(){
-    return this.usernameRegisterInput != '' && this.emailRegisterInput != '' && this.passwordRegisterInput != '';
+    return this.usernameInput !== '' && this.emailInput !== '' && this.passwordInput !== '';
   }
 
   loginFormComplete(){
-    return this.emailLoginInput != '' && this.passwordLoginInput != '';
+    return this.emailInput !== '' && this.passwordInput !== '';
   }
 
   register(){
-    if(this.registerFormComplete()){
-      const registerRequest : RegisterRequest ={
-        'username' : this.usernameRegisterInput,
-        'email' : this.emailRegisterInput,
-        'password' : this.passwordRegisterInput
-      }
-      this.authService.register(registerRequest).subscribe({
-        error : err => console.log(err),
-        complete: () => this.dialogRef.close()
-      })
+    if(!this.registerFormComplete()){
+      this.errorMessage = 'Please fill in all fields.';
+      return;
     }
-    else {
-      console.log('none valid inputs !');
-    }
+    const registerRequest : RegisterRequest = {
+      username: this.usernameInput,
+      email: this.emailInput,
+      password: this.passwordInput
+    };
+    this.startRequest();
+    this.authService.register(registerRequest).subscribe({
+      next: () => this.dialogRef.close(),
+      error: err => this.handleError(err)
+    });
   }
 
   login(){
-    if(this.loginFormComplete()){
-      const loginRequest : LoginRequest ={
-        'email':this.emailLoginInput,
-        'password' : this.passwordLoginInput
-      }
-      this.authService.login(loginRequest).subscribe({
-        error : err => console.log(err),
-        complete: () => this.dialogRef.close()
-      })
+    if(!this.loginFormComplete()){
+      this.errorMessage = 'Please fill in all fields.';
+      return;
     }
-    else {
-      console.log('none valid inputs !');
+    const loginRequest : LoginRequest = {
+      email: this.emailInput,
+      password: this.passwordInput
+    };
+
+    this.startRequest();
+    this.authService.login(loginRequest).subscribe({
+      next: () => this.dialogRef.close(),
+      error: err => this.handleError(err)
+    });
+  }
+
+  private startRequest(){
+    this.errorMessage = '';
+    this.loading = true;
+  }
+
+  private handleError(err: HttpErrorResponse){
+    this.loading = false;
+    switch(err.status){
+      case 400:
+        this.errorMessage = 'Invalid email, or password not between 8 and 72 characters.';
+        break;
+      case 401:
+        this.errorMessage = 'Wrong email or password.';
+        break;
+      case 409:
+        this.errorMessage = 'This email is already in use.';
+        break;
+      default:
+        this.errorMessage = 'Something went wrong, please try again.';
     }
   }
 

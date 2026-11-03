@@ -11,7 +11,7 @@
         Se déconnecter
       </button>
     </mat-menu>
-  <h2>Hello connectedUser.username</h2>
+    <h2>Hello {{ connectedUser()?.username }}</h2>
   } @else {
     <button mat-icon-button (click)="openAuthDialog()">
       <mat-icon>account_circle</mat-icon>

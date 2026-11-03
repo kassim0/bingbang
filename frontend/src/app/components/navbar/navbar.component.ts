@@ -1,10 +1,9 @@
-import {Component, signal} from '@angular/core';
+import {Component} from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
 import {AuthService} from "../../services/auth.service";
-import {User} from "../../models/user.model";
 import {AuthDialogComponent} from "../auth-dialog/auth-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 
@@ -18,21 +17,18 @@ import {MatDialog} from "@angular/material/dialog";
 })
 export class NavbarComponent {
 
-  connectedUser  =  signal<User|null>(null);
+  connectedUser = this.authService.connectedUser;
 
-  constructor( private authService: AuthService,public dialog:MatDialog) {
-    this.connectedUser=authService.connectedUser;
-  }
+  constructor( private authService: AuthService,public dialog:MatDialog) {}
 
   logout(){
     this.authService.logout();
   }
 
   openAuthDialog(){
-    const dialogRef = this.dialog.open(AuthDialogComponent,{
+    this.dialog.open(AuthDialogComponent,{
       width: '40%',
-      height:'90%',
-      data: {}
-    })
+      height:'50%',
+    });
   }
 }
