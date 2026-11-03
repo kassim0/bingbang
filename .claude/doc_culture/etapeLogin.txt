@@ -1,0 +1,10 @@
+Front                 Filtres Security        AuthController      AuthService        AuthenticationManager     UserPrincipalService     JwtService
+  │ POST /api/auth/login    │                        │                  │                     │                        │                     │
+  │ {email, password} ─────►│ route publique,        │                  │                     │                        │                     │
+  │                         │ pas de token → passe ─►│ login(dto) ─────►│ authenticate(...) ─►│ loadUserByUsername ───►│                     │
+  │                         │                        │                  │                     │◄── UserPrincipal ──────│                     │
+  │                         │                        │                  │                     │ compare mot de passe   │                     │
+  │                         │                        │                  │◄── OK / exception ──│                        │                     │
+  │                         │                        │                  │ generateToken(email) ─────────────────────────────────────────────►│
+  │                         │                        │                  │◄──────────────────────────────────────────────────── token signé ──│
+  │◄──────────── 200 { token } ──────────────────────│◄─────────────────│                     │                        │                     │

@@ -1,0 +1,54 @@
+@if (page === 'register') {
+  <form (ngSubmit)="register()" class="auth-form">
+    <p>REGISTER</p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>username</mat-label>
+      <input matInput name="username" data-testid="username-register-input" placeholder="Xxx_black_Shadow_xxX" [(ngModel)]="usernameInput">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>email</mat-label>
+      <input matInput type="email" name="email" data-testid="email-register-input" placeholder="email@ghoo.com" [(ngModel)]="emailInput">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>password</mat-label>
+      <input matInput type="password" name="password" data-testid="password-register-input" placeholder="*****" [(ngModel)]="passwordInput">
+    </mat-form-field>
+
+    @if (errorMessage) {
+      <p data-testid="auth-error-message">{{ errorMessage }}</p>
+    }
+
+    <button type="submit" data-testid="register-submit" [disabled]="loading">Register</button>
+  </form>
+
+  <p>Already an account ?
+  <a data-testid="switch-to-login" (click)="switchPage()">login</a>
+  </p>
+
+} @else {
+  <form (ngSubmit)="login()" class="auth-form">
+    <p>LOGIN</p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>email</mat-label>
+      <input matInput type="email" name="email" data-testid="email-login-input" placeholder="email@ghoo.com" [(ngModel)]="emailInput">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>password</mat-label>
+      <input matInput type="password" name="password" data-testid="password-login-input" placeholder="*****" [(ngModel)]="passwordInput">
+    </mat-form-field>
+
+    @if (errorMessage) {
+      <p data-testid="auth-error-message">{{ errorMessage }}</p>
+    }
+
+    <button type="submit" data-testid="login-submit" [disabled]="loading">Login</button>
+  </form>
+
+  <p>Don't have an account ?
+  <a (click)="switchPage()">Register</a></p>
+}

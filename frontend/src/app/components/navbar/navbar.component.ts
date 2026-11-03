@@ -1,8 +1,12 @@
-import {Component, computed} from '@angular/core';
+import {Component} from '@angular/core';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatIconModule} from '@angular/material/icon';
+import {AuthService} from "../../services/auth.service";
+import {AuthDialogComponent} from "../auth-dialog/auth-dialog.component";
+import {MatDialog} from "@angular/material/dialog";
+
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +17,18 @@ import {MatIconModule} from '@angular/material/icon';
 })
 export class NavbarComponent {
 
-  constructor() {}
+  connectedUser = this.authService.connectedUser;
 
+  constructor( private authService: AuthService,public dialog:MatDialog) {}
 
+  logout(){
+    this.authService.logout();
+  }
+
+  openAuthDialog(){
+    this.dialog.open(AuthDialogComponent,{
+      width: '40%',
+      height:'50%',
+    });
+  }
 }

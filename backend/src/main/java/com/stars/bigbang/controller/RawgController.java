@@ -1,8 +1,9 @@
 package com.stars.bigbang.controller;
 
 import com.stars.bigbang.dto.rawgDto.RawgResponseDto;
-import com.stars.bigbang.rest.RawgApi;
+import com.stars.bigbang.rawg.RawgApi;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,13 +14,8 @@ import org.springframework.web.bind.annotation.*;
 public class RawgController {
     private RawgApi rawgApi;
 
-    @GetMapping(produces="application/json")
-    public RawgResponseDto getJeuxZelda(){
-        return rawgApi.searchGamesByName("the legend of zelda","d4df6345d7fb4a4e842849ef2bf16ba7");
-    }
-
     @GetMapping(value="/{gameName}", produces="application/json")
     public RawgResponseDto getJeuxByName(@PathVariable String gameName){
-        return rawgApi.searchGamesByName(gameName,"d4df6345d7fb4a4e842849ef2bf16ba7");
+        return rawgApi.searchGamesByName(gameName);
     }
 }

@@ -1,4 +1,60 @@
-import {Page} from '@playwright/test';
+import {randomUUID} from 'node:crypto';
+import {APIRequestContext, expect, Page} from '@playwright/test';
+
+export interface TestAccount {
+  username: string;
+  email: string;
+  password: string;
+}
+
+/** Génère un compte unique, pour que les tests lancés en parallèle ne se gênent pas (email déjà utilisé -> 409). */
+export function newTestAccount(): TestAccount {
+  const id = randomUUID();
+  return {
+    username: `e2e-${id.slice(0, 8)}`,
+    email: `e2e-${id}@test.com`,
+    password: 'password123',
+  };
+}
+
+/**
+ * Ouvre la popup d'authentification, qui s'ouvre sur le formulaire d'inscription.
+ * MatDialog donne le focus au premier champ à la fin de son animation : on l'attend, sinon
+ * ce focus peut arriver pendant la saisie d'un autre champ et le texte part dans le premier.
+ */
+export async function openRegisterForm(page: Page): Promise<void> {
+  await page.goto('/');
+  await page.getByTestId('open-auth-dialog').click();
+  await expect(page.getByTestId('username-register-input')).toBeFocused();
+}
+
+/** Crée un compte depuis la popup d'authentification. */
+export async function registerFromUi(page: Page, account: TestAccount): Promise<void> {
+  await openRegisterForm(page);
+  await page.getByTestId('username-register-input').fill(account.username);
+  await page.getByTestId('email-register-input').fill(account.email);
+  await page.getByTestId('password-register-input').fill(account.password);
+  await page.getByTestId('register-submit').click();
+}
+
+/** Crée un compte directement via l'API, pour les tests dont la création de compte n'est pas le sujet. */
+export async function registerFromApi(request: APIRequestContext, account: TestAccount): Promise<void> {
+  const response = await request.post('/api/auth/register', {data: account});
+  expect(response.ok()).toBeTruthy();
+}
+
+/** Ouvre la popup d'authentification sur le formulaire de connexion. */
+export async function openLoginForm(page: Page): Promise<void> {
+  await openRegisterForm(page);
+  await page.getByTestId('switch-to-login').click();
+}
+
+/** Remplit et envoie le formulaire de connexion, déjà ouvert. */
+export async function submitLoginForm(page: Page, email: string, password: string): Promise<void> {
+  await page.getByTestId('email-login-input').fill(email);
+  await page.getByTestId('password-login-input').fill(password);
+  await page.getByTestId('login-submit').click();
+}
 
 /**
  * Recherche `searchTerm` dans la popup ouverte, ajoute le premier résultat
