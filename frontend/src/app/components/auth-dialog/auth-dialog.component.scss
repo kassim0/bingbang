@@ -1,9 +1,32 @@
-p{
-  text-align:center;
-  }
+p {
+  text-align: center;
+  color: var(--bb-muted);
+}
 
 .auth-form {
-  display:flex;
-  flex-direction : column;
-  padding:10%;
+  display: flex;
+  flex-direction: column;
+  padding: 8% 10% 16px;
+
+  > p:first-child {
+    font-family: var(--bb-font-title);
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    background: var(--bb-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
+
+  [data-testid="auth-error-message"] {
+    color: var(--bb-danger);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  button[type="submit"] {
+    margin-top: 8px;
+  }
+}

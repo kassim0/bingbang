@@ -1,3 +1,54 @@
-.spacer {
-  //flex: 1;
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: block;
+}
+
+mat-toolbar.mat-toolbar {
+  --mat-toolbar-container-background-color: rgba(13, 14, 26, 0.8);
+  --mat-toolbar-container-text-color: var(--bb-text);
+  gap: 12px;
+  height: 72px;
+  padding: 0 24px;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--bb-border);
+}
+
+h2 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--bb-muted);
+}
+
+.logo {
+  flex: 1;
+  text-align: center;
+
+  h1 {
+    display: inline-block;
+    font-family: var(--bb-font-title);
+    font-weight: 900;
+    font-size: 1.8rem;
+    letter-spacing: 0.15em;
+    background: var(--bb-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+// Le bloc gauche (icône + "Hello") et le logo centré : on compense avec un
+// pseudo-élément pour garder le logo au milieu.
+mat-toolbar::after {
+  content: '';
+  width: 48px;
+}
+
+button[mat-icon-button] {
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
 }

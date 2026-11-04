@@ -1,3 +1,75 @@
-.line-through{
+:host {
+  display: block;
+}
+
+mat-form-field {
+  margin: 4px 0 8px;
+  padding-right: 48px; // laisse la place au bouton de fermeture
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+ul {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  img {
+    flex-shrink: 0;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .game-name {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  // ligne du bouton "+"
+  &:last-of-type {
+    justify-content: center;
+    margin: 12px 0 24px;
+
+    &:hover {
+      background: transparent;
+    }
+
+    button {
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      --mdc-protected-button-container-color: transparent;
+      box-shadow: none;
+      width: 100%;
+      font-size: 1.4rem;
+    }
+  }
+}
+
+.line-through {
   text-decoration: line-through;
+  opacity: 0.45;
+}
+
+.btn-save,
+.btn-delete {
+  font-weight: 600;
+  padding: 0 20px;
+  margin-right: 8px;
+}
+
+.btn-save {
+  --mdc-text-button-label-text-color: #fff;
+  background: var(--bb-success);
+}
+
+.btn-delete {
+  --mdc-text-button-label-text-color: var(--bb-danger);
+  border: 1px solid var(--bb-danger);
 }
