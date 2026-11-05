@@ -1,7 +1,35 @@
-.item-apercu-list{
+h1 {
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--bb-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+h6 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--bb-muted);
+}
+
+.item-apercu-list {
   display: flex;
   flex-direction: row;
-  margin-bottom: 5px;
   align-items: center;
-  column-gap: 20px;
+  column-gap: 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: var(--bb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  img {
+    flex-shrink: 0;
+    border-radius: 8px;
+    object-fit: cover;
+  }
 }

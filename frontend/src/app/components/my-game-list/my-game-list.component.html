@@ -1,4 +1,4 @@
-<button data-testid="my-list-close" style="float:right; background-color: red;" (click)="close()"><mat-icon>close</mat-icon></button>
+<button data-testid="my-list-close" class="bb-close" (click)="close()"><mat-icon>close</mat-icon></button>
 
 <mat-form-field>
   <input matInput data-testid="edit-list-name-input" [(ngModel)]="editedName" name="gamesListName">
@@ -15,5 +15,5 @@
   <button mat-raised-button data-testid="my-list-add-game" (click)="openGamesSearchPopup()" title="ajouter des jeux">+</button>
 </ul>
 
-<button mat-button data-testid="my-list-save" style="background-color: green; color:white" (click)="saveModifGamesList()">save</button>
-<button mat-button data-testid="my-list-delete" style="background-color: red; color:white" (click)="deleteGamesList()">delete {{editedName}}</button>
+<button mat-button data-testid="my-list-save" class="btn-save" (click)="saveModifGamesList()">save</button>
+<button mat-button data-testid="my-list-delete" class="btn-delete" (click)="deleteGamesList()">delete {{editedName}}</button>
