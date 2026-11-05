@@ -19,7 +19,7 @@ test('modifies a games list name and its games', async ({page}) => {
   await originalGameRow.getByRole('button').click();
 
   const [updateResponse] = await Promise.all([
-    page.waitForResponse(resp => resp.url().includes('/api/updateGamesList') && resp.request().method() === 'POST'),
+    page.waitForResponse(resp => resp.url().includes('/api/game/updateGamesList') && resp.request().method() === 'POST'),
     page.getByTestId('my-list-save').click(),
   ]);
   expect(updateResponse.ok()).toBeTruthy();

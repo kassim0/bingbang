@@ -10,7 +10,8 @@ public record GameDto(
         String slug,
         LocalDate releaseDate,
         String backgroundImage,
-        Integer rawgId
+        Integer rawgId,
+        Integer igdbId
 ) {
     public static GameDto from(Game game) {
         return new GameDto(
@@ -19,7 +20,8 @@ public record GameDto(
                 game.getSlug(),
                 game.getReleaseDate(),
                 game.getBackgroundImage(),
-                game.getRawgId()
+                game.getRawgId(),
+                game.getIgdbId()
         );
     }
 }

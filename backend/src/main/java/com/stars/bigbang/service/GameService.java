@@ -1,9 +1,10 @@
 package com.stars.bigbang.service;
 
-import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.payload.UpdateGamesListDto;
+import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;
+import com.stars.bigbang.entity.GameSource;
 import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.GamesListEntry;
 import com.stars.bigbang.repository.GamesListEntryRepository;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -27,26 +29,64 @@ public class GameService {
     private final GamesListRepository gamesListRepository;
     private final GamesListEntryRepository gamesListEntryRepository;
 
-    private Game saveRawgGame(RawgResultsDto gameDto) {
-        Game game = new Game();
-        game.setName(gameDto.name());
-        game.setSlug(gameDto.slug());
-        game.setBackgroundImage(gameDto.background_image());
-        game.setRawgId(gameDto.id());
+    /**
+     * Retrouve le jeu par l'identifiant de sa source, puis par son slug pour ne pas recréer
+     * un jeu déjà connu via une autre source. Sinon, le crée.
+     */
+    private Game findOrCreateGame(GameSearchResult result) {
+        return findByExternalId(result)
+                .or(() -> findLinkableBySlug(result).map(game -> linkToSource(game, result)))
+                .orElseGet(() -> createGame(result));
+    }
+
+    private Optional<Game> findByExternalId(GameSearchResult result) {
+        return result.source() == GameSource.IGDB
+                ? gamesRepository.findByIgdbId(result.externalId())
+                : gamesRepository.findByRawgId(result.externalId());
+    }
+
+    /** Un jeu qui a déjà un autre identifiant sur cette source est un jeu différent, malgré le même slug. */
+    private Optional<Game> findLinkableBySlug(GameSearchResult result) {
+        if (result.slug() == null) {
+            return Optional.empty();
+        }
+        return gamesRepository.findFirstBySlugOrderByIdAsc(result.slug())
+                .filter(game -> (result.source() == GameSource.IGDB ? game.getIgdbId() : game.getRawgId()) == null);
+    }
+
+    private Game linkToSource(Game game, GameSearchResult result) {
+        setExternalId(game, result);
         return gamesRepository.save(game);
     }
 
+    private Game createGame(GameSearchResult result) {
+        Game game = new Game();
+        game.setName(result.name());
+        game.setSlug(result.slug());
+        game.setReleaseDate(result.releaseDate());
+        game.setBackgroundImage(result.imageUrl());
+        setExternalId(game, result);
+        return gamesRepository.save(game);
+    }
+
+    private void setExternalId(Game game, GameSearchResult result) {
+        if (result.source() == GameSource.IGDB) {
+            game.setIgdbId(result.externalId());
+        } else {
+            game.setRawgId(result.externalId());
+        }
+    }
+
     /**
-     * Create a new GamesList from Rawg games
+     * Create a new GamesList from search results
      * */
-    public GamesList createGamesList(String listName, RawgResultsDto[] gameDto) {
+    public GamesList createGamesList(String listName, GameSearchResult[] games) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         List<GamesListEntry>  savedGamesListEntry;
 
-        for (RawgResultsDto dto : gameDto) {
-            Game game = gamesRepository.findByRawgId(dto.id()).orElseGet(() -> saveRawgGame(dto));
-            savedGames.add(game);
+        for (GameSearchResult result : games) {
+            savedGames.add(findOrCreateGame(result));
         }
 
         savedGamesListEntry = IntStream.range(0,savedGames.size())
@@ -80,22 +120,21 @@ public class GameService {
             manageGamesListEntryPosition(updateGamesListDto.gamesListId());
             returnMessage = "Games list updated";
         }
-        if(updateGamesListDto.newRawgGames() != null && !updateGamesListDto.newRawgGames().isEmpty()) {
-            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newRawgGames());
+        if(updateGamesListDto.newGames() != null && !updateGamesListDto.newGames().isEmpty()) {
+            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGames());
             returnMessage = "Games list updated";
         }
         return returnMessage;
     }
 
-    private void addGames(long gamesListId, List<RawgResultsDto> rawgGamesDto) {
+    private void addGames(long gamesListId, List<GameSearchResult> games) {
         GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
         int nextPosition = gamesList.getGames().stream()
                 .mapToInt(GamesListEntry::getPosition)
                 .max()
                 .orElse(1);
-        for (RawgResultsDto gameId : rawgGamesDto) {
-            Game game = gamesRepository.findByRawgId(gameId.id()).orElseGet(() -> saveRawgGame(gameId));
-            gamesList.getGames().add(new GamesListEntry(game, nextPosition++));
+        for (GameSearchResult result : games) {
+            gamesList.getGames().add(new GamesListEntry(findOrCreateGame(result), nextPosition++));
         }
         gamesListRepository.save(gamesList);
     }

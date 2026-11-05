@@ -1,4 +1,19 @@
-.game-item{
+h3 {
+  font-size: 1.2rem;
+  margin: 6px 48px 20px 0;
+}
+
+.game-item {
   display: flex;
   flex-direction: row;
+}
+
+mat-list-item {
+  --mdc-list-list-item-one-line-container-height: 66px;
+  border-radius: 12px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
 }

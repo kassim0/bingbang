@@ -25,4 +25,7 @@ public class Game {
     @Column(unique = true)
     private Integer rawgId;
 
+    @Column(unique = true)
+    private Integer igdbId;
+
 }

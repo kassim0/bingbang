@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {RawgResultsDto} from "../../../models/rawg.models";
+import {GameSearchResult} from "../../../models/game-search.models";
 import {MatIconButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
 
@@ -13,31 +13,31 @@ import {MatIcon} from "@angular/material/icon";
 export class GameItemComponent {
 
   @Input()
-  rawgGame: RawgResultsDto | undefined;
+  game: GameSearchResult | undefined;
 
   @Input()
-  rawgGamesSelected : RawgResultsDto[] = [];
+  gamesSelected : GameSearchResult[] = [];
 
   @Output()
-  addGame = new EventEmitter<RawgResultsDto>();
+  addGame = new EventEmitter<GameSearchResult>();
 
   @Output()
-  removeGame = new EventEmitter<RawgResultsDto>();
+  removeGame = new EventEmitter<GameSearchResult>();
 
   onAddGame() {
-    if (this.rawgGame) {
+    if (this.game) {
       if(this.isGameSelected()) {
-        this.removeGame.emit(this.rawgGame);
+        this.removeGame.emit(this.game);
       }
       else{
-        this.addGame.emit(this.rawgGame);
+        this.addGame.emit(this.game);
       }
 
     }
   }
 
   isGameSelected(): boolean {
-    return this.rawgGamesSelected.some(g => g.id === this.rawgGame?.id);
+    return this.gamesSelected.some(g => g.source === this.game?.source && g.externalId === this.game?.externalId);
   }
 
 }

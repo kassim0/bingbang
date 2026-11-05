@@ -41,7 +41,7 @@ export class MyGameListComponent {
     this.editedName = data.gamesList.name;
     this.updateGamesList = {
       gamesListId: this.gamesList.id,
-      newRawgGames: null,
+      newGames: null,
       removeGameId: null,
       newName: null,
     };
@@ -60,7 +60,7 @@ export class MyGameListComponent {
       }
       const updateGamesList: UpdateGamesList = {
         gamesListId: this.gamesList.id,
-        newRawgGames: result.addedGames,
+        newGames: result.addedGames,
         removeGameId: null,
         newName: null,
       };

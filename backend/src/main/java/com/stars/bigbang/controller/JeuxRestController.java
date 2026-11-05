@@ -21,7 +21,7 @@ public class JeuxRestController {
 
     @PutMapping(value = "/newGamesList")
     public ResponseEntity<GamesListDto> saveListGames(@RequestBody NewGamesListDto newGamesListDto) {
-        return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto.name(), newGamesListDto.rawgGames())));
+        return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto.name(), newGamesListDto.games())));
     }
 
     @GetMapping(value = "/getGamesLists")
