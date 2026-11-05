@@ -20,7 +20,7 @@
   <mat-list *ngIf="!isSearching">
     <div *ngFor="let game of reponse">
       <mat-list-item>
-        <app-game-item class="game-item" [rawgGame]="game" (addGame)="onAddGame($event)" (removeGame)="onRemoveGame($event)" [rawgGamesSelected]="addedGames" ></app-game-item>
+        <app-game-item class="game-item" [game]="game" (addGame)="onAddGame($event)" (removeGame)="onRemoveGame($event)" [gamesSelected]="addedGames" ></app-game-item>
       </mat-list-item>
       <mat-divider></mat-divider>
     </div>

@@ -11,7 +11,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
 import {FormsModule} from "@angular/forms";
 import {SearchBarComponent} from "../share/search-bar/search-bar.component";
-import {RawgResultsDto} from "../../models/rawg.models";
+import {GameSearchResult} from "../../models/game-search.models";
 import {GamesList} from "../../models/games.model";
 import {NgForOf, NgIf} from "@angular/common";
 import {MatList, MatListItem} from "@angular/material/list";
@@ -37,8 +37,8 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 })
 export class GamesSearchPopupComponent {
 
-  reponse : RawgResultsDto[] | undefined;
-  addedGames: RawgResultsDto[] = [];
+  reponse : GameSearchResult[] | undefined;
+  addedGames: GameSearchResult[] = [];
   listNameInput : string = "";
   isSearching : boolean = false;
 
@@ -68,7 +68,7 @@ export class GamesSearchPopupComponent {
     this.isSearching = true;
     this.gameApiService.searchGames(this.gameNameSearch).subscribe({
       next: (reponse) => {
-        this.reponse = reponse.results;
+        this.reponse = reponse;
         this.isSearching = false;
       },
       error: () => {
@@ -77,12 +77,12 @@ export class GamesSearchPopupComponent {
     });
   }
 
-  onAddGame(game: RawgResultsDto){
+  onAddGame(game: GameSearchResult){
     this.addedGames.push(game);
   }
 
-  onRemoveGame(game: RawgResultsDto){
-    this.addedGames = this.addedGames.filter(g=>g.id!==game.id);
+  onRemoveGame(game: GameSearchResult){
+    this.addedGames = this.addedGames.filter(g=>g.source!==game.source || g.externalId!==game.externalId);
   }
 
 }

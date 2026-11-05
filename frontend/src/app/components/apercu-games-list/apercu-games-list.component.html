@@ -3,14 +3,14 @@
 
 
   <ul class="item-apercu-list" *ngIf="gamesList.games[0]?.game">
-    <img src="{{gamesList.games[0].game.backgroundImage}}" style="width: 35px; height: 35px">
+    <img src="{{gamesList.games[0].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
     {{gamesList.games[0].game.name}}
   </ul>
   <ul class="item-apercu-list" *ngIf="gamesList.games[1]?.game">
-    <img src="{{gamesList.games[1].game.backgroundImage}}" style="width: 35px; height: 35px">
+    <img src="{{gamesList.games[1].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
     {{gamesList.games[1].game.name}}
   </ul>
   <ul class="item-apercu-list" *ngIf="gamesList.games[2]?.game">
-    <img src="{{gamesList.games[2].game.backgroundImage}}" style="width: 35px; height: 35px">
+    <img src="{{gamesList.games[2].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
     {{gamesList.games[2].game.name}}
   </ul>

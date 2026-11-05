@@ -1,4 +1,4 @@
-import {RawgResultsDto} from "./rawg.models";
+import {GameSearchResult} from "./game-search.models";
 
 export interface Game{
   id: number;
@@ -6,7 +6,8 @@ export interface Game{
   name: string;
   releaseDate: string;
   backgroundImage: string;
-  rawgId: string;
+  rawgId: number | null;
+  igdbId: number | null;
 }
 
 export interface GamesList {
@@ -25,13 +26,13 @@ export interface GamesListEntry {
 
 export interface UpdateGamesList{
   gamesListId : number;
-  newRawgGames : RawgResultsDto[] | null;
+  newGames : GameSearchResult[] | null;
   removeGameId : number [] | null;
   newName : string | null;
 }
 
 /** Résultat renvoyé par GamesSearchPopupComponent à sa fermeture. */
 export interface GamesSearchPopupResult {
-  addedGames : RawgResultsDto[];
+  addedGames : GameSearchResult[];
   listName : string;
 }

@@ -4,7 +4,7 @@ import {createGamesList, gamesListCard} from './helpers';
 test('shows the created games list preview on the dashboard', async ({page}) => {
   const listName = `E2E Preview ${Date.now()}`;
 
-  const [firstGame, secondGame] = await createGamesList(page, listName, ['mario', 'sonic']);
+  const [firstGame, secondGame] = await createGamesList(page, listName, ['zelda', 'outer wilds']);
 
   const card = gamesListCard(page, listName);
   await expect(card).toBeVisible();
