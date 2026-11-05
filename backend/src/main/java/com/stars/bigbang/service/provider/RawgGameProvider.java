@@ -4,9 +4,8 @@ import com.stars.bigbang.dto.rawgDto.RawgResponseDto;
 import com.stars.bigbang.dto.rawgDto.RawgResultsDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.entity.GameSource;
-import com.stars.bigbang.rest.RawgApi;
+import com.stars.bigbang.rawg.RawgApi;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -19,9 +18,6 @@ public class RawgGameProvider implements GameProvider {
 
     private final RawgApi rawgApi;
 
-    @Value("${rawg.api-key}")
-    private String apiKey;
-
     @Override
     public GameSource source() {
         return GameSource.RAWG;
@@ -29,7 +25,7 @@ public class RawgGameProvider implements GameProvider {
 
     @Override
     public List<GameSearchResult> search(String name) {
-        RawgResponseDto response = rawgApi.searchGamesByName(name, apiKey);
+        RawgResponseDto response = rawgApi.searchGamesByName(name);
         if (response.getResults() == null) {
             return List.of();
         }

@@ -1,6 +1,6 @@
 package com.stars.bigbang.service;
 
-import com.stars.bigbang.dto.record.UpdateGamesListDto;
+import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.entity.Game;

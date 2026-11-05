@@ -1,4 +1,4 @@
-package com.stars.bigbang.rest;
+package com.stars.bigbang.igdb;
 
 import com.stars.bigbang.dto.igdbDto.IgdbGameDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
-@FeignClient(name = "IgdbAPI", url = "https://api.igdb.com/v4")
+@FeignClient(name = "IgdbAPI", url = "${igdb.url}")
 public interface IgdbApi {
 
     /**

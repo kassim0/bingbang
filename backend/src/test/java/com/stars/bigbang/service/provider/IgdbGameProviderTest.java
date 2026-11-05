@@ -4,7 +4,7 @@ import com.stars.bigbang.dto.igdbDto.IgdbCoverDto;
 import com.stars.bigbang.dto.igdbDto.IgdbGameDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.entity.GameSource;
-import com.stars.bigbang.rest.IgdbApi;
+import com.stars.bigbang.igdb.IgdbApi;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;

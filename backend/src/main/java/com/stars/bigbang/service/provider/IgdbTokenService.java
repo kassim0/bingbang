@@ -1,7 +1,7 @@
 package com.stars.bigbang.service.provider;
 
 import com.stars.bigbang.dto.igdbDto.TwitchTokenDto;
-import com.stars.bigbang.rest.TwitchAuthApi;
+import com.stars.bigbang.igdb.TwitchAuthApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.stars.bigbang.mock;
 
 import com.stars.bigbang.dto.igdbDto.TwitchTokenDto;
-import com.stars.bigbang.rest.TwitchAuthApi;
+import com.stars.bigbang.igdb.TwitchAuthApi;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 

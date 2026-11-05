@@ -1,4 +1,4 @@
-package com.stars.bigbang.rest;
+package com.stars.bigbang.igdb;
 
 import com.stars.bigbang.dto.igdbDto.TwitchTokenDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Map;
 
-@FeignClient(name = "TwitchAuthAPI", url = "https://id.twitch.tv")
+@FeignClient(name = "TwitchAuthAPI", url = "${igdb.auth-url}")
 public interface TwitchAuthApi {
 
     /**

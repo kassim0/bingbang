@@ -2,7 +2,7 @@ package com.stars.bigbang.mock;
 
 import com.stars.bigbang.dto.igdbDto.IgdbCoverDto;
 import com.stars.bigbang.dto.igdbDto.IgdbGameDto;
-import com.stars.bigbang.rest.IgdbApi;
+import com.stars.bigbang.igdb.IgdbApi;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
