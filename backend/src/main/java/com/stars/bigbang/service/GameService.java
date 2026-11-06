@@ -1,5 +1,6 @@
 package com.stars.bigbang.service;
 
+import com.stars.bigbang.dto.payload.NewGamesListDto;
 import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.dto.response.GamesListDto;
@@ -10,6 +11,7 @@ import com.stars.bigbang.entity.GamesListEntry;
 import com.stars.bigbang.repository.GamesListEntryRepository;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
+import com.stars.bigbang.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class GameService {
     private final GamesRepository gamesRepository;
     private final GamesListRepository gamesListRepository;
     private final GamesListEntryRepository gamesListEntryRepository;
+    private final UserRepository userRepository;
 
     /**
      * Retrouve le jeu par l'identifiant de sa source, puis par son slug pour ne pas recréer
@@ -80,10 +83,13 @@ public class GameService {
     /**
      * Create a new GamesList from search results
      * */
-    public GamesList createGamesList(String listName, GameSearchResult[] games) {
+    @Transactional
+    public GamesList createGamesList(NewGamesListDto newGamesListDto, Long userId) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         List<GamesListEntry>  savedGamesListEntry;
+        String listName = newGamesListDto.name();
+        GameSearchResult[] games = newGamesListDto.games();
 
         for (GameSearchResult result : games) {
             savedGames.add(findOrCreateGame(result));
@@ -93,15 +99,16 @@ public class GameService {
                             .mapToObj(i-> new GamesListEntry(savedGames.get(i),i))
                             .toList();
 
-        Long position = gamesListRepository.findMaxOrder() + 1;
+        Long position = gamesListRepository.findMaxOrder(userId) + 1;
         gamesList.setGames(savedGamesListEntry);
         gamesList.setPosition(position);
-        gamesList.setName(listName.isEmpty() ? "Liste N° "+position : listName);
+        gamesList.setName(listName == null || listName.isEmpty() ? "Liste N° "+position : listName);
+        gamesList.setUser(userRepository.getReferenceById(userId));
         return gamesListRepository.saveAndFlush(gamesList);
     }
 
     @Transactional(readOnly = true)
-    public List<GamesListDto> getListGames(long userId) {
+    public List<GamesListDto> getGamesList(long userId) {
 
         return gamesListRepository.findAllByUserOrderByPosition(userId).stream()
                 .map(GamesListDto::from)

@@ -1,12 +1,15 @@
 package com.stars.bigbang.service;
 
+import com.stars.bigbang.dto.payload.NewGamesListDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.entity.Game;
 import com.stars.bigbang.entity.GameSource;
 import com.stars.bigbang.entity.GamesList;
+import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.GamesListEntryRepository;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
+import com.stars.bigbang.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,19 +31,26 @@ class GameServiceTest {
     private GamesListRepository gamesListRepository;
     @Mock
     private GamesListEntryRepository gamesListEntryRepository;
+    @Mock
+    private UserRepository userRepository;
+
+    private static final Long USER_ID = 1L;
 
     private GameService gameService;
+    private User user;
 
     @BeforeEach
     void setUp() {
-        gameService = new GameService(gamesRepository, gamesListRepository, gamesListEntryRepository);
-        when(gamesListRepository.findMaxOrder()).thenReturn(0L);
+        gameService = new GameService(gamesRepository, gamesListRepository, gamesListEntryRepository, userRepository);
+        user = new User();
+        when(userRepository.getReferenceById(USER_ID)).thenReturn(user);
+        when(gamesListRepository.findMaxOrder(USER_ID)).thenReturn(0L);
         when(gamesListRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
         lenient().when(gamesRepository.save(any())).thenAnswer(i -> i.getArgument(0));
     }
 
     private Game savedGame(GameSearchResult result) {
-        GamesList list = gameService.createGamesList("liste", new GameSearchResult[]{result});
+        GamesList list = gameService.createGamesList(new NewGamesListDto("liste", new GameSearchResult[]{result}), USER_ID);
         return list.getGames().get(0).getGame();
     }
 
@@ -49,6 +59,13 @@ class GameServiceTest {
         game.setRawgId(rawgId);
         game.setSlug(slug);
         return game;
+    }
+
+    @Test
+    void createdGamesListBelongsToTheConnectedUser() {
+        GamesList list = gameService.createGamesList(new NewGamesListDto("liste", new GameSearchResult[]{}), USER_ID);
+
+        assertSame(user, list.getUser());
     }
 
     @Test

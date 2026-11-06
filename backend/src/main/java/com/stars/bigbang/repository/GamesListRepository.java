@@ -13,8 +13,8 @@ import java.util.List;
 @Repository
 public interface GamesListRepository extends JpaRepository<GamesList,Long> {
 
-    @Query("SELECT COALESCE(MAX(g.position), 1) FROM GamesList g")
-    Long findMaxOrder();
+    @Query("SELECT COALESCE(MAX(gl.position), 0) FROM GamesList gl WHERE gl.user.id = :userId")
+    Long findMaxOrder(Long userId);
 
     @Query("""
             SELECT DISTINCT gl FROM GamesList gl

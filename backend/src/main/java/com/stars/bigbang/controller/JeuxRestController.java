@@ -22,13 +22,13 @@ public class JeuxRestController {
     private GameService gameService;
 
     @PutMapping(value = "/newGamesList")
-    public ResponseEntity<GamesListDto> saveListGames(@RequestBody NewGamesListDto newGamesListDto) {
-        return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto.name(), newGamesListDto.games())));
+    public ResponseEntity<GamesListDto> saveGamesList(@RequestBody NewGamesListDto newGamesListDto, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto, principal.getId())));
     }
 
     @GetMapping(value = "/getGamesLists")
-    public ResponseEntity<List<GamesListDto>> getListGames(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(gameService.getListGames(principal.getId()));
+    public ResponseEntity<List<GamesListDto>> getGamesList(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(gameService.getGamesList(principal.getId()));
     }
 
     @PostMapping(value = "/updateGamesList")
