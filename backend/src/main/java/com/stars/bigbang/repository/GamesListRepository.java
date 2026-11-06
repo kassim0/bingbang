@@ -20,10 +20,11 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
             SELECT DISTINCT gl FROM GamesList gl
             LEFT JOIN FETCH gl.games entry
             LEFT JOIN FETCH entry.game
-            WHERE gl.position IS NOT NULL
+            WHERE gl.user.id = :userId
+            AND gl.position IS NOT NULL
             ORDER BY gl.position
             """)
-    List<GamesList> findAllWithGamesOrderByPosition();
+    List<GamesList> findAllByUserOrderByPosition(Long userId);
 
     @Transactional
     @Modifying

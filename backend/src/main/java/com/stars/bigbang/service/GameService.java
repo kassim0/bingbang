@@ -101,9 +101,9 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public List<GamesListDto> getListGames() {
+    public List<GamesListDto> getListGames(long userId) {
 
-        return gamesListRepository.findAllWithGamesOrderByPosition().stream()
+        return gamesListRepository.findAllByUserOrderByPosition(userId).stream()
                 .map(GamesListDto::from)
                 .toList();
     }

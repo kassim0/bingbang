@@ -3,9 +3,11 @@ package com.stars.bigbang.controller;
 import com.stars.bigbang.dto.payload.NewGamesListDto;
 import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GamesListDto;
+import com.stars.bigbang.security.UserPrincipal;
 import com.stars.bigbang.service.GameService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +27,8 @@ public class JeuxRestController {
     }
 
     @GetMapping(value = "/getGamesLists")
-    public ResponseEntity<List<GamesListDto>> getListGames() {
-        return ResponseEntity.ok(gameService.getListGames());
+    public ResponseEntity<List<GamesListDto>> getListGames(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(gameService.getListGames(principal.getId()));
     }
 
     @PostMapping(value = "/updateGamesList")

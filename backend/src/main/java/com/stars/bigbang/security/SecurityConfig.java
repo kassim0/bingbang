@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth->auth
                         .requestMatchers("/api/auth/register","/api/auth/login").permitAll()
                         .requestMatchers("/api/games/search").permitAll()
-                        .requestMatchers("/api/game/getGamesLists","/api/game/newGamesList","/api/game/updateGamesList", "/api/game/deleteGamesList/**").permitAll()
+                        .requestMatchers("/api/game/newGamesList","/api/game/updateGamesList", "/api/game/deleteGamesList/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
