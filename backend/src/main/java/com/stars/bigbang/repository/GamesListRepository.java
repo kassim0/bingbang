@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-public interface GamesListRepository extends JpaRepository<GamesList,Long> {
+public interface GamesListRepository extends JpaRepository<GamesList, Long> {
 
     @Query("SELECT COALESCE(MAX(gl.position), 0) FROM GamesList gl WHERE gl.user.id = :userId")
     Long findMaxOrder(Long userId);
@@ -28,9 +28,11 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
 
     @Transactional
     @Modifying
-    @Query("update GamesList g set g.name = :name where g.id = :id")
+    @Query("update GamesList gl set gl.name = :name where gl.id = :id")
     int updateNameById(@Param("id") long id, @Param("name") String name);
 
     int deleteGamesListByIdAndUserId(long id, long userId);
+
+    boolean existsByIdAndUserId(long id, long userId);
 
 }

@@ -37,7 +37,23 @@ export default async function globalTeardown(): Promise<void> {
 
   await client.connect();
   try {
+    // Les listes pointent vers leur compte (clé étrangère user_id), et leurs entrées vers la liste :
+    // on supprime donc des feuilles vers la racine, dans une transaction pour ne rien laisser à moitié.
+    await client.query('BEGIN');
+    await client.query(
+      `DELETE FROM games_list_entry WHERE games_list_id IN (
+         SELECT gl.id FROM games_list gl JOIN users u ON u.id = gl.user_id WHERE u.email ~ $1)`,
+      [TEST_ACCOUNT_EMAIL],
+    );
+    await client.query(
+      'DELETE FROM games_list WHERE user_id IN (SELECT id FROM users WHERE email ~ $1)',
+      [TEST_ACCOUNT_EMAIL],
+    );
     await client.query('DELETE FROM users WHERE email ~ $1', [TEST_ACCOUNT_EMAIL]);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     await client.end();
   }

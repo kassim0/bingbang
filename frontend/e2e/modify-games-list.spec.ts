@@ -1,9 +1,11 @@
 import {test, expect} from '@playwright/test';
-import {addFirstSearchResult, createGamesList, gamesListCard} from './helpers';
+import {addFirstSearchResult, createGamesList, gamesListCard, signInWithNewAccount} from './helpers';
 
 test('modifies a games list name and its games', async ({page}) => {
   const initialName = `E2E Modify ${Date.now()}`;
   const updatedName = `${initialName} - updated`;
+
+  await signInWithNewAccount(page);
 
   const [originalGameName] = await createGamesList(page, initialName, ['mario']);
 

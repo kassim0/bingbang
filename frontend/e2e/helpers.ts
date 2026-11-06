@@ -43,6 +43,27 @@ export async function registerFromApi(request: APIRequestContext, account: TestA
   expect(response.ok()).toBeTruthy();
 }
 
+/**
+ * Crée un compte via l'API et retourne son token, pour appeler directement les routes protégées
+ * (`Authorization: Bearer <token>`) sans passer par l'interface.
+ */
+export async function registerAndGetToken(request: APIRequestContext, account: TestAccount = newTestAccount()): Promise<string> {
+  const response = await request.post('/api/auth/register', {data: account});
+  expect(response.ok()).toBeTruthy();
+  return (await response.json()).token;
+}
+
+/**
+ * Connecte un nouveau compte depuis l'interface : la home n'affiche les listes qu'à un utilisateur connecté.
+ * Attend que le pseudo apparaisse dans le navbar, preuve que la connexion est terminée.
+ */
+export async function signInWithNewAccount(page: Page): Promise<TestAccount> {
+  const account = newTestAccount();
+  await registerFromUi(page, account);
+  await expect(page.getByTestId('connected-username')).toContainText(account.username);
+  return account;
+}
+
 /** Ouvre la popup d'authentification sur le formulaire de connexion. */
 export async function openLoginForm(page: Page): Promise<void> {
   await openRegisterForm(page);
@@ -76,6 +97,7 @@ export async function addFirstSearchResult(page: Page, searchTerm: string): Prom
  * Crée une nouvelle games list depuis la home : ouvre la popup, saisit le nom,
  * ajoute le premier résultat pour chaque terme de recherche fourni, puis ferme la popup.
  * Retourne les noms des jeux ajoutés, dans l'ordre.
+ * Un utilisateur doit déjà être connecté (voir signInWithNewAccount).
  */
 export async function createGamesList(page: Page, listName: string, searchTerms: string[]): Promise<string[]> {
   await page.goto('/');

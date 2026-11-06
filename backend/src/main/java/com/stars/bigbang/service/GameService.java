@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 @Service
@@ -89,7 +88,7 @@ public class GameService {
     public GamesList createGamesList(NewGamesListDto newGamesListDto, Long userId) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
-        List<GamesListEntry>  savedGamesListEntry;
+        List<GamesListEntry> savedGamesListEntry;
         String listName = newGamesListDto.name();
         GameSearchResult[] games = newGamesListDto.games();
 
@@ -97,8 +96,8 @@ public class GameService {
             savedGames.add(findOrCreateGame(result));
         }
 
-        savedGamesListEntry = IntStream.range(0,savedGames.size())
-                            .mapToObj(i-> new GamesListEntry(savedGames.get(i),i))
+        savedGamesListEntry = IntStream.range(0, savedGames.size())
+                            .mapToObj(i -> new GamesListEntry(savedGames.get(i), i))
                             .toList();
 
         Long position = gamesListRepository.findMaxOrder(userId) + 1;
@@ -118,47 +117,65 @@ public class GameService {
     }
 
     @Transactional
-    public String updateGamesList(UpdateGamesListDto updateGamesListDto) {
+    public String updateGamesList(UpdateGamesListDto updateGamesListDto, long userId) {
+        if (!gamesListRepository.existsByIdAndUserId(updateGamesListDto.gamesListId(), userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Games list not found");
+        }
         String returnMessage = "Nothing to update";
-        if(updateGamesListDto.newName() != null) {
-            gamesListRepository.updateNameById(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
-            returnMessage = "Games list updated";
-        }
-        if(updateGamesListDto.removeGameId() != null && !updateGamesListDto.removeGameId().isEmpty()) {
-            gamesListEntryRepository.deleteGameByGamesListId(updateGamesListDto.gamesListId(),updateGamesListDto.removeGameId());
-            manageGamesListEntryPosition(updateGamesListDto.gamesListId());
-            returnMessage = "Games list updated";
-        }
-        if(updateGamesListDto.newGames() != null && !updateGamesListDto.newGames().isEmpty()) {
-            addGames(updateGamesListDto.gamesListId(),updateGamesListDto.newGames());
+        boolean nameUpdated = updateNameGamesList(updateGamesListDto.gamesListId(), updateGamesListDto.newName());
+        boolean gamesRemoved = removeGamesFromGamesList(updateGamesListDto.gamesListId(), updateGamesListDto.removeGameId());
+        boolean gamesAdded = addGamesInGamesList(updateGamesListDto.gamesListId(), updateGamesListDto.newGames());
+
+        if (nameUpdated || gamesRemoved || gamesAdded) {
             returnMessage = "Games list updated";
         }
         return returnMessage;
     }
 
-    private void addGames(long gamesListId, List<GameSearchResult> games) {
-        GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
-        int nextPosition = gamesList.getGames().stream()
-                .mapToInt(GamesListEntry::getPosition)
-                .max()
-                .orElse(1);
-        for (GameSearchResult result : games) {
-            gamesList.getGames().add(new GamesListEntry(findOrCreateGame(result), nextPosition++));
+    private boolean updateNameGamesList(long gamesListId, String gamesListName) {
+        boolean nameUpdated = false;
+        if (gamesListName != null) {
+            gamesListRepository.updateNameById(gamesListId, gamesListName);
+            nameUpdated = true;
         }
-        gamesListRepository.save(gamesList);
+        return nameUpdated;
     }
 
+    private boolean removeGamesFromGamesList(long gamesListId, List<Long> gamesIds) {
+        int gamesRemoved = 0;
+        if (gamesIds != null && !gamesIds.isEmpty()) {
+            gamesRemoved = gamesListEntryRepository.deleteGameByGamesListId(gamesListId, gamesIds);
+            manageGamesListEntryPosition(gamesListId);
+        }
+        return gamesRemoved > 0;
+    }
+
+    private boolean addGamesInGamesList(long gamesListId, List<GameSearchResult> games) {
+        boolean gamesAdded = false;
+        if (games != null && !games.isEmpty()) {
+            GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
+            int nextPosition = gamesList.getGames().stream()
+                    .mapToInt(GamesListEntry::getPosition)
+                    .max()
+                    .orElse(-1);
+            for (GameSearchResult result : games) {
+                gamesList.getGames().add(new GamesListEntry(findOrCreateGame(result), ++nextPosition));
+            }
+            gamesListRepository.save(gamesList);
+            gamesAdded = true;
+        }
+        return gamesAdded;
+    }
+
+    /** Renumérote les jeux restants de 0 à n-1, dans leur ordre actuel, pour combler les trous laissés par un retrait. */
     private void manageGamesListEntryPosition(long gamesListId) {
-        AtomicInteger compteur = new AtomicInteger();
         List<GamesListEntry> gamesListEntryList = gamesListEntryRepository.findByGamesListId(gamesListId).stream()
                 .sorted(Comparator.comparingInt(GamesListEntry::getPosition))
                 .toList();
 
-        gamesListEntryList.forEach(gamesListEntry -> {
-            if(gamesListEntry.getPosition() != compteur.getAndIncrement()) {
-                gamesListEntry.setPosition(compteur.get());
-            }
-        });
+        for (int position = 0; position < gamesListEntryList.size(); position++) {
+            gamesListEntryList.get(position).setPosition(position);
+        }
 
         gamesListEntryRepository.saveAll(gamesListEntryList);
     }
@@ -166,7 +183,7 @@ public class GameService {
     @Transactional
     public String deleteGamesList(Long gamesListId, long userId) {
         int gamesDeleted = gamesListRepository.deleteGamesListByIdAndUserId(gamesListId, userId);
-        if(gamesDeleted == 0) {
+        if (gamesDeleted == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Games list not found");
         }
         return "GamesList deleted";

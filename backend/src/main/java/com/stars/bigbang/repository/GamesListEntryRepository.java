@@ -17,5 +17,5 @@ public interface GamesListEntryRepository extends JpaRepository<GamesListEntry, 
 
     @Modifying(clearAutomatically = true)
     @Query(value = "DELETE FROM games_list_entry WHERE games_list_id = :gamesListId AND game_id IN :gameIds", nativeQuery = true)
-    void deleteGameByGamesListId(@Param("gamesListId") long gamesListId, @Param("gameIds") List<Long> gameIds);
+    int deleteGameByGamesListId(@Param("gamesListId") long gamesListId, @Param("gameIds") List<Long> gameIds);
 }

@@ -4,7 +4,7 @@ import com.stars.bigbang.entity.GamesList;
 
 import java.util.List;
 
-public record GamesListDto(int id, String name, Long position, List<GamesListEntryDto> games) {
+public record GamesListDto(long id, String name, Long position, List<GamesListEntryDto> games) {
 
     public static GamesListDto from(GamesList gamesList) {
         List<GamesListEntryDto> games = gamesList.getGames().stream()
