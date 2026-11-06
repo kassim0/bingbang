@@ -30,4 +30,7 @@ public interface GamesListRepository extends JpaRepository<GamesList,Long> {
     @Modifying
     @Query("update GamesList g set g.name = :name where g.id = :id")
     int updateNameById(@Param("id") long id, @Param("name") String name);
+
+    int deleteGamesListByIdAndUserId(long id, long userId);
+
 }

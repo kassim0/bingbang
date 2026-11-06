@@ -5,7 +5,9 @@ import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.security.UserPrincipal;
 import com.stars.bigbang.service.GameService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +24,8 @@ public class JeuxRestController {
     private GameService gameService;
 
     @PutMapping(value = "/newGamesList")
-    public ResponseEntity<GamesListDto> saveGamesList(@RequestBody NewGamesListDto newGamesListDto, @AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<GamesListDto> saveGamesList(@RequestBody NewGamesListDto newGamesListDto,
+                                                      @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto, principal.getId())));
     }
 
@@ -37,7 +40,7 @@ public class JeuxRestController {
     }
 
     @DeleteMapping(value = "/deleteGamesList/{GamesListId}")
-    public ResponseEntity<String> deleteGamesList(@PathVariable Long GamesListId) {
-        return ResponseEntity.ok(gameService.deleteGamesList(GamesListId));
+    public ResponseEntity<String> deleteGamesList(@PathVariable Long GamesListId, @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(gameService.deleteGamesList(GamesListId, principal.getId()));
     }
 }

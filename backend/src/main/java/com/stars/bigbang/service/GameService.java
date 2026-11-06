@@ -13,8 +13,10 @@ import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
 import com.stars.bigbang.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -161,11 +163,13 @@ public class GameService {
         gamesListEntryRepository.saveAll(gamesListEntryList);
     }
 
-    public String deleteGamesList(Long gamesListId) {
-        if(gamesListId == null) {
-            return "ERROR : Nothing to delete";
+    @Transactional
+    public String deleteGamesList(Long gamesListId, long userId) {
+        int gamesDeleted = gamesListRepository.deleteGamesListByIdAndUserId(gamesListId, userId);
+        if(gamesDeleted == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Games list not found");
         }
-        gamesListRepository.deleteById(gamesListId);
         return "GamesList deleted";
     }
+
 }
