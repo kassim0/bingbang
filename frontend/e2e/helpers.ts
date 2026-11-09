@@ -24,8 +24,21 @@ export function newTestAccount(): TestAccount {
  */
 export async function openRegisterForm(page: Page): Promise<void> {
   await page.goto('/');
+  // Sans token, l'app crée d'abord un invité : on attend qu'il soit en place, sinon sa réponse
+  // pourrait arriver après celle de l'inscription et remplacer le vrai compte.
+  await waitForGuest(page);
   await page.getByTestId('open-auth-dialog').click();
   await expect(page.getByTestId('username-register-input')).toBeFocused();
+}
+
+/** Attend que l'app ait créé le compte invité d'un visiteur arrivé sans token. */
+export async function waitForGuest(page: Page): Promise<void> {
+  await expect(page.getByTestId('guest-label')).toBeVisible();
+}
+
+/** Token stocké par l'app dans le navigateur (null si aucun). */
+export async function storedToken(page: Page): Promise<string | null> {
+  return page.evaluate(() => localStorage.getItem('token'));
 }
 
 /** Crée un compte depuis la popup d'authentification. */

@@ -46,6 +46,10 @@ public class AuthControllerTest {
     private static final String API_REGISTER = "/api/auth/register";
     private static final String API_LOGIN = "/api/auth/login";
     private static final String API_ME = "/api/auth/me";
+    private static final String API_GUEST = "/api/auth/guest";
+
+    /** guest-<uuid>@bingbang.invalid : .invalid est un domaine réservé, aucun mail ne peut y partir. */
+    private static final String GUEST_EMAIL = "^guest-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}@bingbang\\.invalid$";
 
     private static final String USERNAME = "test";
     private static final String EMAIL = "test@test.com";
@@ -69,9 +73,11 @@ public class AuthControllerTest {
         assertFalse(body.token().isBlank());
         assertEquals(EMAIL, body.user().email());
         assertEquals(USERNAME, body.user().username());
+        assertFalse(body.user().guest());
 
         User newUser = userRepository.findByEmail(EMAIL).orElseThrow();
         assertEquals(USERNAME, newUser.getUsername());
+        assertFalse(newUser.isGuest());
         assertNotEquals(PASSWORD, newUser.getPassword());
         assertTrue(passwordEncoder.matches(PASSWORD, newUser.getPassword()));
     }
@@ -206,6 +212,7 @@ public class AuthControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(EMAIL, response.getBody().email());
         assertEquals(USERNAME, response.getBody().username());
+        assertFalse(response.getBody().guest());
     }
 
     @Test
@@ -267,7 +274,57 @@ public class AuthControllerTest {
         assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + token, Map.class).getStatusCode());
     }
 
+    // ---------- POST /api/auth/guest ----------
+
+    @Test
+    public void guestTest_cas_nominal() {
+        ResponseEntity<AuthResponseDto> response = guest();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        AuthResponseDto body = response.getBody();
+        assertNotNull(body);
+        assertFalse(body.token().isBlank());
+        assertTrue(body.user().guest());
+        assertTrue(body.user().email().matches(GUEST_EMAIL), "email invité inattendu : " + body.user().email());
+
+        User guest = userRepository.findByEmail(body.user().email()).orElseThrow();
+        assertTrue(guest.isGuest());
+        assertFalse(guest.getPassword().isBlank());
+    }
+
+    @Test
+    public void guestTest_chaque_appel_cree_un_compte_different() {
+        String firstEmail = guest().getBody().user().email();
+        String secondEmail = guest().getBody().user().email();
+
+        assertNotEquals(firstEmail, secondEmail);
+        assertEquals(2, userRepository.count());
+    }
+
+    @Test
+    public void guestTest_le_token_permet_d_appeler_me() {
+        AuthResponseDto body = guest().getBody();
+
+        ResponseEntity<UserDto> response = me("Bearer " + body.token(), UserDto.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(body.user().email(), response.getBody().email());
+        assertTrue(response.getBody().guest(), "/me doit indiquer que c'est un invité, sinon le front le prend pour un vrai compte");
+    }
+
+    @Test
+    public void guestTest_en_get_est_refuse() {
+        ResponseEntity<Map> response = restTemplate.getForEntity(API_GUEST, Map.class);
+
+        assertNotEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(0, userRepository.count());
+    }
+
     // ---------- outils ----------
+
+    private ResponseEntity<AuthResponseDto> guest() {
+        return restTemplate.postForEntity(API_GUEST, null, AuthResponseDto.class);
+    }
 
     private ResponseEntity<AuthResponseDto> register(String username, String email, String password) {
         return restTemplate.postForEntity(API_REGISTER,

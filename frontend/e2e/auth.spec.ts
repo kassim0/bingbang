@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test';
-import {newTestAccount, openLoginForm, openRegisterForm, registerFromApi, registerFromUi, submitLoginForm} from './helpers';
+import {newTestAccount, openLoginForm, openRegisterForm, registerFromApi, registerFromUi, submitLoginForm, waitForGuest} from './helpers';
 
 test('shows the username in the navbar after creating an account', async ({page}) => {
   const account = newTestAccount();
@@ -42,8 +42,10 @@ test('removes the username from the navbar after logging out', async ({page}) =>
   await expect(page.getByTestId('connected-username')).toBeHidden();
   await expect(page.getByTestId('open-auth-dialog')).toBeVisible();
 
-  // La déconnexion doit survivre au rechargement : le token ne doit plus être stocké.
+  // La déconnexion doit survivre au rechargement : le token ne doit plus être stocké,
+  // et l'app repart donc avec un nouveau compte invité.
   await page.reload();
+  await waitForGuest(page);
   await expect(page.getByTestId('open-auth-dialog')).toBeVisible();
   await expect(page.getByTestId('connected-username')).toBeHidden();
 });
