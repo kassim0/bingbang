@@ -34,4 +34,9 @@ public class AuthController {
     public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(authService.getMe(principal));
     }
+
+    @PostMapping(value="/guest")
+    public ResponseEntity<AuthResponseDto> guest() {
+        return ResponseEntity.ok(authService.newGuest());
+    }
 }

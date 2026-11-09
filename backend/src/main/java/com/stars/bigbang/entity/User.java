@@ -3,6 +3,7 @@ package com.stars.bigbang.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -24,6 +25,9 @@ public class User {
     private String email;
 
     private String password;
+
+    @ColumnDefault(value = "false")
+    private boolean guest;
 
     @CreationTimestamp
     @Column(updatable = false)

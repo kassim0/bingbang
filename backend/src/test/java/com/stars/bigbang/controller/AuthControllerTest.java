@@ -238,7 +238,7 @@ public class AuthControllerTest {
     @Test
     public void meTest_cas_token_expire() {
         register(USERNAME, EMAIL, PASSWORD);
-        String expiredToken = new JwtService(jwtSecret, -1000).generateToken(EMAIL);
+        String expiredToken = new JwtService(jwtSecret, -1000,0).generateToken(EMAIL);
 
         assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + expiredToken, Map.class).getStatusCode());
     }
@@ -246,7 +246,7 @@ public class AuthControllerTest {
     @Test
     public void meTest_cas_token_signe_avec_une_autre_cle() {
         register(USERNAME, EMAIL, PASSWORD);
-        String forgedToken = new JwtService("une-autre-cle-secrete-qui-n-est-pas-celle-du-serveur-123456", 86400000)
+        String forgedToken = new JwtService("une-autre-cle-secrete-qui-n-est-pas-celle-du-serveur-123456", 86400000,0)
                 .generateToken(EMAIL);
 
         assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + forgedToken, Map.class).getStatusCode());

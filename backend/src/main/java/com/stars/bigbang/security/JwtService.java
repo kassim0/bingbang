@@ -15,21 +15,32 @@ public class JwtService {
 
     private final SecretKey key;
     private final long expirationMs;
+    private final long expirationGuestMs;
 
     public JwtService(@Value("${jwt.secret}") String key,
-                      @Value("${jwt.expiration-ms}") long expirationMs) {
+                      @Value("${jwt.expiration-ms}") long expirationMs,
+                      @Value("${jwt.expiration-guest-ms}") long expirationGuestMs) {
         this.key = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
+        this.expirationGuestMs = expirationGuestMs;
     }
 
-    public String generateToken(String email){
+    private String generateToken(String email, long durationMs){
         Date now = new Date();
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime()+expirationMs))
+                .expiration(new Date(now.getTime()+durationMs))
                 .signWith(key)
                 .compact();
+    }
+
+    public String generateToken(String email){
+        return generateToken(email,expirationMs);
+    }
+
+    public String generateGuestToken(String email) {
+        return generateToken(email,expirationGuestMs);
     }
 
     /**
@@ -47,4 +58,6 @@ public class JwtService {
         Claims tokenPayload = extractClaims(token);
         return tokenPayload.getSubject();
     }
+
+
 }

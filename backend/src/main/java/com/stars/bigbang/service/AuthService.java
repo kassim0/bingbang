@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.stars.bigbang.tools.AuthTools.normalizeEmail;
 
@@ -35,7 +36,7 @@ public class AuthService {
     }
 
     public AuthResponseDto createAccount(RegisterRequestDto registerRequestDto) {
-        User newUser = createUser(registerRequestDto);
+        User newUser = createUser(registerRequestDto,false);
         return generateAuthReponse(newUser);
     }
 
@@ -56,10 +57,11 @@ public class AuthService {
     }
 
     public UserDto getMe(UserPrincipal principal) {
-        return new UserDto(principal.getEmail(),principal.getDisplayName());
+
+        return new UserDto(principal.getEmail(),principal.getDisplayName(),principal.isGuest());
     }
 
-    private User createUser(RegisterRequestDto registerRequestDto) {
+    private User createUser(RegisterRequestDto registerRequestDto, boolean guest) {
         String email = normalizeEmail(registerRequestDto.email());
         if(userRepository.existsByEmail(email))
             throw new ResponseStatusException(HttpStatus.CONFLICT,"Email already in use");
@@ -68,15 +70,30 @@ public class AuthService {
         user.setUsername(registerRequestDto.username());
         user.setPassword(passwordEncoder.encode(registerRequestDto.password()));
         user.setEmail(email);
+        user.setGuest(guest);
         userRepository.saveAndFlush(user);
 
         return user;
     }
 
     private AuthResponseDto generateAuthReponse(User user){
-        String token = jwtService.generateToken(user.getEmail());
-        UserDto userDto = new UserDto(user.getEmail(), user.getUsername());
+        String token;
+        token = user.isGuest() ? jwtService.generateGuestToken(user.getEmail()) : jwtService.generateToken(user.getEmail());
+        UserDto userDto = new UserDto(user.getEmail(), user.getUsername(),user.isGuest());
 
         return new AuthResponseDto(token, userDto);
+    }
+
+    public AuthResponseDto newGuest() {
+        RegisterRequestDto registerRequestDto = generateRandomAuth();
+        User newGuestUser = createUser(registerRequestDto,true);
+        return generateAuthReponse(newGuestUser);
+    }
+
+    private RegisterRequestDto generateRandomAuth(){
+        String username = "guest";
+        String email = "guest-"+UUID.randomUUID()+"@bingbang.invalid";
+        String password = UUID.randomUUID().toString();
+        return new RegisterRequestDto(username,email,password);
     }
 }

@@ -18,6 +18,8 @@ public class UserPrincipal implements UserDetails {
     @Getter
     private final String email;
     private final String password;
+    @Getter
+    private final boolean guest;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UserPrincipal(User user) {
@@ -25,6 +27,7 @@ public class UserPrincipal implements UserDetails {
         this.email = user.getEmail();
         this.displayName = user.getUsername();
         this.password = user.getPassword();
+        this.guest = user.isGuest();
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
