@@ -1,7 +1,8 @@
 <mat-toolbar color="primary">
   <span class="spacer"></span>
 
-  @if (connectedUser()) {
+  @if (connectedUser() && !connectedUser()?.guest) {
+    <!-- Vrai compte : menu avec déconnexion -->
     <button mat-icon-button data-testid="user-menu-trigger" [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
     </button>
@@ -13,9 +14,14 @@
     </mat-menu>
     <h2 data-testid="connected-username">Hello {{ connectedUser()?.username }}</h2>
   } @else {
+    <!-- Invité ou personne : le bouton pour se connecter / créer un compte reste visible -->
     <button mat-icon-button data-testid="open-auth-dialog" (click)="openAuthDialog()">
       <mat-icon>account_circle</mat-icon>
     </button>
+    @if (connectedUser()?.guest) {
+      <!-- Pas de déconnexion pour un invité : il perdrait l'accès à ses listes -->
+      <h2 data-testid="guest-label">Invité</h2>
+    }
   }
   <div class="logo"><h1>BINGBANG</h1></div>
 </mat-toolbar>

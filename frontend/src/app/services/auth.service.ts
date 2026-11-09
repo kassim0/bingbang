@@ -9,8 +9,13 @@ export class AuthService{
 
   constructor(private http: HttpClient
               ,@Inject(PLATFORM_ID) private platformId: Object) {
-    if(isPlatformBrowser(this.platformId) && localStorage.getItem('token')) {
-      this.getMe().subscribe({error : () => this.logout()})
+    if(isPlatformBrowser(this.platformId)) {
+      if(localStorage.getItem('token')) {
+        this.getMe().subscribe({error : () => this.logout()})
+      }
+      else {
+        this.guest().subscribe({error : () => this.logout()})
+      }
     }
   }
 
@@ -33,6 +38,12 @@ export class AuthService{
   private getMe(){
     return this.http.get<User>(`${this.base}/me`).pipe(
       tap(response=>{this.connectUser(response)})
+    );
+  }
+
+  private guest(){
+    return this.http.post<AuthResponse>(`${this.base}/guest`,'').pipe(
+      tap(response=>{this.connectUser(response.user,response.token)})
     );
   }
 

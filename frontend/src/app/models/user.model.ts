@@ -1,6 +1,7 @@
 export interface User{
   email: string;
   username: string;
+  guest: boolean;
 }
 
 export interface LoginRequest{
