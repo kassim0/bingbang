@@ -128,6 +128,72 @@ class GameServiceTest {
         verify(gamesRepository, never()).save(any());
     }
 
+    // --- Pas de doublon dans une liste ---
+
+    @Test
+    void sameGameTwiceInANewListIsAddedOnce() {
+        Game portal = rawgGame(4200, "portal-2");
+        when(gamesRepository.findByRawgId(4200)).thenReturn(Optional.of(portal));
+        GameSearchResult result = new GameSearchResult(GameSource.RAWG, 4200, "portal-2", "Portal 2", null, null);
+
+        GamesList list = gameService.createGamesList(new NewGamesListDto("liste", new GameSearchResult[]{result, result}), USER_ID);
+
+        assertEquals(1, list.getGames().size());
+        assertEquals(0, list.getGames().get(0).getPosition());
+    }
+
+    @Test
+    void addingAGameAlreadyInTheListIsIgnored() {
+        Game portal = rawgGame(4200, "portal-2");
+        portal.setId(5L);
+        GamesList gamesList = listWithGames(new GamesListEntry(portal, 0));
+        when(gamesRepository.findByRawgId(4200)).thenReturn(Optional.of(portal));
+        GameSearchResult alreadyThere = new GameSearchResult(GameSource.RAWG, 4200, "portal-2", "Portal 2", null, null);
+
+        String message = gameService.updateGamesList(new UpdateGamesListDto(LIST_ID, List.of(alreadyThere), null, null), USER_ID);
+
+        assertEquals(1, gamesList.getGames().size());
+        assertEquals("Nothing to update", message);
+    }
+
+    @Test
+    void newGameIsAddedNextToAGameAlreadyInTheList() {
+        Game portal = rawgGame(4200, "portal-2");
+        portal.setId(5L);
+        GamesList gamesList = listWithGames(new GamesListEntry(portal, 0));
+        when(gamesRepository.findByRawgId(4200)).thenReturn(Optional.of(portal));
+        GameSearchResult alreadyThere = new GameSearchResult(GameSource.RAWG, 4200, "portal-2", "Portal 2", null, null);
+
+        gameService.updateGamesList(new UpdateGamesListDto(LIST_ID, List.of(alreadyThere, rawgResult(1)), null, null), USER_ID);
+
+        assertEquals(List.of(0, 1), positionsOf(gamesList));
+    }
+
+    // --- Données reçues du navigateur ---
+
+    @Test
+    void imageHostedOutsideOurGameSourcesIsNotSaved() {
+        Game game = savedGame(new GameSearchResult(GameSource.IGDB, 72, "portal-2", "Portal 2", null, "https://evil.example/track.png"));
+
+        assertNull(game.getBackgroundImage());
+    }
+
+    @Test
+    void imageHostedByAGameSourceIsSaved() {
+        String url = "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rs4.jpg";
+
+        Game game = savedGame(new GameSearchResult(GameSource.IGDB, 72, "portal-2", "Portal 2", null, url));
+
+        assertEquals(url, game.getBackgroundImage());
+    }
+
+    @Test
+    void listWithoutGamesFieldIsCreatedEmpty() {
+        GamesList list = gameService.createGamesList(new NewGamesListDto("liste", null), USER_ID);
+
+        assertTrue(list.getGames().isEmpty());
+    }
+
     // --- Propriété : un utilisateur ne peut pas toucher à la liste d'un autre ---
 
     @Test
