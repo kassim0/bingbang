@@ -20,7 +20,6 @@ export interface GamesList {
 export interface GamesListEntry {
   id: number;
   game : Game;
-  gamesList : GamesList;
   position : number;
 }
 
