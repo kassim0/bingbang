@@ -39,6 +39,17 @@ describe('ApercuListComponent', () => {
     expect(element.textContent).not.toContain('Outer Wilds');
   });
 
+  it('opens the list with a real button, reachable with the keyboard', () => {
+    let opened = false;
+    component.open.subscribe(() => opened = true);
+    const button = render(['Hades']).querySelector('h2 button') as HTMLButtonElement;
+
+    button.click();
+
+    expect(button.textContent?.trim()).toBe('My list');
+    expect(opened).toBeTrue();
+  });
+
   it('says when the list is empty', () => {
     const element = render([]);
 

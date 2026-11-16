@@ -1,19 +1,36 @@
 @if (connectedUser()) {
-  <div class="dashboard border">
+  @if (loadFailed) {
+    <p class="home-message error" role="alert" data-testid="home-load-error">
+      Your lists could not be loaded.
+      <button mat-button type="button" (click)="reload()">Try again</button>
+    </p>
+  }
 
-  <div *ngFor="let gamesList of gamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">
-    <app-apercu-games-list
-      (click)="openMyGaleListPopup(gamesList)"
-      [gamesList] = gamesList
-    ></app-apercu-games-list>
-  </div>
+  @if (loaded && gamesLists.length === 0) {
+    <div class="home-message" data-testid="home-empty-state">
+      <h2>Welcome to your games wallet</h2>
+      <p>Keep track of the games you loved and the ones you want to play. Create your first list to start.</p>
+    </div>
+  }
 
-  <div class="case-dashboard border">
-    <button mat-raised-button data-testid="open-search-popup" (click)="OpenGamesSearchPopup()">+</button>
-  </div>
+  <section class="dashboard" aria-label="My games lists">
 
-  </div>
+    @for (gamesList of gamesLists; track gamesList.id) {
+      <div class="case-dashboard" [attr.data-testid]="'games-list-card-' + gamesList.id">
+        <app-apercu-games-list
+          (open)="openGamesListPopup(gamesList)"
+          [gamesList]="gamesList"
+        ></app-apercu-games-list>
+      </div>
+    }
+
+    <div class="case-dashboard new-list">
+      <button mat-raised-button type="button" data-testid="open-search-popup" aria-label="Create a new games list"
+              title="Create a new games list" (click)="openGamesSearchPopup()">+</button>
+    </div>
+
+  </section>
 }
 @else{
-<h1 style="text-align: center">Player not connected 🤖</h1>
+<h1 class="not-connected">Player not connected 🤖</h1>
 }

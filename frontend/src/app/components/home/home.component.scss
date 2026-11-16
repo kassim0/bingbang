@@ -20,6 +20,8 @@
   box-shadow: var(--bb-shadow);
   display: flex;
   align-items: stretch;
+  // repère du pseudo-élément ::after du titre de la carte, qui rend toute la carte cliquable
+  position: relative;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
@@ -29,7 +31,7 @@
   }
 
   // Carte "+" (création de liste)
-  &:last-child {
+  &.new-list {
     align-items: center;
     justify-content: center;
     background: transparent;
@@ -57,5 +59,25 @@
 app-apercu-games-list {
   display: block;
   width: 100%;
-  cursor: pointer;
+  min-width: 0; // laisse les longs noms se couper avec "…" au lieu d'élargir la carte
+}
+
+.home-message {
+  max-width: 1100px;
+  margin: 0 auto 32px;
+  text-align: center;
+  color: var(--bb-muted);
+
+  h2 {
+    margin-bottom: 8px;
+    color: var(--bb-text);
+  }
+
+  &.error {
+    color: var(--bb-danger);
+  }
+}
+
+.not-connected {
+  text-align: center;
 }
