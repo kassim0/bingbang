@@ -362,7 +362,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : cache en mémoire de quelques minutes, par (source, texte normalisé), avec une taille maximale.
 - **Priorité** : moyenne — **Auth** : non
 
-### - [ ] PERF-02 — Images trop lourdes pour des vignettes
+### - [x] PERF-02 — Images trop lourdes pour des vignettes
 - **Où** : `service/provider/IgdbGameProvider.java:20`, `apercu-games-list.component.html:6-14`,
   `game-item.component.html:2`, `my-game-list.component.html:8`
 - **Problème** : on charge l'image `t_cover_big` (264×374) pour l'afficher en 35 ou 50 pixels, sans
@@ -371,6 +371,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `loading="lazy"` + `decoding="async"` + `width`/`height` sur les `<img>`. Pour IGDB, il
   suffit de remplacer `t_cover_big` par `t_cover_small` dans l'URL au moment de l'affichage en vignette.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `loading="lazy"`, dimensions fixées, et `t_cover_small` pour les vignettes IGDB.
 
 ### - [ ] PERF-03 — Rechargement complet après chaque action
 - **Où** : `home.component.ts:57-61,72-76`, `my-game-list.component.ts:67-74`
@@ -379,6 +380,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : requêtes inutiles (même quand rien n'a changé) ; se résout avec `ARCH-03`.
 - **Correction** : utiliser la réponse du serveur pour mettre à jour la liste concernée.
 - **Priorité** : moyenne — **Auth** : non
+- **🟡 Appliqué en partie** : plus de rechargement en double ni de `subscribe` imbriqués. Le rechargement complet après une action reste nécessaire tant que le serveur renvoie une phrase (`ARCH-03`).
 
 ### - [ ] PERF-04 — Requêtes SQL en trop lors d'une modification
 - **Où** : `service/GameService.java:120-181`
@@ -414,7 +416,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 ## 4. Conventions et lisibilité
 
-### - [ ] CONV-01 — Mélange français / anglais dans l'interface
+### - [x] CONV-01 — Mélange français / anglais dans l'interface
 - **Où** : `navbar.component.html:12,23` (« Se déconnecter », « Invité »), `games-search-popup.component.html:4,7,12`
   (« Ajouter des jeux à », `list name`, `search your game`), `my-game-list.component.html:10,15,18,19`
   (`title="supprimer le jeu"`, `save`, `delete`), `apercu-games-list.component.html:2` (`empty`),
@@ -425,28 +427,32 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   anglais (hors fichiers auth).
 - **Priorité** : moyenne — **Auth** : non (les deux libellés du navbar touchent des `data-testid` d'auth : je ne
   change que le texte)
+- **✅ Appliqué** : interface en anglais (seuls deux libellés du navbar ont été traduits ; la popup d'auth était déjà en anglais).
 
-### - [ ] CONV-02 — Erreur de syntaxe dans un template
+### - [x] CONV-02 — Erreur de syntaxe dans un template
 - **Où** : `my-game-list.component.html:9` (`... : '' " ]>`)
 - **Problème** : un `]` en trop après l'attribut `[ngClass]`.
 - **Impact** : Angular l'interprète comme un attribut nommé `]` ; HTML invalide.
 - **Correction** : le retirer.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : le `]` est retiré.
 
-### - [ ] CONV-03 — Aucun retour utilisateur ; `console.log` en production
+### - [x] CONV-03 — Aucun retour utilisateur ; `console.log` en production
 - **Où** : `my-game-list.component.ts:99-102,111`, `games-search-popup.component.ts:74-76`
 - **Problème** : les succès et les erreurs ne sont écrits que dans la console.
 - **Impact** : voir `FRONT-03` et `FRONT-05` (l'utilisateur ne sait pas si son action a marché).
 - **Correction** : `MatSnackBar` pour les messages, suppression des `console.log`.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `MatSnackBar` pour les succès et les erreurs, plus de `console.log`.
 
-### - [ ] CONV-04 — `subscribe` imbriqués et abonnement dans un `effect`
+### - [x] CONV-04 — `subscribe` imbriqués et abonnement dans un `effect`
 - **Où** : `home.component.ts:32-41,57-61`, `my-game-list.component.ts:67-74`
 - **Problème** : des `subscribe` dans des `subscribe` ; dans l'`effect`, une ancienne requête peut répondre
   après une plus récente (ex. invité → inscription).
 - **Impact** : difficile à lire ; risque d'afficher les listes du mauvais état.
 - **Correction** : `switchMap` (annule la requête précédente), et une seule méthode `reload()`.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `switchMap` dans la home (flux unique de rechargement) et dans la popup de liste.
 
 ### - [ ] CONV-05 — Nommage et fautes de frappe
 - **Où** : `home.component.ts:45` (`OpenGamesSearchPopup`, majuscule), `home.component.ts:65`
@@ -461,6 +467,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : basse — **Auth** : non
 - *(Auth, à toi)* : `generateAuthReponse` (`AuthService.java:105`), `hashFactice` (`:28`), `updateAt` →
   `updatedAt` (`User.java:37`, attention : renommer la propriété renomme la colonne).
+- **🟡 Appliqué en partie** : côté front : `openGamesSearchPopup`, `openGamesListPopup`, `results`, `searchSubmitted`. Non renommés pour limiter les conflits : `saveModifGamesList`, `removeGameId` (champ de l'API), le dossier `share/`, `apercu-games-list`, `JeuxRestController`.
 
 ### - [ ] CONV-06 — Injection par `@AllArgsConstructor` sur des champs non `final`
 - **Où** : `controller/GameSearchController.java:15,18`, `controller/JeuxRestController.java:18,22`
@@ -478,7 +485,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `@Getter` + `@Setter` (comme `GamesList` et `User`).
 - **Priorité** : basse — **Auth** : non
 
-### - [ ] CONV-08 — Deux syntaxes de templates mélangées, pas de `track`
+### - [x] CONV-08 — Deux syntaxes de templates mélangées, pas de `track`
 - **Où** : `home.component.html:1,4` (`@if` puis `*ngFor`), `games-search-popup.component.html`,
   `my-game-list.component.html`
 - **Problème** : ancienne syntaxe (`*ngIf`, `*ngFor`) et nouvelle (`@if`, `@for`) dans les mêmes fichiers ;
@@ -486,21 +493,24 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : cohérence ; sans clé, Angular recrée tout le DOM de la liste à chaque rechargement.
 - **Correction** : `@for (...; track x.id)` partout.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `@if` / `@for ... track` partout.
 
-### - [ ] CONV-09 — Styles en ligne dans les templates
+### - [x] CONV-09 — Styles en ligne dans les templates
 - **Où** : `apercu-games-list.component.html:6,10,14`, `game-item.component.html:2`,
   `games-search-popup.component.html:11,16`, `my-game-list.component.html:8`, `home.component.html:18`
 - **Problème** : `style="..."` dans le HTML alors que chaque composant a son fichier `.scss`.
 - **Impact** : styles dispersés, dupliqués (la taille des vignettes est écrite 5 fois).
 - **Correction** : déplacer dans les `.scss`.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : plus aucun `style="..."` dans les templates.
 
-### - [ ] CONV-10 — Aperçu écrit trois fois à la main
+### - [x] CONV-10 — Aperçu écrit trois fois à la main
 - **Où** : `apercu-games-list.component.html:5-16`
 - **Problème** : le même bloc est copié pour les index 0, 1 et 2.
 - **Impact** : toute modification doit être faite 3 fois.
 - **Correction** : une boucle sur les 3 premiers jeux.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : boucle sur les 3 premiers jeux.
 
 ### - [ ] CONV-11 — Noms de packages et de champs hors convention Java
 - **Où** : packages `dto/igdbDto`, `dto/rawgDto` ; champs `first_release_date`, `image_id`, `access_token`,
@@ -512,13 +522,14 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   Le package racine : ne pas y toucher (trop de conflits pour rien).
 - **Priorité** : basse — **Auth** : non
 
-### - [ ] CONV-12 — Dialogues : tailles en dur ignorées par le CSS
+### - [x] CONV-12 — Dialogues : tailles en dur ignorées par le CSS
 - **Où** : `home.component.ts:46-49,66-69`, `my-game-list.component.ts:51-54`, `styles.scss:163-169`
 - **Problème** : les `width: '40%', height: '50%'` passés à `dialog.open` sont écrasés par des `!important`
   dans le CSS global.
 - **Impact** : code trompeur (on croit régler la taille, ça ne fait rien pour la hauteur).
 - **Correction** : retirer les hauteurs des `.ts`, une seule largeur maximale dans le CSS.
 - **Priorité** : basse — **Auth** : non (le même défaut existe dans `navbar.component.ts:29-32`, à toi)
+- **✅ Appliqué** : une seule largeur (`560px`), plus de hauteur en dur. `navbar.component.ts` reste à faire par toi.
 
 ---
 
@@ -571,12 +582,13 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : tests unitaires Mockito.
 - **Priorité** : moyenne — **Auth** : non
 
-### - [ ] TEST-06 — Sélecteurs e2e fragiles
+### - [x] TEST-06 — Sélecteurs e2e fragiles
 - **Où** : `frontend/e2e/helpers.ts:101-103`, `frontend/e2e/modify-games-list.spec.ts:20`
 - **Problème** : certains tests ciblent des classes CSS (`.game-item-container`, `.game-name`) ou la balise `ul`.
 - **Impact** : un changement de style ou de balise casse les tests.
 - **Correction** : `data-testid` (déjà utilisé ailleurs).
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : les e2e utilisent `data-testid` et les noms accessibles des boutons.
 
 ### - [ ] TEST-07 — Logs SQL très bavards pendant les tests
 - **Où** : `backend/src/test/resources/application.properties:9`
@@ -596,7 +608,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 ## 6. Frontend — UX technique et accessibilité
 
-### - [ ] FRONT-01 — Le bouton « ✕ » de la recherche valide au lieu d'annuler
+### - [x] FRONT-01 — Le bouton « ✕ » de la recherche valide au lieu d'annuler
 - **Où** : `games-search-popup.component.ts:58-64`, `games-search-popup.component.html:2`, `home.component.ts:52-55`
 - **Problème** : il n'y a pas de bouton « Créer ». Pour créer la liste il faut cliquer sur la croix de fermeture.
   À l'inverse, cliquer à côté de la popup ou appuyer sur Échap annule tout sans prévenir. Et un nom saisi sans
@@ -605,15 +617,17 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : un bouton explicite « Create list » / « Add games », la croix annule. Une liste avec
   seulement un nom doit pouvoir être créée (règle du wiki).
 - **Priorité** : haute — **Auth** : non
+- **✅ Appliqué** : bouton de validation explicite (`popup-confirm`), la croix / Échap / clic à côté annulent avec confirmation. La création d'une liste avec seulement un nom est traitée dans la ROADMAP (phase 1, branche `claude/features`).
 
-### - [ ] FRONT-02 — Suppression d'une liste sans confirmation
+### - [x] FRONT-02 — Suppression d'une liste sans confirmation
 - **Où** : `my-game-list.component.ts:106-113`, `my-game-list.component.html:19`
 - **Problème** : un clic sur « delete » supprime définitivement la liste.
 - **Impact** : perte de données irréversible sur un clic accidentel (le bouton est juste à côté de « save »).
 - **Correction** : demander confirmation.
 - **Priorité** : haute — **Auth** : non
+- **✅ Appliqué** : popup de confirmation (`ConfirmDialogComponent`) avant suppression.
 
-### - [ ] FRONT-03 — « save » ne donne aucun signe de vie
+### - [x] FRONT-03 — « save » ne donne aucun signe de vie
 - **Où** : `my-game-list.component.ts:95-104`
 - **Problème** : après « save », la popup reste ouverte, les jeux barrés restent affichés, la sélection n'est pas
   vidée et rien n'indique le succès ou l'échec.
@@ -622,8 +636,9 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : après succès : rafraîchir la liste affichée, vider la sélection, afficher un message ;
   en cas d'erreur : afficher un message.
 - **Priorité** : haute — **Auth** : non
+- **✅ Appliqué** : liste rafraîchie, sélection vidée, message de succès ou d'erreur ; confirmation avant de fermer avec des changements non enregistrés.
 
-### - [ ] FRONT-04 — Éléments cliquables inaccessibles au clavier
+### - [x] FRONT-04 — Éléments cliquables inaccessibles au clavier
 - **Où** : `home.component.html:5-8` (carte de liste), `search-bar.component.html:4` (icône loupe)
 - **Problème** : ce sont des éléments non interactifs avec un `(click)` : impossible de les atteindre avec
   Tab ni de les activer avec Entrée, et un lecteur d'écran ne les annonce pas comme des boutons.
@@ -632,36 +647,41 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : haute — **Auth** : non
 - *(Auth, à toi)* : même problème pour les liens `<a (click)>` sans `href` de `auth-dialog.component.html:28,53`
   → utiliser `<button type="button">`.
+- **✅ Appliqué** : carte de liste et loupe : vrais boutons, utilisables au clavier. Les liens de `auth-dialog` restent à faire par toi.
 
-### - [ ] FRONT-05 — Recherche : erreurs et « aucun résultat » invisibles
+### - [x] FRONT-05 — Recherche : erreurs et « aucun résultat » invisibles
 - **Où** : `games-search-popup.component.ts:66-78`, `games-search-popup.component.html:20-27`
 - **Problème** : si la recherche échoue ou ne trouve rien, la zone de résultats reste vide, comme avant la recherche.
 - **Impact** : l'utilisateur ne sait pas s'il doit attendre, réessayer ou changer de mot.
 - **Correction** : trois états visibles : « No game found for … », « Search failed, try again », et l'état initial.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : trois états distincts : aucun résultat, erreur, pas encore cherché.
 
-### - [ ] FRONT-06 — Images sans texte alternatif, images cassées
+### - [x] FRONT-06 — Images sans texte alternatif, images cassées
 - **Où** : `apercu-games-list.component.html:6,10,14`, `my-game-list.component.html:8`, `game-item.component.html:2`
 - **Problème** : pas d'attribut `alt` ; si le jeu n'a pas d'image, `src="null"` affiche une icône d'image cassée.
 - **Impact** : accessibilité ; rendu peu soigné pour les jeux sans jaquette.
 - **Correction** : `alt=""` (image décorative, le nom est écrit à côté) et un bloc de remplacement sans image.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : composant `app-game-cover` : `alt=""`, image de remplacement si absente ou en erreur.
 
-### - [ ] FRONT-07 — Boutons-icônes sans nom accessible
+### - [x] FRONT-07 — Boutons-icônes sans nom accessible
 - **Où** : `games-search-popup.component.html:2`, `my-game-list.component.html:1,10,15`, `home.component.html:12`,
   `game-item.component.html:4`
 - **Problème** : des boutons qui ne contiennent qu'une icône ou un « + », sans `aria-label`.
 - **Impact** : un lecteur d'écran annonce « close, bouton » (le nom de l'icône) ou « plus ».
 - **Correction** : `aria-label` explicites (« Close », « Create a new list », « Add Portal 2 »…).
 - **Priorité** : moyenne — **Auth** : non (le bouton compte du navbar, `navbar.component.html:6,18`, est à toi)
+- **✅ Appliqué** : `aria-label` sur tous les boutons-icônes hors navbar.
 
-### - [ ] FRONT-08 — HTML invalide et hiérarchie de titres incohérente
+### - [x] FRONT-08 — HTML invalide et hiérarchie de titres incohérente
 - **Où** : `apercu-games-list.component.html:1-16`, `my-game-list.component.html:7-16`, `navbar.component.html:15,23,26`
 - **Problème** : des `<ul>` qui contiennent directement `<img>`/`<span>`/`<button>` (sans `<li>`), un `<ul>`
   par jeu ; un `<h1>` par carte de liste en plus du `<h1>` du logo ; « empty » dans un `<h6>`.
 - **Impact** : les lecteurs d'écran annoncent des listes vides et une structure de page fausse.
 - **Correction** : `<ul><li>…</li></ul>`, `<h2>` pour le nom d'une liste, `<p>` pour « empty ».
 - **Priorité** : moyenne — **Auth** : non (les `<h2>` du navbar : à toi)
+- **✅ Appliqué** : `ul > li`, `h2` pour le nom d'une liste, `p` pour « empty ». Les titres du navbar restent à faire par toi.
 
 ### - [ ] FRONT-09 — Écran « Player not connected 🤖 » affiché pendant le chargement
 - **Où** : `home.component.html:17-19`, `frontend/src/app/services/auth.service.ts:12-19`, `angular.json:39-42`
@@ -674,20 +694,22 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   `anonymous` (par exemple un signal `status`). La home affiche un squelette pendant `loading`. Et après un
   logout, recréer tout de suite un invité (comme au démarrage) au lieu de rester sur `null`.
 
-### - [ ] FRONT-10 — Pas d'état de chargement ni d'état vide sur la home
+### - [x] FRONT-10 — Pas d'état de chargement ni d'état vide sur la home
 - **Où** : `home.component.html:1-16`, `home.component.ts:32-41`
 - **Problème** : pendant le chargement des listes, et pour un nouvel utilisateur, la home n'affiche qu'une
   tuile « + » sans aucun texte. Une erreur de chargement n'est pas signalée.
 - **Impact** : un nouveau visiteur ne comprend pas ce qu'est l'app ni quoi faire (voir IDEAS).
 - **Correction** : état vide avec une phrase d'accueil et un bouton clair ; message en cas d'erreur.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : message d'accueil sans liste, message + « Try again » en cas d'erreur de chargement.
 
-### - [ ] FRONT-11 — Jeux déjà dans la liste non signalés dans la recherche
+### - [x] FRONT-11 — Jeux déjà dans la liste non signalés dans la recherche
 - **Où** : `games-search-popup.component.html:23`, `game-item.component.ts:39-41`
 - **Problème** : quand on ajoute des jeux à une liste existante, les résultats ne montrent pas ceux qui y sont déjà.
 - **Impact** : doublons (voir `ARCH-01`).
 - **Correction** : afficher ces jeux comme « déjà dans la liste » (icône cochée, bouton désactivé).
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : les jeux déjà présents sont marqués et leur bouton désactivé.
 
 ### - [ ] FRONT-12 — Bundle initial de 799 kB (budget : 500 kB)
 - **Où** : `frontend/angular.json:44-56`, sortie de `ng build`
@@ -711,6 +733,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : ignorer les recherches vides, texte d'aide ; plus tard, recherche automatique après une pause
   de frappe (une fois le cache `PERF-01` en place).
 - **Priorité** : basse — **Auth** : non
+- **🟡 Appliqué en partie** : une recherche vide n'est plus envoyée, texte d'aide « Press Enter to search », année de sortie affichée. La recherche automatique pendant la frappe reste à faire (IDEAS P-04).
 
 ### - [ ] FRONT-15 — Formulaires d'auth : pas d'`autocomplete`, erreurs non annoncées
 - **Où** : `auth-dialog.component.html:7,12,17,21,37,42,46`
