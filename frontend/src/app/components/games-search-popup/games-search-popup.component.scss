@@ -1,19 +1,65 @@
-h3 {
-  font-size: 1.2rem;
-  margin: 6px 48px 20px 0;
+:host {
+  display: block;
 }
 
-.game-item {
+.popup-header {
   display: flex;
-  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-mat-list-item {
-  --mdc-list-list-item-one-line-container-height: 66px;
-  border-radius: 12px;
-  transition: background 0.2s;
+.popup-title {
+  font-size: 1.2rem;
+  margin-top: 6px;
+}
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.04);
+.search-bar {
+  display: block;
+  margin: 16px 0;
+}
+
+.results-area {
+  min-height: 80px;
+}
+
+.search-state {
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+  text-align: center;
+  color: var(--bb-muted);
+
+  &.error {
+    color: var(--bb-danger);
   }
+}
+
+.results {
+  list-style: none;
+
+  li {
+    padding: 8px 10px;
+    border-radius: 12px;
+    border-bottom: 1px solid var(--bb-border);
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+}
+
+.popup-actions {
+  // reste visible en bas de la popup même quand la liste de résultats est longue
+  position: sticky;
+  bottom: -24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 0;
+  background: var(--bb-surface);
 }

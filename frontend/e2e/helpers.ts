@@ -98,9 +98,9 @@ export async function addFirstSearchResult(page: Page, searchTerm: string): Prom
   await page.getByTestId('search-bar-input').fill(searchTerm);
   await page.getByTestId('search-bar-input').press('Enter');
 
-  const firstItem = page.locator('.game-item-container').first();
+  const firstItem = page.getByTestId('search-result').first();
   await firstItem.waitFor({state: 'visible'});
-  const name = (await firstItem.locator('.game-name').textContent())?.trim() ?? '';
+  const name = (await firstItem.getByTestId('game-item-name').textContent())?.trim() ?? '';
   await firstItem.getByTestId('game-item-add').click();
 
   return name;
@@ -108,7 +108,7 @@ export async function addFirstSearchResult(page: Page, searchTerm: string): Prom
 
 /**
  * Crée une nouvelle games list depuis la home : ouvre la popup, saisit le nom,
- * ajoute le premier résultat pour chaque terme de recherche fourni, puis ferme la popup.
+ * ajoute le premier résultat pour chaque terme de recherche fourni, puis valide la création.
  * Retourne les noms des jeux ajoutés, dans l'ordre.
  * Un utilisateur doit déjà être connecté (voir signInWithNewAccount).
  */
@@ -122,7 +122,8 @@ export async function createGamesList(page: Page, listName: string, searchTerms:
     addedNames.push(await addFirstSearchResult(page, term));
   }
 
-  await page.getByTestId('popup-close').click();
+  // la croix (popup-close) annule : c'est le bouton de validation qui crée la liste
+  await page.getByTestId('popup-confirm').click();
 
   return addedNames;
 }

@@ -15,10 +15,9 @@ test('modifies a games list name and its games', async ({page}) => {
 
   await page.getByTestId('my-list-add-game').click();
   const addedGameName = await addFirstSearchResult(page, 'zelda');
-  await page.getByTestId('popup-close').click();
+  await page.getByTestId('popup-confirm').click();
 
-  const originalGameRow = page.locator('ul').filter({hasText: originalGameName});
-  await originalGameRow.getByRole('button').click();
+  await page.getByRole('button', {name: `Remove ${originalGameName}`}).click();
 
   const [updateResponse] = await Promise.all([
     page.waitForResponse(resp => resp.url().includes('/api/game/updateGamesList') && resp.request().method() === 'POST'),

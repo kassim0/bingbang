@@ -1,30 +1,51 @@
-<div>
-  <button data-testid="popup-close" class="bb-close" (click)="close()"><mat-icon>close</mat-icon></button>
-
-  <h3 *ngIf="gamesList">Ajouter des jeux à « {{ gamesList.name }} »</h3>
-
-  <mat-form-field *ngIf="!gamesList" appearance="outline">
-    <mat-label>list name</mat-label>
-    <input matInput data-testid="list-name-input" placeholder="List N°" [(ngModel)]="listNameInput">
-  </mat-form-field>
-
-  <app-search-bar style=" display: block;margin: 20px 10px;" (dataToParent)="receiveData($event)"
-  [label]="'search your game'"
-  [placeholder]="'ex: \'Outer wilds\''"
-  ></app-search-bar>
-
-  <div *ngIf="isSearching" style="display: flex; justify-content: center; margin: 20px;">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-
-  <mat-list *ngIf="!isSearching">
-    <div *ngFor="let game of reponse">
-      <mat-list-item>
-        <app-game-item class="game-item" [game]="game" (addGame)="onAddGame($event)" (removeGame)="onRemoveGame($event)" [gamesSelected]="addedGames" ></app-game-item>
-      </mat-list-item>
-      <mat-divider></mat-divider>
-    </div>
-  </mat-list>
-
+<div class="popup-header">
+  <h2 class="popup-title" data-testid="popup-title">{{ title }}</h2>
+  <button type="button" data-testid="popup-close" class="bb-close" aria-label="Cancel and close" (click)="cancel()">
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
 </div>
 
+@if (!gamesList) {
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>List name</mat-label>
+    <input matInput data-testid="list-name-input" maxlength="100" placeholder="e.g. Games I loved" [(ngModel)]="listNameInput">
+  </mat-form-field>
+}
+
+<app-search-bar class="search-bar" (searchSubmitted)="receiveData($event)"
+                [label]="'Search a game'"
+                [placeholder]="'e.g. Outer Wilds'"
+></app-search-bar>
+
+<!-- aria-live : un lecteur d'écran annonce le changement d'état de la recherche -->
+<div class="results-area" aria-live="polite">
+  @if (isSearching) {
+    <div class="search-state" role="status" aria-label="Searching">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (searchFailed) {
+    <p class="search-state error" role="alert" data-testid="search-error">
+      The search failed. Please try again in a moment.
+    </p>
+  } @else if (results && results.length === 0) {
+    <p class="search-state" data-testid="search-no-result">
+      No game found for "{{ searchedText }}". Check the spelling or try another title.
+    </p>
+  } @else if (results) {
+    <ul class="results">
+      @for (game of results; track game.source + '-' + game.externalId) {
+        <li data-testid="search-result">
+          <app-game-item [game]="game" [gamesSelected]="addedGames" [alreadyInList]="isAlreadyInList(game)"
+                         (addGame)="onAddGame($event)" (removeGame)="onRemoveGame($event)"></app-game-item>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<div class="popup-actions">
+  <button mat-button type="button" data-testid="popup-cancel" (click)="cancel()">Cancel</button>
+  <button type="button" data-testid="popup-confirm" [disabled]="addedGames.length === 0" (click)="confirm()">
+    {{ confirmLabel }}
+  </button>
+</div>
