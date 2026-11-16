@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -68,7 +67,7 @@ public class GameService {
         game.setName(result.name());
         game.setSlug(result.slug());
         game.setReleaseDate(result.releaseDate());
-        game.setBackgroundImage(result.imageUrl());
+        game.setBackgroundImage(ImageUrlPolicy.trustedOrNull(result.imageUrl()));
         setExternalId(game, result);
         return gamesRepository.save(game);
     }
@@ -82,30 +81,43 @@ public class GameService {
     }
 
     /**
-     * Create a new GamesList from search results
-     * */
+     * Crée une nouvelle liste à partir de résultats de recherche.
+     * Un jeu présent plusieurs fois dans la demande n'est ajouté qu'une fois.
+     */
     @Transactional
     public GamesList createGamesList(NewGamesListDto newGamesListDto, Long userId) {
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
-        List<GamesListEntry> savedGamesListEntry;
-        String listName = newGamesListDto.name();
-        GameSearchResult[] games = newGamesListDto.games();
+        String listName = newGamesListDto.name() == null ? "" : newGamesListDto.name().strip();
+        GameSearchResult[] games = newGamesListDto.games() == null ? new GameSearchResult[0] : newGamesListDto.games();
 
         for (GameSearchResult result : games) {
-            savedGames.add(findOrCreateGame(result));
+            Game game = findOrCreateGame(result);
+            if (!containsGame(savedGames, game)) {
+                savedGames.add(game);
+            }
         }
 
-        savedGamesListEntry = IntStream.range(0, savedGames.size())
-                            .mapToObj(i -> new GamesListEntry(savedGames.get(i), i))
-                            .toList();
+        // ArrayList et non toList() : Hibernate doit pouvoir modifier cette liste par la suite
+        List<GamesListEntry> savedGamesListEntry = new ArrayList<>();
+        for (int position = 0; position < savedGames.size(); position++) {
+            savedGamesListEntry.add(new GamesListEntry(savedGames.get(position), position));
+        }
 
         Long position = gamesListRepository.findMaxOrder(userId) + 1;
         gamesList.setGames(savedGamesListEntry);
         gamesList.setPosition(position);
-        gamesList.setName(listName == null || listName.isEmpty() ? "Liste N° "+position : listName);
+        gamesList.setName(listName.isEmpty() ? "Liste N° " + position : listName);
         gamesList.setUser(userRepository.getReferenceById(userId));
         return gamesListRepository.saveAndFlush(gamesList);
+    }
+
+    /**
+     * Vrai si le jeu est déjà dans la liste donnée. On compare les identifiants de base de données ;
+     * la comparaison d'instance (==) couvre le cas d'un jeu pas encore enregistré.
+     */
+    private boolean containsGame(List<Game> games, Game game) {
+        return games.stream().anyMatch(known -> known == game || (known.getId() != null && known.getId().equals(game.getId())));
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +147,7 @@ public class GameService {
     private boolean updateNameGamesList(long gamesListId, String gamesListName) {
         boolean nameUpdated = false;
         if (gamesListName != null) {
-            gamesListRepository.updateNameById(gamesListId, gamesListName);
+            gamesListRepository.updateNameById(gamesListId, gamesListName.strip());
             nameUpdated = true;
         }
         return nameUpdated;
@@ -150,19 +162,29 @@ public class GameService {
         return gamesRemoved > 0;
     }
 
+    /** Ajoute les jeux à la fin de la liste. Un jeu déjà présent dans la liste est ignoré (pas de doublon). */
     private boolean addGamesInGamesList(long gamesListId, List<GameSearchResult> games) {
+        if (games == null || games.isEmpty()) {
+            return false;
+        }
+        GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
+        List<Game> gamesInList = new ArrayList<>(gamesList.getGames().stream().map(GamesListEntry::getGame).toList());
+        int nextPosition = gamesList.getGames().stream()
+                .mapToInt(GamesListEntry::getPosition)
+                .max()
+                .orElse(-1);
         boolean gamesAdded = false;
-        if (games != null && !games.isEmpty()) {
-            GamesList gamesList = gamesListRepository.findById(gamesListId).orElseThrow();
-            int nextPosition = gamesList.getGames().stream()
-                    .mapToInt(GamesListEntry::getPosition)
-                    .max()
-                    .orElse(-1);
-            for (GameSearchResult result : games) {
-                gamesList.getGames().add(new GamesListEntry(findOrCreateGame(result), ++nextPosition));
+        for (GameSearchResult result : games) {
+            Game game = findOrCreateGame(result);
+            if (containsGame(gamesInList, game)) {
+                continue;
             }
-            gamesListRepository.save(gamesList);
+            gamesInList.add(game);
+            gamesList.getGames().add(new GamesListEntry(game, ++nextPosition));
             gamesAdded = true;
+        }
+        if (gamesAdded) {
+            gamesListRepository.save(gamesList);
         }
         return gamesAdded;
     }

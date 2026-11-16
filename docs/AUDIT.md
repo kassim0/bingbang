@@ -51,7 +51,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 ## 1. Sécurité
 
-### - [ ] SEC-01 — Les données d'un jeu envoyées par le navigateur sont enregistrées telles quelles
+### - [x] SEC-01 — Les données d'un jeu envoyées par le navigateur sont enregistrées telles quelles
 - **Où** : `backend/.../service/GameService.java:66-74` (`createGame`), `controller/JeuxRestController.java:25,36`
 - **Problème** : quand on crée une liste, le navigateur renvoie au backend le nom, le slug, la date et l'URL
   d'image de chaque jeu. Le backend les enregistre dans la table `game` sans rien vérifier. Or cette table est
@@ -65,8 +65,9 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   (`images.igdb.com`, `media.rawg.io`), sinon l'ignorer. À terme (plus sûr) : ne recevoir que
   `source + externalId` et redemander les informations au fournisseur côté serveur.
 - **Priorité** : haute — **Auth** : non
+- **✅ Appliqué** : validation des jeux reçus (`GameSearchResult`) et liste blanche des serveurs d'images (`ImageUrlPolicy`). Reste possible plus tard : ne recevoir que `source + externalId`.
 
-### - [ ] SEC-02 — Aucune validation des payloads de listes (erreurs 500)
+### - [x] SEC-02 — Aucune validation des payloads de listes (erreurs 500)
 - **Où** : `dto/payload/NewGamesListDto.java:5`, `dto/payload/UpdateGamesListDto.java:7`,
   `controller/JeuxRestController.java:25,36`, `service/GameService.java:95,138`
 - **Problème** : pas de `@Valid` ni de contraintes. `games: null` provoque une `NullPointerException` (ligne 95),
@@ -77,6 +78,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : contraintes Bean Validation (`@Size`, `@NotNull`, `@Valid` en cascade) + refuser/ignorer un
   nom vide + limiter le nombre de jeux par requête.
 - **Priorité** : haute — **Auth** : non
+- **✅ Appliqué** : contraintes sur `NewGamesListDto` / `UpdateGamesListDto` + `@Valid` dans le contrôleur ; nom limité à 100 caractères, renommage vide refusé (400), `games` absent = liste vide.
 
 ### - [ ] SEC-03 — Pas de déconnexion côté backend, tokens très longs et non révocables
 - **Où** : `frontend/src/app/services/auth.service.ts:57-62`, `backend/.../security/JwtService.java:28-36`,
@@ -243,6 +245,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : ignorer côté service les jeux déjà présents dans la liste (et les doublons à la création) ;
   puis ajouter une contrainte unique `(games_list_id, game_id)`.
 - **Priorité** : haute — **Auth** : non
+- **🟡 Appliqué en partie** : le service ignore les jeux déjà présents (création et ajout). La contrainte unique en base n'est pas ajoutée : avec `ddl-auto=update`, elle échouerait sur une base qui contient déjà des doublons (à faire avec Flyway, `ARCH-04`).
 
 ### - [ ] ARCH-02 — Routes REST non conventionnelles
 - **Où** : `controller/JeuxRestController.java:17-41`, `frontend/src/app/services/game-api.service.ts:17-31`
@@ -320,7 +323,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - *(Auth, à toi)* : `UserRepository.findByUsername` (ligne 12) et `AuthService.getToken()` côté front
   (`auth.service.ts:64-69`) ne sont pas utilisés non plus.
 
-### - [ ] ARCH-09 — Les mocks sont dans le code de production
+### - [x] ARCH-09 — Les mocks sont dans le code de production
 - **Où** : `backend/src/main/java/com/stars/bigbang/mock/*`
 - **Problème** : `IgdbApiMock`, `RawgApiMock`, `TwitchAuthApiMock` sont compilés dans le jar de production
   (activés par le profil `mock`). De plus ils renvoient **les 3 mêmes jeux quelle que soit la recherche**.
@@ -328,6 +331,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : rendre le mock réaliste (petit catalogue filtré par le texte cherché). Le garder dans `main`
   est acceptable tant qu'il sert à développer sans clé d'API.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `MockCatalog` : petit catalogue commun, filtré par le texte cherché.
 
 ### - [ ] ARCH-10 — DTO utilisés dans les deux sens et types incohérents
 - **Où** : `dto/payload/NewGamesListDto.java:5`, `dto/response/GameSearchResult.java`,
@@ -520,7 +524,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 ## 5. Tests
 
-### - [ ] TEST-01 — Les tests unitaires du frontend sont cassés
+### - [x] TEST-01 — Les tests unitaires du frontend sont cassés
 - **Où** : `frontend/src/app/**/*.spec.ts` (10 tests), ex. `app.component.spec.ts:17-28`
 - **Problème** : `ng test` donne **9 échecs sur 10**. Ce sont les fichiers générés par Angular CLI, jamais mis
   à jour : il manque les « providers » (`HttpClient`, `MatDialogRef`, `MAT_DIALOG_DATA`, animations), et
@@ -530,21 +534,24 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : réparer les specs (ajouter les providers de test), puis ajouter de vrais tests sur la logique
   des composants. Je ne supprime ni ne désactive aucun test.
 - **Priorité** : haute — **Auth** : non (la spec de `auth-dialog` est réparée sans toucher au composant)
+- **✅ Appliqué** : specs réparées et enrichies (22 tests verts), `karma.conf.js` + `npm run test:ci`.
 
-### - [ ] TEST-02 — Pas de test HTTP sur les routes de listes
+### - [x] TEST-02 — Pas de test HTTP sur les routes de listes
 - **Où** : `controller/JeuxRestController.java` (aucun `JeuxRestControllerTest`)
 - **Problème** : seule la logique du service est testée, avec des mocks. Rien ne vérifie les codes HTTP
   (400 sur payload invalide, 404 sur la liste d'un autre) ni le JSON renvoyé.
 - **Impact** : une erreur de mapping ou de validation passerait inaperçue.
 - **Correction** : tests `@SpringBootTest` + `TestRestTemplate` (même style que `AuthControllerTest`).
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `JeuxRestControllerTest` : 18 tests de bout en bout (codes HTTP, validation, appartenance).
 
-### - [ ] TEST-03 — Requêtes SQL personnalisées non testées
+### - [x] TEST-03 — Requêtes SQL personnalisées non testées
 - **Où** : `repository/GamesListRepository.java:16-34`, `repository/GamesListEntryRepository.java:15-20`
 - **Problème** : les requêtes JPQL/SQL natives ne sont exécutées par aucun test (les repositories sont mockés).
 - **Impact** : une faute dans une requête n'est détectée qu'à l'exécution.
 - **Correction** : couvert par les tests d'intégration de `TEST-02` (vraie base H2).
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : les requêtes des repositories sont exécutées sur H2 par `JeuxRestControllerTest`.
 
 ### - [ ] TEST-04 — Les e2e dépendent d'un environnement manuel et de la vraie API
 - **Où** : `frontend/playwright.config.ts:3-7`, `frontend/e2e/db.ts:9-36`, `mock/IgdbApiMock.java:16-22`
@@ -555,6 +562,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : rendre le mock réaliste (`ARCH-09`), documenter la commande de lancement, et ajouter un
   `docker-compose.yml` pour Postgres.
 - **Priorité** : moyenne — **Auth** : non
+- **🟡 Appliqué en partie** : mock de recherche réaliste : les 28 e2e passent avec le profil `mock`. Le `docker-compose` est traité dans `BUILD-08`.
 
 ### - [ ] TEST-05 — Composants de fournisseurs peu testés
 - **Où** : `service/provider/RawgGameProvider.java:46-55`, `service/provider/IgdbTokenService.java:33-49`
@@ -717,12 +725,13 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 ## 7. Build / config
 
-### - [ ] BUILD-01 — `mvnw` n'est pas exécutable
+### - [x] BUILD-01 — `mvnw` n'est pas exécutable
 - **Où** : `mvnw` (mode git `100644`)
 - **Problème** : `./mvnw test` répond « Permission denied » sous Linux/macOS.
 - **Impact** : première commande du projet en échec ; bloquera une CI.
 - **Correction** : `git update-index --chmod=+x mvnw`.
 - **Priorité** : haute (1 minute) — **Auth** : non
+- **✅ Appliqué** : `mvnw` est exécutable dans git.
 
 ### - [ ] BUILD-02 — Deux versions de Springdoc
 - **Où** : `backend/pom.xml:68-77`
