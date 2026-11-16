@@ -14,12 +14,16 @@ Toutes les branches partent de `dev`. Rien n'est poussé sur `dev` ni `master`, 
 
 ## Étape en cours
 
-**Étape 1 — Documents** (branche `claude/docs`)
+**Étape 2 — Améliorations** (branche `claude/improvements`) — à démarrer
 
-- [x] `docs/AUDIT.md`
-- [ ] `docs/ROADMAP.md`
-- [ ] `docs/IDEAS.md`
-- [ ] `docs/BUSINESS-MODEL.md`
+## Fait
+
+### Étape 1 — Documents (branche `claude/docs`) ✅
+
+- [x] `docs/AUDIT.md` — 83 points, dont 15 entièrement liés à l'auth et 3 partiellement (non modifiés, expliqués)
+- [x] `docs/ROADMAP.md` — comparaison wiki / code, phases 0 à 6 + phase A (auth)
+- [x] `docs/IDEAS.md` — 13 frictions du parcours utilisateur + 15 idées
+- [x] `docs/BUSINESS-MODEL.md` — 3 modèles, recommandation : freemium « Wallet+ » en deux temps
 
 ## Reste à faire
 
