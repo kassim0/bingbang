@@ -16,7 +16,7 @@ export async function connectToDatabase(): Promise<Client> {
     if (line === undefined) {
       throw new Error(`Propriété ${name} introuvable dans application.properties`);
     }
-    return line.slice(name.length + 1).trim();
+    return resolvePlaceholder(line.slice(name.length + 1).trim());
   };
 
   const url = new URL(property('spring.datasource.url').replace(/^jdbc:/, ''));
@@ -33,4 +33,17 @@ export async function connectToDatabase(): Promise<Client> {
   });
   await client.connect();
   return client;
+}
+
+/**
+ * Les propriétés du backend s'écrivent `${VARIABLE:valeur par défaut}`. Comme Spring, on prend la variable
+ * d'environnement si elle existe, sinon la valeur par défaut. Une valeur écrite en dur est renvoyée telle quelle.
+ */
+export function resolvePlaceholder(value: string): string {
+  const placeholder = /^\$\{([^:}]+)(?::(.*))?\}$/.exec(value);
+  if (placeholder === null) {
+    return value;
+  }
+  const [, variable, defaultValue] = placeholder;
+  return process.env[variable] ?? defaultValue ?? '';
 }

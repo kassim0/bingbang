@@ -33,7 +33,11 @@ build/
 .vscode/
 
 ### Dependencies ###
-node_module
+node_modules/
+
+### Résultats de tests (Playwright) ###
+test-results/
+playwright-report/
 
 rawgKey.md
 backend/.env
