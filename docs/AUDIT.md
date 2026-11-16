@@ -39,7 +39,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 
 | Catégorie | Haute | Moyenne | Basse |
 |---|---|---|---|
-| Sécurité | 5 | 8 | 4 |
+| Sécurité | 5 | 7 | 5 |
 | Architecture | 1 | 6 | 4 |
 | Performance | 0 | 3 | 4 |
 | Conventions et lisibilité | 0 | 4 | 8 |
