@@ -5,4 +5,5 @@
 - Il existe dans la branche claude/user-account-system-c58q0u toute la partie d'authentification, mais le problème est que je n'aime pas, ne pas comprendre ce qui a été implémenté, car je ne maitrise pas la partie config/auth/jwt d'une application
 donc j'ai décidé de refaire toute la partie auth par moi-même. Pour ce faire, je vais suivre la roadmap /.claude/roadmap-account-system.md qui a été généré par claude code.
 - en ce moment je suis en train de suivre la roadmap. 
-- j'ai terminé la phase 1.a
+- le 10/11/2026 : j'ai terminé toutes les phases.
+- 

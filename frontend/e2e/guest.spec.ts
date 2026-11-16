@@ -51,6 +51,24 @@ test.describe('guest account in the interface', () => {
     await expect(page.getByTestId('guest-label')).toBeHidden();
     await expect(page.getByTestId('user-menu-trigger')).toBeVisible();
   });
+
+  test('a guest keeps its games lists after creating a real account', async ({page}) => {
+    const listName = `E2E Guest to account ${Date.now()}`;
+    const account = newTestAccount();
+    await page.goto('/');
+    await waitForGuest(page);
+    await createGamesList(page, listName, ['zelda']);
+    await expect(gamesListCard(page, listName)).toBeVisible();
+
+    await registerFromUi(page, account);
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+
+    await expect(gamesListCard(page, listName)).toBeVisible();
+    // la liste est bien rattachée au compte côté serveur, pas seulement encore affichée
+    await page.reload();
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+    await expect(gamesListCard(page, listName)).toBeVisible();
+  });
 });
 
 test.describe('guest API', () => {

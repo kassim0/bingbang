@@ -3,8 +3,11 @@ package com.stars.bigbang.controller;
 import com.stars.bigbang.dto.payload.LoginRequestDto;
 import com.stars.bigbang.dto.payload.RegisterRequestDto;
 import com.stars.bigbang.dto.response.AuthResponseDto;
+import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.dto.response.UserDto;
+import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.User;
+import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.UserRepository;
 import com.stars.bigbang.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +40,8 @@ public class AuthControllerTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private GamesListRepository gamesListRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtService jwtService;
@@ -47,6 +53,7 @@ public class AuthControllerTest {
     private static final String API_LOGIN = "/api/auth/login";
     private static final String API_ME = "/api/auth/me";
     private static final String API_GUEST = "/api/auth/guest";
+    private static final String API_GET_GAMES_LISTS = "/api/game/getGamesLists";
 
     /** guest-<uuid>@bingbang.invalid : .invalid est un domaine réservé, aucun mail ne peut y partir. */
     private static final String GUEST_EMAIL = "^guest-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}@bingbang\\.invalid$";
@@ -57,6 +64,8 @@ public class AuthControllerTest {
 
     @BeforeEach
     public void cleanDatabase() {
+        // les listes d'abord : elles référencent les comptes (clé étrangère user_id)
+        gamesListRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -320,7 +329,97 @@ public class AuthControllerTest {
         assertEquals(0, userRepository.count());
     }
 
+    // ---------- POST /api/auth/register par un invité ----------
+
+    @Test
+    public void registerTest_invite_devient_un_vrai_compte_et_garde_ses_listes() {
+        AuthResponseDto guest = guest().getBody();
+        User guestUser = userRepository.findByEmail(guest.user().email()).orElseThrow();
+        createGamesList(guestUser, "Liste de l'invité");
+
+        ResponseEntity<AuthResponseDto> response = register(USERNAME, "TeSt@TeSt.CoM", PASSWORD, guest.token());
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        AuthResponseDto body = response.getBody();
+        assertEquals(EMAIL, body.user().email());
+        assertEquals(USERNAME, body.user().username());
+        assertFalse(body.user().guest());
+
+        // même compte transformé, pas un nouveau compte à côté
+        assertEquals(1, userRepository.count());
+        User user = userRepository.findById(guestUser.getId()).orElseThrow();
+        assertEquals(EMAIL, user.getEmail());
+        assertFalse(user.isGuest());
+        assertTrue(passwordEncoder.matches(PASSWORD, user.getPassword()));
+
+        // le nouveau token retrouve la liste créée en tant qu'invité
+        ResponseEntity<GamesListDto[]> lists = getGamesLists(body.token());
+        assertEquals(HttpStatus.OK, lists.getStatusCode());
+        assertEquals(1, lists.getBody().length);
+        assertEquals("Liste de l'invité", lists.getBody()[0].name());
+
+        // l'ancien token invité portait l'ancien email : il ne doit plus fonctionner
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + guest.token(), Map.class).getStatusCode());
+        // et on peut se reconnecter normalement avec les nouveaux identifiants
+        assertEquals(HttpStatus.OK, restTemplate.postForEntity(API_LOGIN,
+                new LoginRequestDto(EMAIL, PASSWORD), AuthResponseDto.class).getStatusCode());
+    }
+
+    @Test
+    public void registerTest_invite_cas_email_existant() {
+        register("test1", EMAIL, PASSWORD);
+        AuthResponseDto guest = guest().getBody();
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(API_REGISTER,
+                withToken(new RegisterRequestDto("test2", "TEST@test.com", PASSWORD), guest.token()), Map.class);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("Email already in use", response.getBody().get("message"));
+        // l'invité est resté invité, avec son token toujours valide
+        assertTrue(userRepository.findByEmail(guest.user().email()).orElseThrow().isGuest());
+        assertEquals(HttpStatus.OK, me("Bearer " + guest.token(), UserDto.class).getStatusCode());
+    }
+
+    @Test
+    public void registerTest_cas_vrai_compte_deja_connecte() {
+        String token = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(API_REGISTER,
+                withToken(new RegisterRequestDto("autre", "autre@test.com", PASSWORD), token), Map.class);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("already connected", response.getBody().get("message"));
+        assertEquals(1, userRepository.count());
+        assertEquals(EMAIL, userRepository.findAll().get(0).getEmail());
+    }
+
     // ---------- outils ----------
+
+    private void createGamesList(User user, String name) {
+        GamesList gamesList = new GamesList();
+        gamesList.setName(name);
+        gamesList.setPosition(1L);
+        gamesList.setGames(new ArrayList<>());
+        gamesList.setUser(user);
+        gamesListRepository.save(gamesList);
+    }
+
+    private ResponseEntity<GamesListDto[]> getGamesLists(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return restTemplate.exchange(API_GET_GAMES_LISTS, HttpMethod.GET, new HttpEntity<>(headers), GamesListDto[].class);
+    }
+
+    private <T> HttpEntity<T> withToken(T body, String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return new HttpEntity<>(body, headers);
+    }
+
+    private ResponseEntity<AuthResponseDto> register(String username, String email, String password, String token) {
+        return restTemplate.postForEntity(API_REGISTER,
+                withToken(new RegisterRequestDto(username, email, password), token), AuthResponseDto.class);
+    }
 
     private ResponseEntity<AuthResponseDto> guest() {
         return restTemplate.postForEntity(API_GUEST, null, AuthResponseDto.class);

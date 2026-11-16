@@ -11,6 +11,7 @@ import com.stars.bigbang.security.UserPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -27,6 +28,7 @@ public class AuthService {
     private final String hashFactice;
 
     private static final String WRONG_AUTH = "wrong auth";
+    private static final String ALREADY_CONNECTED = "already connected";
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
@@ -35,7 +37,15 @@ public class AuthService {
         this.hashFactice = passwordEncoder.encode("nimportekoi");
     }
 
-    public AuthResponseDto createAccount(RegisterRequestDto registerRequestDto) {
+    @Transactional
+    public AuthResponseDto createAccount(RegisterRequestDto registerRequestDto, UserPrincipal userPrincipal) {
+        if(userPrincipal != null ){
+            if(userPrincipal.isGuest()){
+                User guestUser = updateGuestUser(registerRequestDto,userPrincipal.getId());
+                return generateAuthReponse(guestUser);
+            }
+            throw new ResponseStatusException(HttpStatus.CONFLICT, ALREADY_CONNECTED);
+        }
         User newUser = createUser(registerRequestDto,false);
         return generateAuthReponse(newUser);
     }
@@ -63,8 +73,7 @@ public class AuthService {
 
     private User createUser(RegisterRequestDto registerRequestDto, boolean guest) {
         String email = normalizeEmail(registerRequestDto.email());
-        if(userRepository.existsByEmail(email))
-            throw new ResponseStatusException(HttpStatus.CONFLICT,"Email already in use");
+        assertUniqueEmail(email);
 
         User user = new User();
         user.setUsername(registerRequestDto.username());
@@ -74,6 +83,23 @@ public class AuthService {
         userRepository.saveAndFlush(user);
 
         return user;
+    }
+
+    private User updateGuestUser(RegisterRequestDto registerRequestDto, long userId) {
+        String email = normalizeEmail(registerRequestDto.email());
+        assertUniqueEmail(email);
+
+        User guestUser = userRepository.findById(userId).orElseThrow();
+        guestUser.setUsername(registerRequestDto.username());
+        guestUser.setEmail(email);
+        guestUser.setPassword(passwordEncoder.encode(registerRequestDto.password()));
+        guestUser.setGuest(false);
+        return userRepository.save(guestUser);
+    }
+
+    private void assertUniqueEmail(String email){
+        if(userRepository.existsByEmail(email))
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Email already in use");
     }
 
     private AuthResponseDto generateAuthReponse(User user){
