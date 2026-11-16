@@ -2,30 +2,33 @@
   display: block;
 }
 
-mat-form-field {
-  margin: 4px 0 8px;
-  padding-right: 48px; // laisse la place au bouton de fermeture
-  font-size: 1.2rem;
-  font-weight: 600;
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 4px 0 16px;
+
+  mat-form-field {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
 }
 
-ul {
+.games {
   list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  transition: background 0.2s;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.04);
-  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    transition: background 0.2s;
 
-  img {
-    flex-shrink: 0;
-    border-radius: 8px;
-    object-fit: cover;
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
   }
 
   .game-name {
@@ -33,23 +36,18 @@ ul {
     font-weight: 500;
   }
 
-  // ligne du bouton "+"
-  &:last-of-type {
-    justify-content: center;
-    margin: 12px 0 24px;
-
-    &:hover {
-      background: transparent;
-    }
-
-    button {
-      border: 2px dashed rgba(255, 255, 255, 0.2);
-      --mdc-protected-button-container-color: transparent;
-      box-shadow: none;
-      width: 100%;
-      font-size: 1.4rem;
-    }
+  .no-game {
+    color: var(--bb-muted);
+    font-style: italic;
   }
+}
+
+.add-games {
+  width: 100%;
+  margin: 12px 0 16px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  --mdc-protected-button-container-color: transparent;
+  box-shadow: none;
 }
 
 .line-through {
@@ -57,16 +55,31 @@ ul {
   opacity: 0.45;
 }
 
+.pending {
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: var(--bb-muted);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .btn-save,
 .btn-delete {
   font-weight: 600;
   padding: 0 20px;
-  margin-right: 8px;
 }
 
 .btn-save {
   --mdc-text-button-label-text-color: #fff;
   background: var(--bb-success);
+
+  &:disabled {
+    opacity: 0.5;
+  }
 }
 
 .btn-delete {
