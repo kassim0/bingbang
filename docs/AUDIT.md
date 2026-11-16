@@ -15,7 +15,9 @@ Chaque point a un identifiant (ex. `SEC-01`) et suit toujours le même format :
 - **Auth** : `oui` = fait partie de l'authentification/JWT/sécurité → **je ne le modifie pas**, c'est toi qui le
   réécris. Pour ces points, j'ajoute une rubrique **« À faire toi-même »** qui explique la démarche sans donner le code final.
 
-La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/improvements` quand le point y est appliqué.
+La case devant chaque point est cochée `[x]` sur la branche `claude/improvements` quand le point y est appliqué.
+Une ligne en fin de point précise : **✅ Appliqué**, **🟡 Appliqué en partie** (case non cochée) ou
+**⏸ Non appliqué** avec la raison. Les points « Auth : oui » n'ont pas de ligne : ils sont à toi.
 
 ### Ce que j'appelle « périmètre auth » (fichiers que je ne modifie pas)
 
@@ -34,6 +36,15 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 | `ng build` (frontend) | ✅ compile, avec un avertissement de budget (bundle 799 kB > 500 kB) |
 | `ng test` (tests unitaires frontend) | ❌ **9 échecs sur 10** (voir `TEST-01`) |
 | `playwright test` (e2e), backend en profil `mock` | ⚠️ 26 passent, 2 échouent **à cause du mock** (voir `TEST-04`) |
+
+### État sur `claude/improvements` (après application)
+
+| Vérification | Résultat |
+|---|---|
+| `./mvnw test` (backend) | ✅ 118 tests, 0 échec, 1 ignoré |
+| `ng build` (frontend) | ✅ |
+| `npm run test:ci` (tests unitaires frontend) | ✅ 59 tests |
+| `playwright test` (e2e), backend en profil `mock` | ✅ 28 tests |
 
 ### Vue d'ensemble
 
@@ -170,22 +181,25 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction (hors auth)** : limiter la taille de `name` et mettre les résultats en cache quelques minutes
   (voir `PERF-01`). La limite de débit et le `permitAll` relèvent de la config de sécurité → à toi.
 - **Priorité** : moyenne — **Auth** : partiel (taille + cache : non ; `permitAll` et rate limit : oui)
+- **🟡 Appliqué en partie** : taille du texte limitée à 100 caractères (400 au-delà) et cache des recherches. La limite de débit et le `permitAll` relèvent de ta config de sécurité.
 
-### - [ ] SEC-11 — Pas de délai maximum (timeout) sur les appels IGDB / RAWG / Twitch
+### - [x] SEC-11 — Pas de délai maximum (timeout) sur les appels IGDB / RAWG / Twitch
 - **Où** : `igdb/IgdbApi.java:11`, `igdb/TwitchAuthApi.java:10`, `rawg/RawgApi.java:9`, `application.properties`
 - **Problème** : aucun timeout configuré pour Feign (valeurs par défaut : 10 s de connexion, 60 s de lecture).
 - **Impact** : si IGDB est lent, chaque recherche bloque un thread du serveur pendant une minute ; quelques
   dizaines de recherches suffisent à rendre l'application indisponible.
 - **Correction** : `spring.cloud.openfeign.client.config.default.connect-timeout=2000` et `read-timeout=5000`.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `connect-timeout=2000`, `read-timeout=5000` dans `application.properties`.
 
-### - [ ] SEC-12 — Identifiants de base de données en dur
+### - [x] SEC-12 — Identifiants de base de données en dur
 - **Où** : `application.properties:11-13`
 - **Problème** : URL, utilisateur et mot de passe (`postgres`/`test`) sont écrits dans le fichier.
 - **Impact** : impossible de déployer sans modifier le fichier ; risque de commiter un vrai mot de passe un jour.
 - **Correction** : `${DB_URL:...}`, `${DB_USERNAME:...}`, `${DB_PASSWORD:...}` avec les valeurs locales par
   défaut. Attention : `frontend/e2e/db.ts` lit ce fichier à la main, il faut l'adapter en même temps.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `${DB_URL:...}`, `${DB_USERNAME:...}`, `${DB_PASSWORD:...}` ; `e2e/db.ts` sait lire cette syntaxe.
 
 ### - [ ] SEC-13 — CORS : origine en dur et `allowCredentials(true)` inutile
 - **Où** : `config/CorsConfig.java:17-20`
@@ -256,6 +270,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `POST /api/games-lists`, `GET /api/games-lists`, `PATCH /api/games-lists/{id}`,
   `DELETE /api/games-lists/{id}`. Garder les anciennes routes le temps de migrer le front et les tests e2e.
 - **Priorité** : moyenne — **Auth** : non
+- **⏸ Non appliqué** : renommer les routes change le contrat entre le front, les e2e et la branche `claude/features` (créée depuis `dev`, donc avec les anciennes routes). À faire après la fusion des branches, en une fois.
 
 ### - [ ] ARCH-03 — La modification renvoie une phrase au lieu de la liste
 - **Où** : `service/GameService.java:120-133,184-190`, `controller/JeuxRestController.java:36-45`
@@ -264,6 +279,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : deux requêtes au lieu d'une, et du code front plus compliqué (`subscribe` imbriqués).
 - **Correction** : renvoyer le `GamesListDto` à jour ; `204 No Content` pour la suppression.
 - **Priorité** : moyenne — **Auth** : non
+- **⏸ Non appliqué** : même raison que `ARCH-02` : c'est un changement de contrat d'API, à faire en même temps.
 
 ### - [ ] ARCH-04 — Schéma de base géré par `ddl-auto=update`
 - **Où** : `application.properties:17`
@@ -275,6 +291,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   automatiquement** : cela change ta façon de travailler et demande de « baseliner » ta base locale ; je préfère
   que tu le décides (voir ROADMAP, phase 0).
 - **Priorité** : moyenne — **Auth** : non
+- **⏸ Non appliqué** : décision à prendre par toi (voir la correction proposée).
 
 ### - [ ] ARCH-05 — Contraintes manquantes sur les tables de listes
 - **Où** : `entity/GamesList.java:16-25`
@@ -285,6 +302,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `@ManyToOne(optional = false, fetch = LAZY)` + `@JoinColumn(nullable = false)`,
   `@Column(nullable = false)` sur `name`, `orphanRemoval = true`.
 - **Priorité** : moyenne — **Auth** : non
+- **⏸ Non appliqué** : avec `ddl-auto=update`, Hibernate n'ajoute pas un `NOT NULL` sur une colonne existante : la contrainte n'existerait que sur une base neuve. À faire avec Flyway (`ARCH-04`).
 
 ### - [ ] ARCH-06 — Pas de gestion centralisée des erreurs
 - **Où** : tout le backend (aucun `@RestControllerAdvice`)
@@ -294,6 +312,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : un `@RestControllerAdvice` qui renvoie toujours `{status, message}` pour les erreurs de
   validation des routes hors auth.
 - **Priorité** : moyenne — **Auth** : non (mais ne pas changer le comportement des routes `/api/auth`)
+- **⏸ Non appliqué** : un gestionnaire global modifie aussi le format des erreurs des routes `/api/auth`, que testent tes `AuthControllerTest`. À faire avec `SEC-09`, côté auth.
 
 ### - [ ] ARCH-07 — `GameService` fait deux métiers
 - **Où** : `service/GameService.java` (192 lignes)
@@ -303,8 +322,9 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : extraire `GameCatalogService` (trouver/créer un jeu) et renommer en `GamesListService` /
   `GamesListController`.
 - **Priorité** : moyenne — **Auth** : non
+- **⏸ Non appliqué** : renommage de classes = conflits assurés avec `claude/features` et avec tes branches en cours. À faire à un moment calme (l'IDE le fait en un clic).
 
-### - [ ] ARCH-08 — Code mort
+### - [x] ARCH-08 — Code mort
 - **Où** :
   - `frontend/src/app/app.routes.ts:1-11,19-34` : `AppRoutingModule` jamais utilisé (l'app est « standalone ») ;
   - `backend/.../dto/rawgDto/` : 11 DTO jamais utilisés (`RawgAddedByStatusDto`, `RawgEsrbRatingDto`,
@@ -322,6 +342,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : basse — **Auth** : non
 - *(Auth, à toi)* : `UserRepository.findByUsername` (ligne 12) et `AuthService.getToken()` côté front
   (`auth.service.ts:64-69`) ne sont pas utilisés non plus.
+- **✅ Appliqué** : DTO RAWG inutilisés, JSON de 320 ko, `AppRoutingModule`, imports morts, `test-results/` et `openapitools.json` racine supprimés. `title = 'frontend'` est conservé car un test existant le vérifie. Les deux éléments d'auth restent à toi.
 
 ### - [x] ARCH-09 — Les mocks sont dans le code de production
 - **Où** : `backend/src/main/java/com/stars/bigbang/mock/*`
@@ -342,6 +363,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : incohérences qui font hésiter à chaque nouvelle route.
 - **Correction** : `List` partout, conversion en DTO dans le service partout.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : garder le tableau évite de modifier les tests existants de `GameServiceTest` ; à regrouper avec `ARCH-02`.
 
 ### - [ ] ARCH-11 — Texte d'interface généré par le backend
 - **Où** : `service/GameService.java:106` (`"Liste N° " + position`)
@@ -349,18 +371,20 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : mélange des responsabilités ; impossible à traduire.
 - **Correction** : à traiter avec la règle « au moins un nom ou des jeux » (ROADMAP phase 1).
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : traité avec la règle « nom ou jeux » (ROADMAP phase 1).
 
 ---
 
 ## 3. Performance
 
-### - [ ] PERF-01 — Aucune mise en cache des recherches
+### - [x] PERF-01 — Aucune mise en cache des recherches
 - **Où** : `service/GameSearchService.java:47-59`
 - **Problème** : chaque recherche appelle IGDB/RAWG, même si la même recherche vient d'être faite.
 - **Impact** : latence (300–800 ms par recherche) et consommation du quota (IGDB : 4 requêtes/seconde ;
   RAWG gratuit : 20 000 requêtes/mois).
 - **Correction** : cache en mémoire de quelques minutes, par (source, texte normalisé), avec une taille maximale.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : cache Caffeine dans `GameSearchService` (10 minutes, 1000 entrées, réglable par `bingbang.search.cache-duration`).
 
 ### - [x] PERF-02 — Images trop lourdes pour des vignettes
 - **Où** : `service/provider/IgdbGameProvider.java:20`, `apercu-games-list.component.html:6-14`,
@@ -389,6 +413,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : négligeable aujourd'hui (listes courtes).
 - **Correction** : charger la liste une seule fois et la modifier en mémoire dans la transaction.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : gain négligeable aujourd'hui ; à reprendre avec `ARCH-03`.
 
 ### - [ ] PERF-05 — La home charge tous les jeux pour n'en afficher que 3
 - **Où** : `repository/GamesListRepository.java:19-27`, `apercu-games-list.component.html`
@@ -396,13 +421,15 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : négligeable tant que les listes sont petites ; à surveiller.
 - **Correction** : plus tard, un DTO « aperçu » (3 jeux + nombre total).
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : à surveiller, pas de changement nécessaire maintenant.
 
-### - [ ] PERF-06 — Polices chargées de façon bloquante
+### - [x] PERF-06 — Polices chargées de façon bloquante
 - **Où** : `frontend/src/index.html:8-9`
 - **Problème** : deux feuilles Google Fonts sans `preconnect`.
 - **Impact** : premier affichage retardé de quelques centaines de millisecondes.
 - **Correction** : ajouter `<link rel="preconnect">` vers `fonts.googleapis.com` et `fonts.gstatic.com`.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `preconnect` ajouté dans `index.html`.
 
 ### - [ ] PERF-07 — Un accès base par requête pour l'authentification
 - **Où** : `security/JwtAuthFilter.java:38`
@@ -469,14 +496,15 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   `updatedAt` (`User.java:37`, attention : renommer la propriété renomme la colonne).
 - **🟡 Appliqué en partie** : côté front : `openGamesSearchPopup`, `openGamesListPopup`, `results`, `searchSubmitted`. Non renommés pour limiter les conflits : `saveModifGamesList`, `removeGameId` (champ de l'API), le dossier `share/`, `apercu-games-list`, `JeuxRestController`.
 
-### - [ ] CONV-06 — Injection par `@AllArgsConstructor` sur des champs non `final`
+### - [x] CONV-06 — Injection par `@AllArgsConstructor` sur des champs non `final`
 - **Où** : `controller/GameSearchController.java:15,18`, `controller/JeuxRestController.java:18,22`
 - **Problème** : les dépendances ne sont pas `final`, on pourrait les réassigner.
 - **Impact** : faible ; incohérent avec les services, qui utilisent `@RequiredArgsConstructor` + `final`.
 - **Correction** : `private final` + `@RequiredArgsConstructor`.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `private final` + `@RequiredArgsConstructor` sur les deux contrôleurs.
 
-### - [ ] CONV-07 — `@Data` sur des entités JPA
+### - [x] CONV-07 — `@Data` sur des entités JPA
 - **Où** : `entity/Game.java:10`, `entity/GamesListEntry.java:11`, `entity/AppSetting.java:16`
 - **Problème** : `@Data` génère `equals`/`hashCode`/`toString` sur tous les champs, y compris les relations
   paresseuses (`GamesListEntry.game`).
@@ -484,6 +512,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   `LazyInitializationException` ; deux entités non enregistrées (id `null`) sont « égales ».
 - **Correction** : `@Getter` + `@Setter` (comme `GamesList` et `User`).
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `@Getter` / `@Setter` sur `Game`, `GamesListEntry`, `AppSetting`.
 
 ### - [x] CONV-08 — Deux syntaxes de templates mélangées, pas de `track`
 - **Où** : `home.component.html:1,4` (`@if` puis `*ngFor`), `games-search-popup.component.html`,
@@ -521,6 +550,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `@JsonProperty("first_release_date") Long firstReleaseDate`, packages `dto.igdb` / `dto.rawg`.
   Le package racine : ne pas y toucher (trop de conflits pour rien).
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : renommer des packages touche tous les imports : conflits assurés pour un gain cosmétique.
 
 ### - [x] CONV-12 — Dialogues : tailles en dur ignorées par le CSS
 - **Où** : `home.component.ts:46-49,66-69`, `my-game-list.component.ts:51-54`, `styles.scss:163-169`
@@ -575,12 +605,13 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : moyenne — **Auth** : non
 - **🟡 Appliqué en partie** : mock de recherche réaliste : les 28 e2e passent avec le profil `mock`. Le `docker-compose` est traité dans `BUILD-08`.
 
-### - [ ] TEST-05 — Composants de fournisseurs peu testés
+### - [x] TEST-05 — Composants de fournisseurs peu testés
 - **Où** : `service/provider/RawgGameProvider.java:46-55`, `service/provider/IgdbTokenService.java:33-49`
 - **Problème** : pas de test pour le parsing de date RAWG, ni pour le cache/l'expiration du token Twitch.
 - **Impact** : logique à risque (dates invalides, token expiré) non protégée.
 - **Correction** : tests unitaires Mockito.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `RawgGameProviderTest` et `IgdbTokenServiceTest`.
 
 ### - [x] TEST-06 — Sélecteurs e2e fragiles
 - **Où** : `frontend/e2e/helpers.ts:101-103`, `frontend/e2e/modify-games-list.spec.ts:20`
@@ -590,12 +621,13 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : basse — **Auth** : non
 - **✅ Appliqué** : les e2e utilisent `data-testid` et les noms accessibles des boutons.
 
-### - [ ] TEST-07 — Logs SQL très bavards pendant les tests
+### - [x] TEST-07 — Logs SQL très bavards pendant les tests
 - **Où** : `backend/src/test/resources/application.properties:9`
 - **Problème** : `show-sql=true` écrit toutes les requêtes.
 - **Impact** : la sortie des tests fait des milliers de lignes, les vraies erreurs sont noyées.
 - **Correction** : `false` (à réactiver ponctuellement pour déboguer).
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `show-sql=false` dans la config de test.
 
 ### - [ ] TEST-08 — Pas de mesure de couverture
 - **Où** : `backend/pom.xml`
@@ -603,6 +635,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : on ne sait pas quelles parties ne sont pas testées.
 - **Correction** : plugin JaCoCo (rapport HTML dans `target/site/jacoco`), sans seuil bloquant au début.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : faute de temps ; ajout simple (plugin `jacoco-maven-plugin`, goals `prepare-agent` et `report`).
 
 ---
 
@@ -717,13 +750,15 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : premier chargement plus lent sur mobile.
 - **Correction** : charger les popups à la demande (`import()` dynamique des composants de dialogue).
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : demande de charger les popups à la demande ; à mesurer d'abord (le bundle reste sous la limite d'erreur de 1 Mo).
 
-### - [ ] FRONT-13 — Pas de respect de `prefers-reduced-motion`
+### - [x] FRONT-13 — Pas de respect de `prefers-reduced-motion`
 - **Où** : `frontend/src/styles.scss:123-129`, `home.component.scss:23-29`
 - **Problème** : les animations de survol ne sont pas désactivées pour les personnes qui le demandent au système.
 - **Impact** : inconfort pour certains utilisateurs.
 - **Correction** : une règle `@media (prefers-reduced-motion: reduce)`.
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : règle `prefers-reduced-motion` dans `styles.scss`.
 
 ### - [ ] FRONT-14 — Recherche uniquement sur « Entrée », sans longueur minimale
 - **Où** : `search-bar.component.html:3`, `search-bar.component.ts:33-35`
@@ -756,22 +791,24 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Priorité** : haute (1 minute) — **Auth** : non
 - **✅ Appliqué** : `mvnw` est exécutable dans git.
 
-### - [ ] BUILD-02 — Deux versions de Springdoc
+### - [x] BUILD-02 — Deux versions de Springdoc
 - **Où** : `backend/pom.xml:68-77`
 - **Problème** : `springdoc-openapi-ui` 1.8.0 (prévu pour Spring Boot 2) est présent en plus de
   `springdoc-openapi-starter-webmvc-ui` 2.5.0 (Spring Boot 3).
 - **Impact** : classes en double sur le classpath, jar plus lourd, comportements imprévisibles.
 - **Correction** : supprimer la dépendance 1.8.0.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : dépendance `springdoc-openapi-ui` 1.8.0 retirée (Swagger vérifié : toujours accessible).
 
-### - [ ] BUILD-03 — Version de Java incohérente
+### - [x] BUILD-03 — Version de Java incohérente
 - **Où** : `pom.xml:12` (21) et `backend/pom.xml:17` (17)
 - **Problème** : le pom parent dit 21, le module dit 17 ; c'est le 17 qui gagne.
 - **Impact** : confusion sur la version à installer.
 - **Correction** : une seule valeur (17, celle réellement utilisée).
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : Java 17 dans les deux `pom.xml`.
 
-### - [ ] BUILD-04 — Versions de dépendances gérées à la main
+### - [x] BUILD-04 — Versions de dépendances gérées à la main
 - **Où** : `backend/pom.xml:55-59,90-105,108-113`
 - **Problème** : `spring-cloud-starter` 4.1.1, `spring-cloud-starter-openfeign` 4.1.0, `feign-core` et
   `feign-httpclient` 13.2.1, `junit-jupiter` 5.10.2 sont fixés un par un, alors que Spring Boot et le BOM
@@ -780,6 +817,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : importer le BOM `spring-cloud-dependencies` et retirer les versions ; retirer `feign-core`,
   `feign-httpclient` et `junit-jupiter` (déjà apportés par les starters).
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : BOM `spring-cloud-dependencies` 2023.0.3 ; `feign-core`, `feign-httpclient` et `junit-jupiter` explicites retirés.
 
 ### - [ ] BUILD-05 — Versions en fin de vie
 - **Où** : `backend/pom.xml:8` (Spring Boot 3.2.2, janvier 2024), `frontend/package.json:15-25` (Angular 17)
@@ -788,15 +826,17 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : au minimum la dernière 3.2.x ; puis planifier 3.5.x et Angular récent. **Non appliqué
   automatiquement** pour la montée majeure : Spring Security fait partie du périmètre auth, à valider avec tes tests.
 - **Priorité** : moyenne — **Auth** : partiel
+- **🟡 Appliqué en partie** : Spring Boot 3.2.2 → 3.2.12 (dernier correctif de la branche 3.2, tous les tests passent). La montée vers 3.5 et Angular récent reste à planifier avec toi.
 
-### - [ ] BUILD-06 — Pas d'intégration continue
+### - [x] BUILD-06 — Pas d'intégration continue
 - **Où** : pas de dossier `.github/workflows/`
 - **Problème** : rien ne lance les tests automatiquement à chaque push.
 - **Impact** : une régression peut arriver sur `dev` sans que personne ne la voie (cas de `TEST-01`).
 - **Correction** : un workflow GitHub Actions : tests backend + build et tests frontend.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : `.github/workflows/ci.yml` : tests backend, build et tests unitaires frontend.
 
-### - [ ] BUILD-07 — README incomplet
+### - [x] BUILD-07 — README incomplet
 - **Où** : `README.md`, `frontend/README.md`
 - **Problème** : pas d'instructions d'installation (Postgres, variables `IGDB_CLIENT_ID`, `RAWG_API_KEY`,
   `JWT_SECRET`, profil `mock`, lancement des tests) ; `frontend/README.md` est le texte par défaut d'Angular ;
@@ -804,13 +844,15 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : impossible de lancer le projet sans lire le code.
 - **Correction** : écrire un vrai README.
 - **Priorité** : moyenne — **Auth** : non
+- **✅ Appliqué** : README racine et `frontend/README.md` réécrits.
 
-### - [ ] BUILD-08 — Pas de `docker-compose` pour la base
+### - [x] BUILD-08 — Pas de `docker-compose` pour la base
 - **Où** : racine du dépôt
 - **Problème** : il faut installer et configurer Postgres à la main.
 - **Impact** : friction au démarrage et pour les e2e.
 - **Correction** : `docker-compose.yml` avec un Postgres préconfiguré (base `bingbang`, mot de passe `test`).
 - **Priorité** : basse — **Auth** : non
+- **✅ Appliqué** : `docker-compose.yml` (PostgreSQL 16).
 
 ### - [ ] BUILD-09 — `.gitignore` : faute et fichiers générés commités
 - **Où** : `.gitignore:36` (`node_module` au lieu de `node_modules`), `test-results/.last-run.json`,
@@ -820,6 +862,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Impact** : bruit dans les diffs.
 - **Correction** : corriger la règle, ignorer `test-results/`, retirer le fichier du suivi git.
 - **Priorité** : basse — **Auth** : non
+- **🟡 Appliqué en partie** : règle `node_modules/` corrigée, `test-results/` ignoré et retiré. `.claude/settings.local.json` laissé en place : c'est ton fichier de réglages.
 
 ### - [ ] BUILD-10 — Pas de linter ni de formateur
 - **Où** : `frontend/package.json`, `backend/pom.xml`
@@ -828,6 +871,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `ng add @angular-eslint/schematics` + Prettier. **Non appliqué** : reformater tout le code
   créerait des conflits avec tes branches en cours ; à faire à un moment calme.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : voir la correction proposée (reformater tout le code créerait des conflits).
 
 ### - [ ] BUILD-11 — Pas de profils Spring
 - **Où** : `backend/src/main/resources/application.properties`
@@ -836,6 +880,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : `application-dev.properties` / `application-prod.properties`. Lié à `SEC-04`, `SEC-08`,
   `SEC-12`, `ARCH-04` : à faire en même temps que ta partie auth.
 - **Priorité** : basse — **Auth** : partiel
+- **⏸ Non appliqué** : lié à tes points d'auth (`SEC-04`, `SEC-08`).
 
 ### - [ ] BUILD-12 — Outils du front désalignés
 - **Où** : `frontend/package.json:42` (`@types/node` ^18), `README.md` (openapi-generator absent des dépendances)
@@ -845,6 +890,7 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
 - **Correction** : aligner `@types/node` sur ta version de Node ; soit utiliser vraiment le client généré,
   soit retirer `openapitools.json`.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : faute de temps ; sans risque à faire plus tard.
 
 ### - [ ] BUILD-13 — SSR + prérendu pour une app entièrement derrière un token
 - **Où** : `frontend/angular.json:39-42`, `frontend/server.ts`
@@ -855,3 +901,4 @@ La case `[ ]` devant chaque point sera cochée `[x]` sur la branche `claude/impr
   (aperçu du lien, référencement).
 - **Correction** : le garder (utile pour le partage, ROADMAP phase 4), mais le savoir. Rien à modifier maintenant.
 - **Priorité** : basse — **Auth** : non
+- **⏸ Non appliqué** : rien à modifier maintenant (information).
