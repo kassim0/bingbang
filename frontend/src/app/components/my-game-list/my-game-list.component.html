@@ -4,13 +4,17 @@
   <input matInput data-testid="edit-list-name-input" [(ngModel)]="editedName" name="gamesListName">
 </mat-form-field>
 
-<ul *ngFor="let gameItem of gamesList.games">
+<ng-container *ngFor="let gameItem of gamesList.games">
+<ul>
   <img src="{{gameItem?.game?.backgroundImage}}" style="width: 50px; height: 50px; object-fit: cover">
   <span class="game-name" [ngClass]="isGameSelected(gameItem.game) ? 'line-through' : '' " ]>{{gameItem?.game?.name}}</span>
   <button mat-icon-button color="primary" [attr.data-testid]="'delete-game-' + gameItem.game.id" (click)="onDeleteGame(gameItem.game)" title="supprimer le jeu">
     <mat-icon>{{ isGameSelected(gameItem.game) ? 'restore_from_trash' : 'delete' }}</mat-icon>
   </button>
 </ul>
+<app-game-commentary [gamesListId]="gamesList.id" [gameId]="gameItem.game.id" [gameName]="gameItem.game.name"
+                     [commentary]="gameItem.commentary" (commentaryChange)="gameItem.commentary = $event"></app-game-commentary>
+</ng-container>
 <ul>
   <button mat-raised-button data-testid="my-list-add-game" (click)="openGamesSearchPopup()" title="ajouter des jeux">+</button>
 </ul>

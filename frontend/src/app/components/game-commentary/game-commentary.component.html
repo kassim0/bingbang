@@ -1,0 +1,38 @@
+@if (editing) {
+  <div class="editor">
+    <textarea [attr.data-testid]="'commentary-input-' + gameId" rows="3" [maxlength]="maxLength"
+              [attr.aria-label]="'Comment on ' + gameName" placeholder="What did you think of this game?"
+              [(ngModel)]="draft"></textarea>
+    <div class="actions">
+      <button mat-button type="button" [attr.data-testid]="'commentary-save-' + gameId"
+              [disabled]="busy || draft.trim().length === 0" (click)="save()">Save comment</button>
+      <button mat-button type="button" [attr.data-testid]="'commentary-cancel-' + gameId" (click)="cancelEditing()">Cancel</button>
+    </div>
+  </div>
+} @else if (commentary) {
+  <p class="text" [attr.data-testid]="'commentary-text-' + gameId">{{ commentary }}</p>
+  <div class="actions">
+    <button mat-button type="button" [attr.data-testid]="'commentary-edit-' + gameId" (click)="startEditing()">Edit</button>
+    <button mat-button type="button" [attr.data-testid]="'commentary-copy-' + gameId" [disabled]="busy"
+            [attr.aria-expanded]="copyTargets !== null" (click)="toggleCopyTargets()">Copy to…</button>
+    <button mat-button type="button" [attr.data-testid]="'commentary-delete-' + gameId" [disabled]="busy" (click)="delete()">Delete comment</button>
+  </div>
+  @if (copyTargets !== null) {
+    <div class="copy-targets" [attr.data-testid]="'commentary-copy-targets-' + gameId">
+      @for (target of copyTargets; track target.id) {
+        <button mat-button type="button" [disabled]="busy" (click)="copyTo(target)">{{ target.name }}</button>
+      } @empty {
+        <span class="hint">You have no other list.</span>
+      }
+    </div>
+  }
+} @else {
+  <button mat-button type="button" class="add" [attr.data-testid]="'commentary-add-' + gameId" (click)="startEditing()">
+    <mat-icon aria-hidden="true">chat_bubble_outline</mat-icon>
+    Add a comment
+  </button>
+}
+
+@if (message) {
+  <p class="hint" role="status" [attr.data-testid]="'commentary-message-' + gameId">{{ message }}</p>
+}

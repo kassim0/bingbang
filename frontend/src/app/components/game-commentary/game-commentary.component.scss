@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  // aligné sous le nom du jeu (image de 50px + espacement de la ligne)
+  margin: 0 10px 12px 76px;
+  font-size: 0.9rem;
+}
+
+.text {
+  white-space: pre-wrap; // conserve les retours à la ligne saisis
+  overflow-wrap: anywhere;
+  padding: 8px 12px;
+  border-left: 3px solid var(--bb-primary);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: var(--bb-surface-2);
+  color: var(--bb-text);
+  font: inherit;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--bb-primary);
+  }
+}
+
+.actions,
+.copy-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.copy-targets {
+  padding: 4px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.add,
+.hint {
+  color: var(--bb-muted);
+}
+
+.add {
+  --mdc-text-button-label-text-color: var(--bb-muted);
+}

@@ -1,6 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {Game, GamesList, GamesSearchPopupResult, UpdateGamesList} from "../../models/games.model";
 import {NgClass, NgForOf} from "@angular/common";
+import {GameCommentaryComponent} from "../game-commentary/game-commentary.component";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {MatIcon} from "@angular/material/icon";
 import {MatButton, MatIconButton} from "@angular/material/button";
@@ -21,7 +22,8 @@ import {GamesSearchPopupComponent} from "../games-search-popup/games-search-popu
     MatButton,
     FormsModule,
     MatFormField,
-    MatInput
+    MatInput,
+    GameCommentaryComponent
   ],
   templateUrl: './my-game-list.component.html',
   styleUrl: './my-game-list.component.scss'
