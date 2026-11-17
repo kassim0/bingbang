@@ -10,10 +10,13 @@ import {FormsModule} from '@angular/forms';
 import {MatInputModule} from "@angular/material/input";
 import {MatIconModule} from "@angular/material/icon";
 import {HomeComponent} from './components/home/home.component';
+import {SharedViewComponent} from './components/shared-view/shared-view.component';
 
 export const routes: Routes = [
   {path: '', redirectTo: 'home', pathMatch: 'full'},
-  {path: 'home', component: HomeComponent}
+  {path: 'home', component: HomeComponent},
+  // Page publique d'un lien de partage (lecture seule)
+  {path: 'share/:token', component: SharedViewComponent}
 ];
 
 @NgModule({

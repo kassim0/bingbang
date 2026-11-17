@@ -17,6 +17,12 @@ export class WalletService {
 
   background = signal<WalletBackground>(DEFAULT_BACKGROUND);
 
+  /**
+   * Fond affiché temporairement à la place de celui de l'utilisateur, ou null.
+   * Utilisé par la page de partage, qui montre le wallet de quelqu'un d'autre avec SON fond.
+   */
+  previewBackground = signal<WalletBackground | null>(null);
+
   constructor(private http: HttpClient,
               authService: AuthService,
               @Inject(DOCUMENT) private document: Document) {
@@ -30,7 +36,7 @@ export class WalletService {
     }, {allowSignalWrites: true});
 
     // À chaque changement de fond, on met à jour l'attribut de <body>.
-    effect(() => this.document.body.setAttribute('data-bb-background', this.background()));
+    effect(() => this.document.body.setAttribute('data-bb-background', this.previewBackground() ?? this.background()));
   }
 
   private load() {

@@ -1,5 +1,8 @@
 @if (connectedUser()) {
-  <app-background-picker />
+  <div class="wallet-tools">
+    <app-share-button [gamesLists]="gamesLists" />
+    <app-background-picker />
+  </div>
   <div class="dashboard border">
 
   <div *ngFor="let gamesList of gamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">

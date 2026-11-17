@@ -1,0 +1,79 @@
+<div class="header">
+  <h2>Share your games wallet</h2>
+  <button type="button" class="bb-close" data-testid="share-close" aria-label="Close" (click)="close()">
+    <mat-icon aria-hidden="true">close</mat-icon>
+  </button>
+</div>
+
+<p class="hint">
+  People who open a share link can <strong>only read</strong>: they cannot change anything.
+  You can revoke a link at any time.
+</p>
+
+@if (isGuest) {
+  <p class="warning" data-testid="share-guest-warning">
+    You are using a guest account, saved in this browser only. If you lose it, you will not be able to revoke
+    your links: create an account first to stay in control.
+  </p>
+}
+
+<fieldset>
+  <legend>New link</legend>
+
+  <label>
+    <input type="radio" name="scope" value="WALLET" data-testid="share-scope-wallet" [(ngModel)]="scope">
+    My whole wallet <span class="hint">(lists you create later will be visible too)</span>
+  </label>
+  <label>
+    <input type="radio" name="scope" value="LISTS" data-testid="share-scope-lists" [(ngModel)]="scope">
+    Only the lists I choose
+  </label>
+
+  @if (scope === 'LISTS') {
+    <div class="lists">
+      @for (list of gamesLists; track list.id) {
+        <label>
+          <input type="checkbox" [attr.data-testid]="'share-list-' + list.id"
+                 [checked]="selectedListIds.has(list.id)" (change)="toggleList(list.id)">
+          {{ list.name }}
+        </label>
+      } @empty {
+        <span class="hint">You have no list yet.</span>
+      }
+    </div>
+  }
+
+  <label>
+    <input type="checkbox" data-testid="share-include-commentaries" [(ngModel)]="includeCommentaries">
+    Also show my comments
+  </label>
+
+  <button type="button" data-testid="share-create" [disabled]="!canCreate" (click)="create()">Create read-only link</button>
+</fieldset>
+
+<h3>Your links</h3>
+@if (loading) {
+  <p class="hint">Loading…</p>
+} @else {
+  <ul class="links">
+    @for (link of links; track link.id) {
+      <li [attr.data-testid]="'share-link-' + link.id">
+        <span class="what">{{ describe(link) }}</span>
+        <input type="text" readonly data-testid="share-link-url" [attr.aria-label]="'Address of the link: ' + describe(link)"
+               [value]="urlOf(link)" (focus)="$any($event.target).select()">
+        <span class="link-actions">
+          <button mat-button type="button" data-testid="share-link-copy" (click)="copy(link)">
+            {{ copiedLinkId === link.id ? 'Copied ✓' : 'Copy' }}
+          </button>
+          <button mat-button type="button" class="revoke" data-testid="share-link-revoke" [disabled]="busy" (click)="revoke(link)">Revoke</button>
+        </span>
+      </li>
+    } @empty {
+      <li class="hint" data-testid="share-no-link">You are not sharing anything yet.</li>
+    }
+  </ul>
+}
+
+@if (message) {
+  <p class="warning" role="alert" data-testid="share-message">{{ message }}</p>
+}

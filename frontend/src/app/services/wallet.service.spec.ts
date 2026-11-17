@@ -67,4 +67,17 @@ describe('WalletService', () => {
 
     expect(service.background()).toBe('COSMIC');
   });
+
+  it('shows a preview background without changing the one of the user', () => {
+    TestBed.flushEffects();
+
+    service.previewBackground.set('OCEAN');
+    TestBed.flushEffects();
+    expect(document.body.getAttribute('data-bb-background')).toBe('OCEAN');
+    expect(service.background()).toBe('COSMIC');
+
+    service.previewBackground.set(null);
+    TestBed.flushEffects();
+    expect(document.body.getAttribute('data-bb-background')).toBe('COSMIC');
+  });
 });

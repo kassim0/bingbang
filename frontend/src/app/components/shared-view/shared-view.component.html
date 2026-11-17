@@ -1,0 +1,50 @@
+@if (state === 'ready' && shared) {
+  <div class="banner" data-testid="shared-banner">
+    <p>
+      You are viewing
+      <strong>{{ shared.scope === 'WALLET' ? shared.ownerName + "'s games wallet" : 'games lists shared by ' + shared.ownerName }}</strong>
+      <span class="read-only">Read only</span>
+    </p>
+    <a routerLink="/home" data-testid="shared-go-home">Go to my own wallet</a>
+  </div>
+
+  <div class="lists">
+    @for (list of shared.lists; track list.id) {
+      <section class="list" [attr.data-testid]="'shared-list-' + list.id">
+        <h2>{{ list.name }}</h2>
+        <ul>
+          @for (entry of list.games; track entry.id) {
+            <li>
+              @if (entry.game.backgroundImage) {
+                <img [src]="entry.game.backgroundImage" alt="" loading="lazy" width="50" height="50">
+              }
+              <div>
+                <span class="game-name">{{ entry.game.name }}</span>
+                @if (entry.commentary) {
+                  <p class="commentary">{{ entry.commentary }}</p>
+                }
+              </div>
+            </li>
+          } @empty {
+            <li class="muted">This list is empty.</li>
+          }
+        </ul>
+      </section>
+    } @empty {
+      <p class="muted">There is no games list to show yet.</p>
+    }
+  </div>
+} @else if (state === 'not-found') {
+  <div class="message" data-testid="shared-not-found">
+    <h2>This link does not lead anywhere</h2>
+    <p>It does not exist, or its owner stopped sharing it.</p>
+    <a routerLink="/home">Go to my own wallet</a>
+  </div>
+} @else if (state === 'error') {
+  <div class="message" role="alert">
+    <h2>Something went wrong</h2>
+    <p>The shared wallet could not be loaded. Please try again in a moment.</p>
+  </div>
+} @else {
+  <p class="message muted" role="status">Loading…</p>
+}

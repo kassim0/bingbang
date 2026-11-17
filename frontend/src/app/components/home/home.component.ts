@@ -10,6 +10,7 @@ import {MatButton} from "@angular/material/button";
 import {MyGameListComponent} from "../my-game-list/my-game-list.component";
 import {AuthService} from "../../services/auth.service";
 import {BackgroundPickerComponent} from "../background-picker/background-picker.component";
+import {ShareButtonComponent} from "../share-dialog/share-button.component";
 
 @Component({
   selector: 'app-home',
@@ -19,6 +20,7 @@ import {BackgroundPickerComponent} from "../background-picker/background-picker.
     ApercuGamesListComponent,
     MatButton,
     BackgroundPickerComponent,
+    ShareButtonComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

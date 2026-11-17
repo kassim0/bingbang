@@ -31,10 +31,7 @@ import {WALLET_BACKGROUNDS, WalletBackground} from '../../models/wallet.model';
   `,
   styles: `
     :host {
-      display: flex;
-      justify-content: flex-end;
-      max-width: 1100px;
-      margin: -32px auto 8px;
+      display: inline-flex;
     }
 
     .swatch {
