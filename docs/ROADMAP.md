@@ -25,7 +25,7 @@ Légende : ✅ fait · 🚧 partiel · ❌ pas commencé · 🔒 relève de l'au
 | Règle du wiki | État | Preuve dans le code / remarque |
 |---|---|---|
 | Créer autant de listes que voulu | ✅ | `GameService.createGamesList` |
-| Une liste a **au moins un nom ou des jeux** | 🚧 | le backend accepte une liste sans nom ni jeu (nom par défaut « Liste N° x ») ; le front, lui, refuse de créer une liste sans jeu, même avec un nom (`home.component.ts:53`) |
+| Une liste a **au moins un nom ou des jeux** | 🚧 → ✅ sur `claude/features` | sur `dev` : le backend accepte une liste sans nom ni jeu, et le front refuse une liste sans jeu même avec un nom |
 | La home montre toutes les listes avec leurs **3 premiers jeux** | ✅ | `apercu-games-list.component.html` |
 | Modifier une liste : renommer, ajouter, retirer des jeux | ✅ | `GameService.updateGamesList`, `my-game-list.component` (mais un jeu peut être ajouté en double, AUDIT `ARCH-01`) |
 | Supprimer une liste | ✅ | `GameService.deleteGamesList` (sans confirmation, AUDIT `FRONT-02`) |
@@ -35,18 +35,18 @@ Légende : ✅ fait · 🚧 partiel · ❌ pas commencé · 🔒 relève de l'au
 
 | Règle du wiki | État | Remarque |
 |---|---|---|
-| Ajouter un commentaire sur chaque jeu d'une liste | ❌ | aucune table, aucune route |
-| Le commentaire est **conservé si le jeu est retiré**, et réapparaît si on le rajoute | ❌ | impose de stocker le commentaire à part de la ligne « jeu dans la liste » |
-| Supprimer un commentaire explicitement | ❌ | |
-| Un même jeu dans deux listes a **deux commentaires différents** | ❌ | |
-| Transférer un commentaire vers une autre liste | ❌ | questions ouvertes dans `v2-Decisions` (copier ou déplacer ? conflit ?) |
+| Ajouter un commentaire sur chaque jeu d'une liste | ❌ → ✅ sur `claude/features` | sur `dev` : aucune table, aucune route |
+| Le commentaire est **conservé si le jeu est retiré**, et réapparaît si on le rajoute | ❌ → ✅ sur `claude/features` | impose de stocker le commentaire à part de la ligne « jeu dans la liste » |
+| Supprimer un commentaire explicitement | ❌ → ✅ sur `claude/features` | |
+| Un même jeu dans deux listes a **deux commentaires différents** | ❌ → ✅ sur `claude/features` | |
+| Transférer un commentaire vers une autre liste | ❌ → ✅ sur `claude/features` (copie) | questions ouvertes dans `v2-Decisions` (copier ou déplacer ? conflit ?) |
 
 ### GamesWallet
 
 | Règle du wiki | État | Remarque |
 |---|---|---|
-| gamesWallet = toutes les listes + un **fond personnel** | ❌ | le fond est le même pour tout le monde (`styles.scss`) |
-| Choisir le fond de la home | ❌ | question ouverte : fonds prédéfinis ou image envoyée ? |
+| gamesWallet = toutes les listes + un **fond personnel** | ❌ → ✅ sur `claude/features` | le fond est le même pour tout le monde (`styles.scss`) |
+| Choisir le fond de la home | ❌ → ✅ sur `claude/features` (6 fonds prédéfinis) | question ouverte : fonds prédéfinis ou image envoyée ? |
 
 ### Compte
 
@@ -62,11 +62,11 @@ Légende : ✅ fait · 🚧 partiel · ❌ pas commencé · 🔒 relève de l'au
 
 | Règle du wiki | État | Remarque |
 |---|---|---|
-| Partager tout le gamesWallet avec un lien | ❌ | |
-| Partager une seule liste avec un lien | ❌ | |
-| Sélectionner plusieurs listes et les partager dans un seul lien | ❌ | |
-| Les visiteurs d'un lien ne peuvent que **lire** | ❌ | |
-| Révoquer un lien de partage | ❌ | |
+| Partager tout le gamesWallet avec un lien | ❌ → ✅ sur `claude/features` | |
+| Partager une seule liste avec un lien | ❌ → ✅ sur `claude/features` | |
+| Sélectionner plusieurs listes et les partager dans un seul lien | ❌ → ✅ sur `claude/features` | |
+| Les visiteurs d'un lien ne peuvent que **lire** | ❌ → ✅ sur `claude/features` | |
+| Révoquer un lien de partage | ❌ → ✅ sur `claude/features` | |
 
 ### Idées futures (`Future-ideas`)
 
@@ -276,5 +276,22 @@ Phase A (auth, par toi) : indépendante, en parallèle            Phase 5 (types
 
 ## 3. Ce qui est implémenté sur `claude/features`
 
-Voir `docs/PROGRESS.md` pour l'état exact. Les phases sont traitées dans l'ordre 0 (minimum) → 1 → 2 → 3 → 4,
-hors auth. Les phases A, 5 et 6 ne sont pas commencées.
+| Phase | État | Ce qui a été fait |
+|---|---|---|
+| 0 — Fondations | ✅ (minimum) | pas de doublon dans une liste, validation des données reçues, mock de recherche réaliste (commits repris de `claude/improvements`) |
+| 1 — Nom ou jeux | ✅ | une liste sans nom ni jeu répond 400 ; l'interface crée une liste avec seulement un nom |
+| 2 — Commentaires | ✅ | les 5 règles du wiki ; le « transfert » est une copie, refusée (409) si la cible a déjà un commentaire, sauf accord |
+| 3 — Fond personnel | ✅ | 6 fonds prédéfinis, enregistrés par utilisateur (invité compris) |
+| 4 — Partage | ✅ | wallet entier (dynamique) ou listes choisies (figées), commentaires sur demande, révocation, page `/share/:token` en lecture seule |
+| A — Compte (auth) | ⏳ à toi | non touché |
+| 5 — Types de listes | ❌ | non commencé |
+| 6 — Liste coop | ❌ | non commencé |
+
+Les décisions proposées plus haut pour les questions ouvertes du wiki sont celles qui ont été codées. Elles sont
+faciles à changer : chacune tient en une condition dans `CommentaryService` ou `ShareService`.
+
+**Limite connue du partage** : la page `/share/:token` passe par le compte invité du visiteur (voir l'encadré 🔒
+de la phase 4). Elle fonctionne, mais n'est pas encore « publique » au sens strict.
+
+**Base de données** : trois nouvelles tables, créées automatiquement par Hibernate au démarrage
+(`ddl-auto=update`) : `game_commentary`, `wallet`, `share_link`. Aucune table existante n'est modifiée.
