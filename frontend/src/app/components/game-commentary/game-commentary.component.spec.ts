@@ -85,6 +85,7 @@ describe('GameCommentaryComponent', () => {
     component.save();
 
     http.expectNone(URL);
+    expect(component.busy).toBeFalse();
   });
 
   it('keeps the editor open and explains when saving fails', () => {
@@ -155,5 +156,6 @@ describe('GameCommentaryComponent', () => {
     http.expectOne(URL + '/transfer').flush('conflict', {status: 409, statusText: 'Conflict'});
 
     http.expectNone(URL + '/transfer');
+    expect(component.message).toBe('');
   });
 });

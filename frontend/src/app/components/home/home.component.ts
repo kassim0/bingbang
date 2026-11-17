@@ -9,6 +9,7 @@ import {ApercuGamesListComponent} from "../apercu-games-list/apercu-games-list.c
 import {MatButton} from "@angular/material/button";
 import {MyGameListComponent} from "../my-game-list/my-game-list.component";
 import {AuthService} from "../../services/auth.service";
+import {BackgroundPickerComponent} from "../background-picker/background-picker.component";
 
 @Component({
   selector: 'app-home',
@@ -17,6 +18,7 @@ import {AuthService} from "../../services/auth.service";
     NgForOf,
     ApercuGamesListComponent,
     MatButton,
+    BackgroundPickerComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

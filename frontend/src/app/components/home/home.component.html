@@ -1,4 +1,5 @@
 @if (connectedUser()) {
+  <app-background-picker />
   <div class="dashboard border">
 
   <div *ngFor="let gamesList of gamesLists" class="case-dashboard border" [attr.data-testid]="'games-list-card-' + gamesList.id">
