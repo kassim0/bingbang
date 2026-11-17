@@ -4,6 +4,7 @@ import com.stars.bigbang.dto.payload.NewGamesListDto;
 import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.security.UserPrincipal;
+import com.stars.bigbang.service.CommentaryService;
 import com.stars.bigbang.service.GameService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.List;
 public class JeuxRestController {
 
     private GameService gameService;
+    private CommentaryService commentaryService;
 
     @PutMapping(value = "/newGamesList")
     public ResponseEntity<GamesListDto> saveGamesList(@Valid @RequestBody NewGamesListDto newGamesListDto,
@@ -30,7 +32,7 @@ public class JeuxRestController {
 
     @GetMapping(value = "/getGamesLists")
     public ResponseEntity<List<GamesListDto>> getGamesList(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(gameService.getGamesList(principal.getId()));
+        return ResponseEntity.ok(commentaryService.withCommentaries(gameService.getGamesList(principal.getId())));
     }
 
     @PostMapping(value = "/updateGamesList")

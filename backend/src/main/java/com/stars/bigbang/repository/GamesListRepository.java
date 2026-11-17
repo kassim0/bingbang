@@ -35,4 +35,7 @@ public interface GamesListRepository extends JpaRepository<GamesList, Long> {
 
     boolean existsByIdAndUserId(long id, long userId);
 
+    @Query("SELECT COUNT(entry) > 0 FROM GamesList gl JOIN gl.games entry WHERE gl.id = :listId AND entry.game.id = :gameId")
+    boolean existsGameInList(@Param("listId") long listId, @Param("gameId") long gameId);
+
 }
