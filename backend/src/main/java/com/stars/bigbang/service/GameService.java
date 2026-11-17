@@ -91,6 +91,11 @@ public class GameService {
         String listName = newGamesListDto.name() == null ? "" : newGamesListDto.name().strip();
         GameSearchResult[] games = newGamesListDto.games() == null ? new GameSearchResult[0] : newGamesListDto.games();
 
+        // Règle métier : une liste a au moins un nom ou des jeux.
+        if (listName.isEmpty() && games.length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A games list needs a name or at least one game");
+        }
+
         for (GameSearchResult result : games) {
             Game game = findOrCreateGame(result);
             if (!containsGame(savedGames, game)) {

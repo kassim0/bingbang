@@ -63,4 +63,31 @@ describe('ListGamesPopupComponent', () => {
 
     expect(component.addedGames).toEqual([mario]);
   });
+
+  // ---------- règle « au moins un nom ou des jeux » ----------
+
+  it('returns a list with only a name', () => {
+    component.listNameInput = '  Wishlist ';
+
+    component.close();
+
+    expect(dialogRef.close).toHaveBeenCalledOnceWith({addedGames: [], listName: 'Wishlist'});
+  });
+
+  it('returns a list with only games', () => {
+    const zelda = aSearchResult(1, 'Zelda');
+    component.onAddGame(zelda);
+
+    component.close();
+
+    expect(dialogRef.close).toHaveBeenCalledOnceWith({addedGames: [zelda], listName: ''});
+  });
+
+  it('returns nothing when there is neither a name nor a game', () => {
+    component.listNameInput = '   ';
+
+    component.close();
+
+    expect(dialogRef.close).toHaveBeenCalledOnceWith();
+  });
 });

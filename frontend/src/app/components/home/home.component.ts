@@ -50,7 +50,8 @@ export class HomeComponent {
     })
 
     dialogRef.afterClosed().subscribe((result?: GamesSearchPopupResult) => {
-      if (!result?.addedGames?.length) {
+      // une liste se crée avec un nom, des jeux, ou les deux
+      if (!result || (result.addedGames.length === 0 && result.listName.length === 0)) {
         return;
       }
       const newList: NewGameList = {name: result.listName, games: result.addedGames};

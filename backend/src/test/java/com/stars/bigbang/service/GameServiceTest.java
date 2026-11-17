@@ -128,6 +128,35 @@ class GameServiceTest {
         verify(gamesRepository, never()).save(any());
     }
 
+    // --- Règle : une liste a au moins un nom ou des jeux ---
+
+    @Test
+    void listWithNeitherNameNorGamesIsRefused() {
+        for (String name : new String[]{null, "", "   "}) {
+            ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                    () -> gameService.createGamesList(new NewGamesListDto(name, new GameSearchResult[]{}), USER_ID));
+
+            assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        }
+        verify(gamesListRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void listWithOnlyANameIsCreated() {
+        GamesList list = gameService.createGamesList(new NewGamesListDto("Wishlist", null), USER_ID);
+
+        assertEquals("Wishlist", list.getName());
+        assertTrue(list.getGames().isEmpty());
+    }
+
+    @Test
+    void listWithOnlyGamesGetsADefaultName() {
+        GamesList list = gameService.createGamesList(new NewGamesListDto(null, new GameSearchResult[]{rawgResult(1)}), USER_ID);
+
+        assertEquals("Liste N° 1", list.getName());
+        assertEquals(1, list.getGames().size());
+    }
+
     // --- Pas de doublon dans une liste ---
 
     @Test

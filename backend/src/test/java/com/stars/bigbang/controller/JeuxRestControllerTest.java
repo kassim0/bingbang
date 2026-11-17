@@ -141,6 +141,31 @@ public class JeuxRestControllerTest {
         assertNull(list.games().get(0).game().backgroundImage());
     }
 
+    @Test
+    public void createTest_cas_ni_nom_ni_jeux() {
+        assertBadRequest(API_NEW, HttpMethod.PUT, Map.of("name", "  ", "games", List.of()));
+        assertBadRequest(API_NEW, HttpMethod.PUT, Map.of());
+        assertEquals(0, gamesListRepository.count());
+    }
+
+    @Test
+    public void createTest_avec_seulement_un_nom() {
+        ResponseEntity<GamesListDto> response = create(token, "Wishlist");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Wishlist", response.getBody().name());
+        assertTrue(response.getBody().games().isEmpty());
+    }
+
+    @Test
+    public void createTest_avec_seulement_des_jeux_recoit_un_nom_par_defaut() {
+        ResponseEntity<GamesListDto> response = exchange(API_NEW, HttpMethod.PUT, token,
+                Map.of("games", List.of(game(72, "Portal 2"))), GamesListDto.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Liste N° 1", response.getBody().name());
+    }
+
     // ---------- lecture ----------
 
     @Test

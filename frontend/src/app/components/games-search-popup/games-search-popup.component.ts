@@ -55,9 +55,17 @@ export class GamesSearchPopupComponent {
     this.gamesList = data?.gamesList ?? null;
   }
 
+  /**
+   * Ferme la popup en renvoyant ce qui a été saisi.
+   * - Nouvelle liste : il suffit d'un nom OU d'au moins un jeu (règle « au moins un nom ou des jeux »).
+   * - Ajout à une liste existante : il faut au moins un jeu.
+   * Sinon la popup se ferme sans rien renvoyer.
+   */
   close() {
-    if(this.addedGames.length > 0){
-      this.dialogRef.close({addedGames: this.addedGames, listName: this.listNameInput});
+    const listName = this.listNameInput.trim();
+    const creatingNewList = this.gamesList === null;
+    if (this.addedGames.length > 0 || (creatingNewList && listName.length > 0)) {
+      this.dialogRef.close({addedGames: this.addedGames, listName});
       return;
     }
     this.dialogRef.close();
