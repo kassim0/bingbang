@@ -1,7 +1,17 @@
 <div class="game-item-container">
-  <img src="{{game?.imageUrl}}" style="width: 50px; height: 50px; object-fit: cover">
-  <span class="game-name">{{game?.name}}</span>
-  <button mat-icon-button color="primary" data-testid="game-item-add" (click)="onAddGame()" title="Ajouter le jeu">
-    <mat-icon>{{ isGameSelected() ? 'check_circle' : 'add' }}</mat-icon>
+  <app-game-cover [url]="game?.imageUrl" />
+  <span class="game-text">
+    <span class="game-name" data-testid="game-item-name">{{ game?.name }}</span>
+    @if (releaseYear) {
+      <span class="game-year">{{ releaseYear }}</span>
+    }
+  </span>
+  <button mat-icon-button type="button" color="primary" data-testid="game-item-add"
+          [disabled]="alreadyInList"
+          [attr.aria-label]="buttonLabel"
+          [attr.aria-pressed]="alreadyInList ? null : isGameSelected()"
+          [title]="buttonLabel"
+          (click)="onAddGame()">
+    <mat-icon aria-hidden="true">{{ icon }}</mat-icon>
   </button>
 </div>

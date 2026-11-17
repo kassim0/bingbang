@@ -1,0 +1,19 @@
+# Base de données PostgreSQL pour le développement local.
+#   docker compose up -d      -> démarre la base (base "bingbang", utilisateur "postgres", mot de passe "test")
+#   docker compose down       -> l'arrête (les données sont conservées dans le volume)
+#   docker compose down -v    -> l'arrête et efface les données
+# Ces valeurs sont celles par défaut de backend/src/main/resources/application.properties.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: bingbang
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - bingbang-db:/var/lib/postgresql/data
+
+volumes:
+  bingbang-db:

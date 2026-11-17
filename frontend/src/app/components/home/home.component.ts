@@ -1,7 +1,9 @@
 import {Component, effect} from '@angular/core';
-import {NgForOf} from '@angular/common';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {catchError, EMPTY, Subject, switchMap} from "rxjs";
 import {GamesSearchPopupComponent} from "../games-search-popup/games-search-popup.component";
 import {MatDialog} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {GameApiService} from "../../services/game-api.service";
 import {GamesList, GamesSearchPopupResult} from "../../models/games.model";
 import {NewGameList} from "../../models/game-search.models";
@@ -14,7 +16,6 @@ import {AuthService} from "../../services/auth.service";
   selector: 'app-home',
   standalone: true,
   imports: [
-    NgForOf,
     ApercuGamesListComponent,
     MatButton,
   ],
@@ -26,26 +27,55 @@ export class HomeComponent {
   gamesLists : GamesList[] = [];
   connectedUser = this.authService.connectedUser;
 
+  /** Vrai une fois les listes reçues au moins une fois : évite d'afficher « aucune liste » pendant le chargement. */
+  loaded = false;
+  loadFailed = false;
+
+  /**
+   * Chaque `next()` demande un rechargement des listes.
+   * switchMap annule la requête précédente si une nouvelle demande arrive avant sa réponse :
+   * on n'affiche donc jamais une réponse périmée (ex. les listes de l'invité après une inscription).
+   */
+  private reloadRequests = new Subject<void>();
+
   constructor(private authService: AuthService,
               public dialog:MatDialog,
+              private snackBar: MatSnackBar,
               private gameApiService: GameApiService) {
+    this.reloadRequests.pipe(
+      switchMap(() => this.gameApiService.getGamesList().pipe(
+        // catchError ici, à l'intérieur : une erreur ne doit pas arrêter définitivement les rechargements
+        catchError(() => {
+          this.loadFailed = true;
+          return EMPTY;
+        })
+      )),
+      takeUntilDestroyed(),
+    ).subscribe(gamesLists => {
+      this.gamesLists = gamesLists;
+      this.loaded = true;
+      this.loadFailed = false;
+    });
+
     effect(()=>{
       if(this.connectedUser()){
-        this.gameApiService.getGamesList().subscribe(gamesLists => {
-          this.gamesLists = gamesLists;
-        });
+        this.reload();
       }
       else{
         this.gamesLists = [];
+        this.loaded = false;
       }
     });
   }
 
+  reload() {
+    this.reloadRequests.next();
+  }
 
-  OpenGamesSearchPopup() {
+  openGamesSearchPopup() {
     const dialogRef = this.dialog.open(GamesSearchPopupComponent,{
-      width: '40%',
-      height:'50%',
+      width: '560px',
+      autoFocus: 'input', // le curseur arrive dans le premier champ, pas sur la croix de fermeture
       data: {}
     })
 
@@ -54,27 +84,23 @@ export class HomeComponent {
         return;
       }
       const newList: NewGameList = {name: result.listName, games: result.addedGames};
-      this.gameApiService.saveGamesList(newList).subscribe(() => {
-        this.gameApiService.getGamesList().subscribe(gamesList => {
-          this.gamesLists = gamesList;
-        });
+      this.gameApiService.saveGamesList(newList).subscribe({
+        next: () => {
+          this.snackBar.open('List created', undefined, {duration: 3000});
+          this.reload();
+        },
+        error: () => this.snackBar.open('Could not create the list. Please try again.', undefined, {duration: 5000}),
       });
     })
   }
 
-  openMyGaleListPopup(gameList : GamesList){
+  openGamesListPopup(gameList : GamesList){
     const dialogRef = this.dialog.open(MyGameListComponent,{
-      width: '40%',
-      height:'90%',
+      width: '560px',
       data: {gamesList : gameList}
     })
 
-    dialogRef.afterClosed().subscribe(() => {
-      this.gameApiService.getGamesList().subscribe(gamesLists => {
-        this.gamesLists = gamesLists;
-      })
-    })
+    dialogRef.afterClosed().subscribe(() => this.reload())
   }
-
 
 }

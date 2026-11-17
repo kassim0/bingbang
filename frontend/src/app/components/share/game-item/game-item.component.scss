@@ -4,14 +4,20 @@
   gap: 16px;
   width: 100%;
 
-  img {
-    border-radius: 8px;
-    object-fit: cover;
+  .game-text {
+    flex: 1;
+    min-width: 0; // autorise le texte à rétrécir au lieu de pousser le bouton hors de la ligne
+    display: flex;
+    flex-direction: column;
   }
 
   .game-name {
-    flex: 1;
     font-weight: 500;
     color: var(--bb-text);
+  }
+
+  .game-year {
+    font-size: 0.8rem;
+    color: var(--bb-muted);
   }
 }

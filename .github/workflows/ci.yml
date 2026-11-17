@@ -1,0 +1,38 @@
+# Intégration continue : à chaque push et à chaque pull request, GitHub lance les tests.
+# Un échec apparaît en rouge sur le commit : on voit tout de suite qu'une modification a cassé quelque chose.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      # Les tests utilisent une base H2 en mémoire et de fausses API : ni Postgres ni clé d'API nécessaires.
+      - run: ./mvnw -B test
+
+  frontend:
+    name: Frontend (build + tests unitaires)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test:ci

@@ -1,18 +1,62 @@
-h1 {
+.list-title {
   font-size: 1.15rem;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--bb-border);
+}
+
+// Bouton sans apparence de bouton : il ressemble au titre qu'il contient.
+// (`button.open-list` est assez précis pour passer devant le style global des boutons natifs.)
+button.open-list:not([mat-button]):not([mat-raised-button]):not([mat-icon-button]):not([mat-menu-item]) {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+  }
+
+  // Étend la zone cliquable à toute la carte. La carte (.case-dashboard, dans la home) est en
+  // position: relative : c'est elle que ce pseudo-élément recouvre.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--bb-radius);
+  }
+
+  // Le contour de focus se dessine autour de la carte entière, pas seulement autour du titre.
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid var(--bb-primary);
+      outline-offset: 2px;
+    }
+  }
 }
 
-h6 {
+.empty {
   font-size: 0.85rem;
   font-weight: 500;
   font-style: italic;
   color: var(--bb-muted);
+}
+
+.preview {
+  list-style: none;
 }
 
 .item-apercu-list {
@@ -23,13 +67,10 @@ h6 {
   margin-bottom: 10px;
   font-size: 0.9rem;
   color: var(--bb-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 
-  img {
-    flex-shrink: 0;
-    border-radius: 8px;
-    object-fit: cover;
+  .item-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

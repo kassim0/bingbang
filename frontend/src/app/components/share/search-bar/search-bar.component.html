@@ -1,5 +1,9 @@
-<mat-form-field appearance="outline">
+<mat-form-field appearance="outline" subscriptSizing="dynamic">
   <mat-label>{{label}}</mat-label>
-  <input matInput data-testid="search-bar-input" [placeholder]=placeholder [(ngModel)]="inputResult" (keydown.enter)="sendInput()">
-  <mat-icon matSuffix fontIcon="search" (click)="sendInput()"></mat-icon>
+  <input matInput type="search" data-testid="search-bar-input" maxlength="100" [placeholder]="placeholder"
+         [(ngModel)]="inputResult" (keydown.enter)="sendInput()">
+  <button mat-icon-button matSuffix type="button" data-testid="search-bar-submit" aria-label="Search" (click)="sendInput()">
+    <mat-icon aria-hidden="true">search</mat-icon>
+  </button>
+  <mat-hint>Press Enter to search</mat-hint>
 </mat-form-field>

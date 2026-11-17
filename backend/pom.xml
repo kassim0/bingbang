@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version>
+		<version>3.2.12</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -15,7 +15,25 @@
 
 	<properties>
 		<java.version>17</java.version>
+		<!-- Version de Spring Cloud compatible avec Spring Boot 3.2 (voir https://spring.io/projects/spring-cloud) -->
+		<spring-cloud.version>2023.0.3</spring-cloud.version>
 	</properties>
+
+	<!--
+		Le "BOM" Spring Cloud choisit des versions compatibles entre elles pour toutes les dépendances
+		Spring Cloud (dont OpenFeign) : on n'écrit donc plus leur <version> une par une ci-dessous.
+	-->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 
@@ -55,7 +73,6 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter</artifactId>
-			<version>4.1.1</version>
 		</dependency>
 
 		<dependency>
@@ -71,12 +88,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.8.0</version>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
@@ -87,29 +98,16 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!--Feign-->
+		<!--Cache en mémoire, pour ne pas rappeler IGDB/RAWG à chaque recherche identique-->
 		<dependency>
-			<groupId>io.github.openfeign</groupId>
-			<artifactId>feign-core</artifactId>
-			<version>13.2.1</version>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.github.openfeign</groupId>
-			<artifactId>feign-httpclient</artifactId>
-			<version>13.2.1</version>
-		</dependency>
+
+		<!--Feign (feign-core arrive avec ce starter, à la bonne version)-->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
-			<version>4.1.0</version>
-		</dependency>
-
-		<!--Junit-->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>5.10.2</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!--Lmobok-->

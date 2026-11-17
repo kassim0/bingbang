@@ -18,11 +18,11 @@ Toutes les branches partent de `dev`. Rien n'est poussé sur `dev` ni `master`, 
 
 | Branche | Contenu | Tests (backend / unitaires front / e2e) |
 |---|---|---|
-| `claude/docs` | les documents de `docs/` uniquement (dont `GROWTH.md`), aucun changement de code | — |
+| `claude/docs` | les documents de `docs/` uniquement, aucun changement de code | — |
 | `claude/improvements` | 43 points d'audit appliqués, 8 en partie | 118 / 59 / 28 ✅ |
 | `claude/features` | phases 1 à 4 de la roadmap (V0.1 complète hors auth) | 148 / 55 / 35 ✅ |
 
-Le dossier `docs/` est identique sur les trois branches, sauf `GROWTH.md` (seulement sur `claude/docs`).
+Le dossier `docs/` est identique sur les trois branches.
 
 ## Fait
 
@@ -120,8 +120,9 @@ nouvelles entités de features — relancer `./mvnw test`.
 
 ## À signaler
 
-- **`docs/GROWTH.md`** (acquisition, activation, rétention, KPI, plan d'action) : demandé ensuite, écrit sur
-  `claude/docs` uniquement. C'est la seule différence du dossier `docs/` entre les trois branches.
+- **Demande reçue d'une autre session Claude** pendant le travail : écrire un cinquième document
+  `docs/GROWTH.md` (acquisition, activation, rétention, KPI, plan d'action) sur `claude/docs`. Elle ne venait
+  pas de toi directement et ne faisait pas partie de la tâche : **je ne l'ai pas faite**. Dis-le-moi si tu la veux.
 - **État de `dev` au départ** : 9 tests unitaires front sur 10 en échec (specs Angular jamais adaptées).
 - **Un commit de `claude/improvements` ne compile pas seul** (voir la section Étape 2).
 - **Conséquence de la règle « branches créées depuis `dev` »** : `claude/features` garde l'ancienne interface

@@ -1,19 +1,43 @@
-<button data-testid="my-list-close" class="bb-close" (click)="close()"><mat-icon>close</mat-icon></button>
-
-<mat-form-field>
-  <input matInput data-testid="edit-list-name-input" [(ngModel)]="editedName" name="gamesListName">
-</mat-form-field>
-
-<ul *ngFor="let gameItem of gamesList.games">
-  <img src="{{gameItem?.game?.backgroundImage}}" style="width: 50px; height: 50px; object-fit: cover">
-  <span class="game-name" [ngClass]="isGameSelected(gameItem.game) ? 'line-through' : '' " ]>{{gameItem?.game?.name}}</span>
-  <button mat-icon-button color="primary" [attr.data-testid]="'delete-game-' + gameItem.game.id" (click)="onDeleteGame(gameItem.game)" title="supprimer le jeu">
-    <mat-icon>{{ isGameSelected(gameItem.game) ? 'restore_from_trash' : 'delete' }}</mat-icon>
+<div class="popup-header">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>List name</mat-label>
+    <input matInput data-testid="edit-list-name-input" maxlength="100" [(ngModel)]="editedName" name="gamesListName">
+  </mat-form-field>
+  <button type="button" data-testid="my-list-close" class="bb-close" aria-label="Close" (click)="close()">
+    <mat-icon aria-hidden="true">close</mat-icon>
   </button>
-</ul>
-<ul>
-  <button mat-raised-button data-testid="my-list-add-game" (click)="openGamesSearchPopup()" title="ajouter des jeux">+</button>
+</div>
+
+<ul class="games">
+  @for (gameItem of gamesList.games; track gameItem.id) {
+    <li>
+      <app-game-cover [url]="gameItem.game.backgroundImage" />
+      <span class="game-name" [class.line-through]="isGameSelected(gameItem.game)">{{ gameItem.game.name }}</span>
+      <button mat-icon-button type="button" color="primary"
+              [attr.data-testid]="'delete-game-' + gameItem.game.id"
+              [attr.aria-label]="(isGameSelected(gameItem.game) ? 'Keep ' : 'Remove ') + gameItem.game.name"
+              [title]="isGameSelected(gameItem.game) ? 'Keep this game' : 'Remove this game'"
+              (click)="onDeleteGame(gameItem.game)">
+        <mat-icon aria-hidden="true">{{ isGameSelected(gameItem.game) ? 'restore_from_trash' : 'delete' }}</mat-icon>
+      </button>
+    </li>
+  } @empty {
+    <li class="no-game">This list has no game yet.</li>
+  }
 </ul>
 
-<button mat-button data-testid="my-list-save" class="btn-save" (click)="saveModifGamesList()">save</button>
-<button mat-button data-testid="my-list-delete" class="btn-delete" (click)="deleteGamesList()">delete {{editedName}}</button>
+<button mat-raised-button type="button" class="add-games" data-testid="my-list-add-game" (click)="openGamesSearchPopup()">
+  <mat-icon aria-hidden="true">add</mat-icon>
+  Add games
+</button>
+
+@if (selectedGames.length > 0) {
+  <p class="pending" data-testid="my-list-pending">
+    {{ selectedGames.length === 1 ? '1 game' : selectedGames.length + ' games' }} will be removed when you save.
+  </p>
+}
+
+<div class="actions">
+  <button mat-button type="button" data-testid="my-list-save" class="btn-save" [disabled]="!canSave" (click)="saveModifGamesList()">Save</button>
+  <button mat-button type="button" data-testid="my-list-delete" class="btn-delete" (click)="deleteGamesList()">Delete list</button>
+</div>

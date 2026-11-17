@@ -178,6 +178,15 @@ button:not([mat-button]):not([mat-raised-button]):not([mat-icon-button]):not([ma
   width: 100%;
 }
 
+/* Respecte le réglage système « réduire les animations » (accessibilité) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Scrollbar */
 * {
   scrollbar-width: thin;

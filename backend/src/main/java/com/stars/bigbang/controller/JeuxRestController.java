@@ -5,7 +5,8 @@ import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GamesListDto;
 import com.stars.bigbang.security.UserPrincipal;
 import com.stars.bigbang.service.GameService;
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -15,14 +16,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/game")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class JeuxRestController {
 
-    private GameService gameService;
+    private final GameService gameService;
 
     @PutMapping(value = "/newGamesList")
-    public ResponseEntity<GamesListDto> saveGamesList(@RequestBody NewGamesListDto newGamesListDto,
+    public ResponseEntity<GamesListDto> saveGamesList(@Valid @RequestBody NewGamesListDto newGamesListDto,
                                                       @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(GamesListDto.from(gameService.createGamesList(newGamesListDto, principal.getId())));
     }
@@ -33,7 +34,7 @@ public class JeuxRestController {
     }
 
     @PostMapping(value = "/updateGamesList")
-    public ResponseEntity<String> updateGamesList(@RequestBody UpdateGamesListDto updateGamesListDto,
+    public ResponseEntity<String> updateGamesList(@Valid @RequestBody UpdateGamesListDto updateGamesListDto,
                                                   @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(gameService.updateGamesList(updateGamesListDto, principal.getId()));
     }

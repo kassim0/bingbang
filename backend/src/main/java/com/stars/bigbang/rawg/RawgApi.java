@@ -10,5 +10,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface RawgApi {
 
     @GetMapping("/games")
-    RawgResponseDto searchGamesByName(@RequestParam("search") String GameName);
+    RawgResponseDto searchGamesByName(@RequestParam("search") String gameName);
 }

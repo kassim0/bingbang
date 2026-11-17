@@ -1,13 +1,15 @@
 package com.stars.bigbang.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "game")
-@Data
+@Getter
+@Setter
 public class Game {
 
     @Id

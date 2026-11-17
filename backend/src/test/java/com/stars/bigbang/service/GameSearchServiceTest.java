@@ -1,5 +1,6 @@
 package com.stars.bigbang.service;
 
+import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.entity.AppSetting;
 import com.stars.bigbang.entity.GameSource;
 import com.stars.bigbang.repository.AppSettingRepository;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -88,5 +90,71 @@ class GameSearchServiceTest {
         ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.search("zelda"));
 
         assertEquals(HttpStatus.BAD_GATEWAY, e.getStatusCode());
+    }
+
+    // ---------- cache des recherches ----------
+
+    private GameSearchService serviceWithCache() {
+        return new GameSearchService(repository, List.of(igdb, rawg), Duration.ofMinutes(10));
+    }
+
+    @Test
+    void sameSearchIsServedFromCacheWithoutCallingTheSourceAgain() {
+        settingIs("IGDB");
+        GameSearchService cached = serviceWithCache();
+        List<GameSearchResult> results = List.of(new GameSearchResult(GameSource.IGDB, 72, "portal-2", "Portal 2", null, null));
+        when(igdb.search("portal")).thenReturn(results);
+
+        assertEquals(results, cached.search("portal"));
+        assertEquals(results, cached.search("portal"));
+
+        verify(igdb, times(1)).search("portal");
+    }
+
+    @Test
+    void cacheIgnoresCaseAndExtraSpaces() {
+        settingIs("IGDB");
+        GameSearchService cached = serviceWithCache();
+
+        cached.search("The Witcher");
+        cached.search("  the   witcher ");
+
+        verify(igdb, times(1)).search(any());
+    }
+
+    @Test
+    void eachSourceHasItsOwnCachedResults() {
+        GameSearchService cached = serviceWithCache();
+        settingIs("IGDB");
+        cached.search("zelda");
+        settingIs("RAWG");
+        cached.search("zelda");
+
+        verify(igdb, times(1)).search("zelda");
+        verify(rawg, times(1)).search("zelda");
+    }
+
+    @Test
+    void failedSearchIsNotCached() {
+        settingIs("RAWG");
+        GameSearchService cached = serviceWithCache();
+        Request request = Request.create(Request.HttpMethod.GET, "https://api.rawg.io/api/games", Map.of(), null, null, null);
+        when(rawg.search("zelda"))
+                .thenThrow(new FeignException.InternalServerError("500", request, null, null))
+                .thenReturn(List.of());
+
+        assertThrows(ResponseStatusException.class, () -> cached.search("zelda"));
+
+        assertTrue(cached.search("zelda").isEmpty());
+        verify(rawg, times(2)).search("zelda");
+    }
+
+    @Test
+    void searchedTextIsTrimmedBeforeBeingSentToTheSource() {
+        settingIs("IGDB");
+
+        service.search("  zelda  ");
+
+        verify(igdb).search("zelda");
     }
 }

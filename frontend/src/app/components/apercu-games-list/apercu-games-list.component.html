@@ -1,16 +1,21 @@
-<h1 class="border">{{gamesList.name}}</h1>
-<h6 *ngIf="!gamesList.games[0]?.game">empty</h6>
+<!--
+  Le nom de la liste est un vrai bouton : on peut l'atteindre avec Tab et l'activer avec Entrée.
+  Son pseudo-élément ::after recouvre toute la carte (voir le .scss), donc un clic n'importe où
+  sur la carte ouvre aussi la liste.
+-->
+<h2 class="list-title">
+  <button type="button" class="open-list" (click)="open.emit()">{{ gamesList.name }}</button>
+</h2>
 
-
-  <ul class="item-apercu-list" *ngIf="gamesList.games[0]?.game">
-    <img src="{{gamesList.games[0].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
-    {{gamesList.games[0].game.name}}
+@if (previewGames.length === 0) {
+  <p class="empty">empty</p>
+} @else {
+  <ul class="preview">
+    @for (entry of previewGames; track entry.id) {
+      <li class="item-apercu-list">
+        <app-game-cover [url]="entry.game.backgroundImage" [size]="35" />
+        <span class="item-name">{{ entry.game.name }}</span>
+      </li>
+    }
   </ul>
-  <ul class="item-apercu-list" *ngIf="gamesList.games[1]?.game">
-    <img src="{{gamesList.games[1].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
-    {{gamesList.games[1].game.name}}
-  </ul>
-  <ul class="item-apercu-list" *ngIf="gamesList.games[2]?.game">
-    <img src="{{gamesList.games[2].game.backgroundImage}}" style="width: 35px; height: 35px; object-fit: cover">
-    {{gamesList.games[2].game.name}}
-  </ul>
+}

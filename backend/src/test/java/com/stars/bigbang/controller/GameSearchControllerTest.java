@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,6 +52,14 @@ public class GameSearchControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(gameSearchService).search("the legend of zelda");
+    }
+
+    @Test
+    public void searchTest_cas_texte_trop_long() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/games/search?name={name}", String.class, "x".repeat(101));
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(gameSearchService, never()).search(any());
     }
 
     private ResponseEntity<GameSearchResult[]> search(String name) {

@@ -9,7 +9,7 @@
     <mat-menu #userMenu>
       <button mat-menu-item data-testid="logout-button" (click)="logout()">
         <mat-icon>logout</mat-icon>
-        Se déconnecter
+        Log out
       </button>
     </mat-menu>
     <h2 data-testid="connected-username">Hello {{ connectedUser()?.username }}</h2>
@@ -20,7 +20,7 @@
     </button>
     @if (connectedUser()?.guest) {
       <!-- Pas de déconnexion pour un invité : il perdrait l'accès à ses listes -->
-      <h2 data-testid="guest-label">Invité</h2>
+      <h2 data-testid="guest-label">Guest</h2>
     }
   }
   <div class="logo"><h1>BINGBANG</h1></div>
