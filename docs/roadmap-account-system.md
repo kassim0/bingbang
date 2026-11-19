@@ -28,7 +28,7 @@ Travaille sur la branche `feature/account-system` (déjà créée, basée sur `d
 
 **Total estimé : 1 à 2 jours pleins**, en avançant à ton rythme et en comprenant chaque étape (pas en copiant).
 
-Deux commits ne sont **pas** à refaire : `778abfd` et `34116fa` concernent la fusion des deux repos (`bingbang` + `bingbang-front` → dossier `frontend/`), un sujet totalement différent du système de compte. Ils sont expliqués en annexe pour le contexte, mais la fusion existe déjà et doit juste être conservée.
+Deux commits ne sont **pas** à refaire : `778abfd` et `34116fa` concernent la fusion des deux repos (`bingbang` + `bingbang-front` → dossier `../frontend`), un sujet totalement différent du système de compte. Ils sont expliqués en annexe pour le contexte, mais la fusion existe déjà et doit juste être conservée.
 
 ---
 
@@ -57,7 +57,7 @@ Deux commits ne sont **pas** à refaire : `778abfd` et `34116fa` concernent la f
 - `service/AuthService.java` — logique métier : hacher le mot de passe à l'inscription, vérifier les identifiants à la connexion, générer le token.
 - `controller/AuthController.java` — endpoints `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`.
 
-**Dépendances à ajouter** (`backend/pom.xml`) : `spring-boot-starter-security`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`, `spring-boot-starter-validation`.
+**Dépendances à ajouter** (`../backend/pom.xml`) : `spring-boot-starter-security`, `jjwt-api`/`jjwt-impl`/`jjwt-jackson`, `spring-boot-starter-validation`.
 
 **Pièges déjà rencontrés** (pour t'éviter de les redécouvrir à la dure, ou au contraire pour les laisser volontairement sur ta route si tu préfères apprendre en bloquant) :
 - Par défaut, Spring Security cache le vrai message d'erreur ("No message available" au lieu de "Email already in use") → propriété `server.error.include-message=always`.
@@ -76,7 +76,7 @@ Deux commits ne sont **pas** à refaire : `778abfd` et `34116fa` concernent la f
 - Un **intercepteur HTTP** : du code qui s'exécute automatiquement sur chaque requête pour y ajouter l'en-tête `Authorization`.
 - Pourquoi stocker le token dans `localStorage` pose un piège en SSR (Angular Universal/server-side rendering) : `localStorage` n'existe pas côté serveur, il faut vérifier `isPlatformBrowser` avant d'y toucher.
 
-**Fichiers à créer** (`frontend/src/app/`) :
+**Fichiers à créer** (`../frontend/src/app`) :
 - `models/user.model.ts` — interfaces `User`, `LoginRequest`, `RegisterRequest`, `AuthResponse`.
 - `services/auth.service.ts` — signal `currentUser`, méthodes `login()`, `register()`, `logout()`, `getToken()`.
 - `interceptors/auth.interceptor.ts` — ajoute `Authorization: Bearer <token>` aux requêtes sortantes.
@@ -165,7 +165,7 @@ Par défaut, Spring Security intercepte aussi la route interne `/error` utilisé
 
 ## Annexe — Pour contexte seulement (ne pas refaire)
 
-- `778abfd` : fusion de l'historique complet du repo `bingbang-front` dans `bingbang`, sous `frontend/` (via `git subtree`), pour n'avoir qu'un seul repo à terme.
+- `778abfd` : fusion de l'historique complet du repo `bingbang-front` dans `bingbang`, sous `../frontend` (via `git subtree`), pour n'avoir qu'un seul repo à terme.
 - `34116fa` : mise à jour du README pour documenter cette nouvelle structure.
 
 Ces deux commits sont indépendants du système de compte — ils concernent l'organisation des repos Git, pas l'authentification.

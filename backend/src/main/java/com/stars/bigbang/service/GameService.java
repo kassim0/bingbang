@@ -86,6 +86,9 @@ public class GameService {
      */
     @Transactional
     public GamesList createGamesList(NewGamesListDto newGamesListDto, Long userId) {
+        if(newGamesListDto.games() == null && newGamesListDto.name() == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         GamesList gamesList = new GamesList();
         List<Game> savedGames = new ArrayList<>();
         String listName = newGamesListDto.name() == null ? "" : newGamesListDto.name().strip();

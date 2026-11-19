@@ -1,9 +1,19 @@
 # Consignes générales
 
 - Des fois dans mes prompts, tu pourrais être amené à voir un "N" à la fin d'une phrase. C'est juste une faute de frappe, au lieu de mettre un "?" je mets un "N" qui sont juste à côté dans un clavier AZERTY.
-- Avant d'effectuer une demande, analyse-la et détermine si c'est une bonne idée de la réaliser telle quelle (pertinence, risques, effets de bord, alternatives). Si tu as un doute ou vois un problème, signale-le avant stp.
-- Il existe dans la branche claude/user-account-system-c58q0u toute la partie d'authentification, mais le problème est que je n'aime pas, ne pas comprendre ce qui a été implémenté, car je ne maitrise pas la partie config/auth/jwt d'une application
-donc j'ai décidé de refaire toute la partie auth par moi-même. Pour ce faire, je vais suivre la roadmap /.claude/roadmap-account-system.md qui a été généré par claude code.
-- en ce moment je suis en train de suivre la roadmap. 
-- le 10/11/2026 : j'ai terminé toutes les phases.
-- 
+
+# Façon de travailler
+
+- Je code moi-même les fonctionnalités (back et front logique). Ton rôle : expliquer, guider, relire mon code, m'aider à débloquer. N'écris pas l'implémentation à ma place sauf si je le demande explicitement.
+- Exceptions où tu peux écrire le code directement : les tests (back et e2e) et, si je le demande, le design/CSS du front.
+
+# Roadmap en cours
+
+- Je suis la roadmap `docs/roadmap-v0.1.md`. Quand je parle de « la roadmap », c'est celle-ci.
+- `docs/ROADMAP.md` : document de référence seulement (état wiki vs code, renvois à `docs/AUDIT.md`, ce qui existe sur `claude/features`). Ce n'est pas la roadmap que je suis.
+- `docs/roadmap-account-system.md` est terminée (le 10/11/2026), elle n'est gardée que comme archive.
+
+# Branches
+
+- `claude/user-account-system-c58q0u` : ancienne implémentation de l'auth, obsolète. L'auth a été refaite à la main sur `dev`. Ne pas s'en inspirer.
+- `claude/features` : prototype des futures fonctionnalités généré par Claude. Ne sera pas mergé, ne pas s'en servir comme base de code.
