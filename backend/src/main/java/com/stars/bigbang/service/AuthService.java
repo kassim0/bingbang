@@ -51,7 +51,7 @@ public class AuthService {
     }
 
     //Toute cette méthode aurrait pu être remplacer par authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-    public AuthResponseDto login(LoginRequestDto loginRequestDto) {
+    public AuthResponseDto login(LoginRequestDto loginRequestDto, UserPrincipal userPrincipal) {
         String email =  normalizeEmail(loginRequestDto.email());
         Optional<User> user = userRepository.findByEmail(email);
 
@@ -59,11 +59,21 @@ public class AuthService {
             passwordEncoder.matches(loginRequestDto.password(), hashFactice); // hash factice : temps de réponse identique, que l'email existe ou non.
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
         }
+
+        if(userPrincipal != null && userPrincipal.isGuest()){
+            User guestUser  = userRepository.findByEmail(userPrincipal.getEmail()).orElseThrow();
+            transfertData(guestUser,user.get());
+        }
+
         if(!passwordEncoder.matches(loginRequestDto.password(), user.get().getPassword())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
         }
 
         return generateAuthReponse(user.get());
+    }
+
+    private void transfertData(User userFrom, User userTo) {
+        //à faire
     }
 
     public UserDto getMe(UserPrincipal principal) {
