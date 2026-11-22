@@ -53,7 +53,7 @@ class GameServiceTest {
         user = new User();
         // lenient : ces mocks ne servent qu'aux tests de création, pas à ceux de modification/suppression
         lenient().when(userRepository.getReferenceById(USER_ID)).thenReturn(user);
-        lenient().when(gamesListRepository.findMaxOrder(USER_ID)).thenReturn(0L);
+        lenient().when(gamesListRepository.findMaxOrder(USER_ID)).thenReturn(0);
         lenient().when(gamesListRepository.saveAndFlush(any())).thenAnswer(i -> i.getArgument(0));
         lenient().when(gamesRepository.save(any())).thenAnswer(i -> i.getArgument(0));
     }

@@ -39,6 +39,6 @@ public class AuthController {
 
     @PostMapping(value="/guest")
     public ResponseEntity<AuthResponseDto> guest() {
-        return ResponseEntity.ok(authService.newGuest());
+        return ResponseEntity.ok(authService.generateGuestUser());
     }
 }

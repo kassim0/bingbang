@@ -103,4 +103,8 @@ export class HomeComponent {
     dialogRef.afterClosed().subscribe(() => this.reload())
   }
 
+  continueAsGuest(){
+    this.authService.guest().subscribe()
+  }
+
 }

@@ -1,6 +1,5 @@
 package com.stars.bigbang.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +14,8 @@ public class GamesList {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
-    private Long position;
+    @Column(nullable = false)
+    private int position;
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name="games_list_id")
     @OrderBy("position")

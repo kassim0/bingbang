@@ -4,7 +4,9 @@ import com.stars.bigbang.dto.payload.LoginRequestDto;
 import com.stars.bigbang.dto.payload.RegisterRequestDto;
 import com.stars.bigbang.dto.response.AuthResponseDto;
 import com.stars.bigbang.dto.response.UserDto;
+import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.User;
+import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.UserRepository;
 import com.stars.bigbang.security.JwtService;
 import com.stars.bigbang.security.UserPrincipal;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,12 +32,15 @@ public class AuthService {
 
     private static final String WRONG_AUTH = "wrong auth";
     private static final String ALREADY_CONNECTED = "already connected";
+    private final GamesListRepository gamesListRepository;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                       GamesListRepository gamesListRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.hashFactice = passwordEncoder.encode("nimportekoi");
+        this.gamesListRepository = gamesListRepository;
     }
 
     @Transactional
@@ -51,6 +57,7 @@ public class AuthService {
     }
 
     //Toute cette méthode aurrait pu être remplacer par authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    @Transactional
     public AuthResponseDto login(LoginRequestDto loginRequestDto, UserPrincipal userPrincipal) {
         String email =  normalizeEmail(loginRequestDto.email());
         Optional<User> user = userRepository.findByEmail(email);
@@ -60,20 +67,34 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
         }
 
+        if(!passwordEncoder.matches(loginRequestDto.password(), user.get().getPassword())){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
+        }
+
         if(userPrincipal != null && userPrincipal.isGuest()){
             User guestUser  = userRepository.findByEmail(userPrincipal.getEmail()).orElseThrow();
             transfertData(guestUser,user.get());
-        }
-
-        if(!passwordEncoder.matches(loginRequestDto.password(), user.get().getPassword())){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, WRONG_AUTH);
+            userRepository.delete(guestUser);
         }
 
         return generateAuthReponse(user.get());
     }
 
+    /**
+     * Transfert all data from a user to another user
+     * The data = gamesLists
+     * The methode start by reorganize the order of the gamesList of the guest
+     * then set the new user of each gamesLists
+     * */
     private void transfertData(User userFrom, User userTo) {
-        //à faire
+        int maxPosition = gamesListRepository.findMaxOrder(userTo.getId());
+        List<GamesList> gamesLists = gamesListRepository.findAllByUserOrderByPosition(userFrom.getId());
+        for(int position = 0; position < gamesLists.size(); position++) {
+            var gameList = gamesLists.get(position);
+            gameList.setPosition(maxPosition+1);
+            gameList.setUser(userTo);
+        }
+        //Pas besoin de saveAll() car hibernate enregistre leurs modifiactions tout seul au commit
     }
 
     public UserDto getMe(UserPrincipal principal) {
@@ -120,7 +141,7 @@ public class AuthService {
         return new AuthResponseDto(token, userDto);
     }
 
-    public AuthResponseDto newGuest() {
+    public AuthResponseDto generateGuestUser() {
         RegisterRequestDto registerRequestDto = generateRandomAuth();
         User newGuestUser = createUser(registerRequestDto,true);
         return generateAuthReponse(newGuestUser);

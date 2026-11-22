@@ -393,12 +393,112 @@ public class AuthControllerTest {
         assertEquals(EMAIL, userRepository.findAll().get(0).getEmail());
     }
 
+    // ---------- POST /api/auth/login par un invité (phase 0b) ----------
+
+    @Test
+    public void loginTest_invite_transfere_ses_listes_a_la_suite_de_celles_du_compte() {
+        register(USERNAME, EMAIL, PASSWORD);
+        User account = userRepository.findByEmail(EMAIL).orElseThrow();
+        createGamesList(account, "Liste du compte", 1);
+        AuthResponseDto guest = guest().getBody();
+        User guestUser = userRepository.findByEmail(guest.user().email()).orElseThrow();
+        createGamesList(guestUser, "Invité 1", 1);
+        createGamesList(guestUser, "Invité 2", 2);
+
+        ResponseEntity<AuthResponseDto> response = login(EMAIL, PASSWORD, guest.token());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(EMAIL, response.getBody().user().email());
+
+        // les 3 listes appartiennent au compte : la sienne d'abord, puis celles de l'invité, sans trou ni doublon
+        GamesListDto[] lists = getGamesLists(response.getBody().token()).getBody();
+        assertEquals(3, lists.length);
+        assertEquals("Liste du compte", lists[0].name());
+        assertEquals("Invité 1", lists[1].name());
+        assertEquals("Invité 2", lists[2].name());
+        assertEquals(1, lists[0].position());
+        assertEquals(2, lists[1].position());
+        assertEquals(3, lists[2].position());
+
+        // l'invité n'existe plus, et son ancien token ne fonctionne plus
+        assertFalse(userRepository.existsById(guestUser.getId()));
+        assertEquals(1, userRepository.count());
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + guest.token(), Map.class).getStatusCode());
+    }
+
+    @Test
+    public void loginTest_invite_sans_liste_est_supprime() {
+        register(USERNAME, EMAIL, PASSWORD);
+        AuthResponseDto guest = guest().getBody();
+
+        ResponseEntity<AuthResponseDto> response = login(EMAIL, PASSWORD, guest.token());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(userRepository.findByEmail(guest.user().email()).isEmpty());
+        assertEquals(0, getGamesLists(response.getBody().token()).getBody().length);
+    }
+
+    @Test
+    public void loginTest_invite_cas_mauvais_mot_de_passe_ne_change_rien() {
+        register(USERNAME, EMAIL, PASSWORD);
+        User account = userRepository.findByEmail(EMAIL).orElseThrow();
+        createGamesList(account, "Liste du compte", 1);
+        AuthResponseDto guest = guest().getBody();
+        User guestUser = userRepository.findByEmail(guest.user().email()).orElseThrow();
+        createGamesList(guestUser, "Invité 1", 1);
+        createGamesList(guestUser, "Invité 2", 2);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(API_LOGIN,
+                withToken(new LoginRequestDto(EMAIL, "mauvaisMotDePasse"), guest.token()), Map.class);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        // l'invité existe toujours, garde ses 2 listes et son token
+        assertTrue(userRepository.existsById(guestUser.getId()));
+        assertEquals(HttpStatus.OK, me("Bearer " + guest.token(), UserDto.class).getStatusCode());
+        GamesListDto[] guestLists = getGamesLists(guest.token()).getBody();
+        assertEquals(2, guestLists.length);
+        assertEquals("Invité 1", guestLists[0].name());
+        assertEquals(1, guestLists[0].position());
+        assertEquals(2, guestLists[1].position());
+        // le compte n'a reçu aucune liste
+        String accountToken = login(EMAIL, PASSWORD, null).getBody().token();
+        assertEquals(1, getGamesLists(accountToken).getBody().length);
+    }
+
+    @Test
+    public void loginTest_vrai_compte_deja_connecte_ne_transfere_rien() {
+        register("autre", "autre@test.com", PASSWORD);
+        User other = userRepository.findByEmail("autre@test.com").orElseThrow();
+        createGamesList(other, "Liste de l'autre", 1);
+        String otherToken = login("autre@test.com", PASSWORD, null).getBody().token();
+        register(USERNAME, EMAIL, PASSWORD);
+
+        ResponseEntity<AuthResponseDto> response = login(EMAIL, PASSWORD, otherToken);
+
+        // seul un invité est fusionné : un vrai compte garde ses listes et n'est pas supprimé
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(userRepository.existsById(other.getId()));
+        assertEquals(0, getGamesLists(response.getBody().token()).getBody().length);
+        assertEquals(1, getGamesLists(otherToken).getBody().length);
+    }
+
     // ---------- outils ----------
 
+    /** Connexion, avec le token d'un utilisateur déjà connecté (invité ou non) si {@code token} n'est pas null. */
+    private ResponseEntity<AuthResponseDto> login(String email, String password, String token) {
+        LoginRequestDto body = new LoginRequestDto(email, password);
+        return restTemplate.postForEntity(API_LOGIN, token == null ? new HttpEntity<>(body) : withToken(body, token),
+                AuthResponseDto.class);
+    }
+
     private void createGamesList(User user, String name) {
+        createGamesList(user, name, 1);
+    }
+
+    private void createGamesList(User user, String name, int position) {
         GamesList gamesList = new GamesList();
         gamesList.setName(name);
-        gamesList.setPosition(1L);
+        gamesList.setPosition(position);
         gamesList.setGames(new ArrayList<>());
         gamesList.setUser(user);
         gamesListRepository.save(gamesList);

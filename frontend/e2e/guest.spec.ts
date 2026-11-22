@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test';
-import {createGamesList, gamesListCard, registerFromUi, newTestAccount, storedToken, waitForGuest} from './helpers';
+import {createGamesList, gamesListCard, newTestAccount, openLoginForm, registerFromApi, registerFromUi, storedToken,
+  submitLoginForm, waitForGuest} from './helpers';
 
 /** Phase 3 : un visiteur sans compte devient automatiquement un invité, qui peut déjà créer des listes. */
 
@@ -61,6 +62,26 @@ test.describe('guest account in the interface', () => {
     await expect(gamesListCard(page, listName)).toBeVisible();
 
     await registerFromUi(page, account);
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+
+    await expect(gamesListCard(page, listName)).toBeVisible();
+    // la liste est bien rattachée au compte côté serveur, pas seulement encore affichée
+    await page.reload();
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+    await expect(gamesListCard(page, listName)).toBeVisible();
+  });
+
+  test('a guest keeps its games lists after logging in to an existing account', async ({page, request}) => {
+    const listName = `E2E Guest to existing account ${Date.now()}`;
+    const account = newTestAccount();
+    await registerFromApi(request, account);
+    await page.goto('/');
+    await waitForGuest(page);
+    await createGamesList(page, listName, ['zelda']);
+    await expect(gamesListCard(page, listName)).toBeVisible();
+
+    await openLoginForm(page);
+    await submitLoginForm(page, account.email, account.password);
     await expect(page.getByTestId('connected-username')).toContainText(account.username);
 
     await expect(gamesListCard(page, listName)).toBeVisible();

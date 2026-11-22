@@ -4,10 +4,7 @@ import com.stars.bigbang.dto.payload.NewGamesListDto;
 import com.stars.bigbang.dto.payload.UpdateGamesListDto;
 import com.stars.bigbang.dto.response.GameSearchResult;
 import com.stars.bigbang.dto.response.GamesListDto;
-import com.stars.bigbang.entity.Game;
-import com.stars.bigbang.entity.GameSource;
-import com.stars.bigbang.entity.GamesList;
-import com.stars.bigbang.entity.GamesListEntry;
+import com.stars.bigbang.entity.*;
 import com.stars.bigbang.repository.GamesListEntryRepository;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.GamesRepository;
@@ -107,7 +104,7 @@ public class GameService {
             savedGamesListEntry.add(new GamesListEntry(savedGames.get(position), position));
         }
 
-        Long position = gamesListRepository.findMaxOrder(userId) + 1;
+        int position = gamesListRepository.findMaxOrder(userId) + 1;
         gamesList.setGames(savedGamesListEntry);
         gamesList.setPosition(position);
         gamesList.setName(listName.isEmpty() ? "Liste N° " + position : listName);
@@ -204,6 +201,8 @@ public class GameService {
 
         gamesListEntryRepository.saveAll(gamesListEntryList);
     }
+
+
 
     @Transactional
     public String deleteGamesList(Long gamesListId, long userId) {
