@@ -90,6 +90,46 @@ test.describe('guest account in the interface', () => {
     await expect(page.getByTestId('connected-username')).toContainText(account.username);
     await expect(gamesListCard(page, listName)).toBeVisible();
   });
+
+  /** Phase 0d : un /guest lent ne doit pas remplacer le compte auquel l'utilisateur s'est connecté entre-temps. */
+  test('a late /guest response does not replace an account logged in meanwhile', async ({page, request}) => {
+    const account = newTestAccount();
+    await registerFromApi(request, account);
+
+    // On retient la requête /guest jusqu'à ce que la connexion soit terminée
+    let releaseGuest!: () => void;
+    const guestReleased = new Promise<void>(resolve => releaseGuest = resolve);
+    await page.route('**/api/auth/guest', async route => {
+      await guestReleased;
+      await route.continue();
+    });
+
+    await page.goto('/');
+    // Pas de openLoginForm ici : il attend l'invité, qui est justement bloqué
+    await page.getByTestId('open-auth-dialog').click();
+    await expect(page.getByTestId('username-register-input')).toBeFocused();
+    await page.getByTestId('switch-to-login').click();
+    await submitLoginForm(page, account.email, account.password);
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+    const accountToken = await storedToken(page);
+
+    // La réponse de /guest arrive maintenant, après la connexion
+    const guestResponse = page.waitForResponse('**/api/auth/guest');
+    releaseGuest();
+    await (await guestResponse).finished();
+    // Laisse à l'app le temps de traiter la réponse : sans ce délai, les vérifications
+    // pourraient passer avant que le bug (s'il revient) ait eu lieu
+    await page.waitForTimeout(300);
+
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+    await expect(page.getByTestId('guest-label')).toBeHidden();
+    expect(await storedToken(page)).toBe(accountToken);
+
+    // Le compte est toujours là après rechargement : c'est bien son token qui est resté stocké
+    await page.unroute('**/api/auth/guest');
+    await page.reload();
+    await expect(page.getByTestId('connected-username')).toContainText(account.username);
+  });
 });
 
 test.describe('guest API', () => {

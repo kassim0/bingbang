@@ -43,7 +43,11 @@ export class AuthService{
 
   public guest(){
     return this.http.post<AuthResponse>(`${this.base}/guest`,'').pipe(
-      tap(response=>{this.connectUser(response.user,response.token)})
+      tap(response=>{
+        if (this.connectedUser()===null){
+          this.connectUser(response.user,response.token)
+        }
+      })
     );
   }
 

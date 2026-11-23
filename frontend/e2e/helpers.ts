@@ -24,9 +24,8 @@ export function newTestAccount(): TestAccount {
  */
 export async function openRegisterForm(page: Page): Promise<void> {
   await page.goto('/');
-  // Sans token, l'app crée d'abord un invité : on attend qu'il soit en place, sinon sa réponse
-  // pourrait arriver après celle de l'inscription et remplacer le vrai compte.
-  await waitForGuest(page);
+  // Pas besoin d'attendre l'invité : depuis la phase 0d, une réponse tardive de /guest
+  // n'écrase plus le compte connecté entre-temps.
   await page.getByTestId('open-auth-dialog').click();
   await expect(page.getByTestId('username-register-input')).toBeFocused();
 }
