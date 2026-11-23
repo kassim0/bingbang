@@ -55,26 +55,12 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 3. Si l'identifiant est faux : rien ne doit avoir bougé (l'invité garde ses listes et son token).
 
 **Décision à prendre** : un invité sans aucune liste qui se connecte → on le supprime aussi ? (Conseil : oui, sinon les invités orphelins s'accumulent.)
-> Ma décision :
+> Ma décision : l'invité est toujours supprimé, même sans liste.
 
 **Tests** :
 - Back : invité avec 2 listes + compte avec 1 liste → après login, le compte a 3 listes en positions 1, 2, 3 et l'invité n'existe plus.
 - Back : login invité avec mauvais mot de passe → 401, l'invité et ses listes sont intacts.
 - E2E : un invité crée une liste, se connecte à un compte existant, retrouve sa liste (et après rechargement).
-
-### 0c. Recréer un invité après la déconnexion
-
-**État** : ❌ à faire.
-
-**Problème** : après `logout()`, l'utilisateur n'a plus de token. Tant qu'il ne recharge pas la page, il n'est ni connecté ni invité : créer une liste échoue (401).
-
-**Concepts clés** :
-- `logout()` → appeler `guest()` derrière.
-- **Attention à la boucle** : aujourd'hui `guest()` en erreur appelle `logout()`. Si `logout()` rappelle `guest()`, une panne du back provoque une boucle infinie de requêtes. Il faut séparer « nettoyer la session » (sans effet de bord) et « se déconnecter » (nettoyer + créer un invité).
-
-**Tests** :
-- E2E : se déconnecter, puis créer une liste **sans recharger** → la liste est créée et visible.
-- Manuel : back arrêté, cliquer sur déconnexion → une seule requête `/guest` en erreur dans l'onglet réseau, pas une boucle.
 
 ### 0d. Une réponse tardive de `/guest` ne doit pas écraser un vrai compte
 

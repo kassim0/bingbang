@@ -427,6 +427,31 @@ public class AuthControllerTest {
     }
 
     @Test
+    public void loginTest_invite_positions_avec_trou_ordre_conserve() {
+        register(USERNAME, EMAIL, PASSWORD);
+        User account = userRepository.findByEmail(EMAIL).orElseThrow();
+        createGamesList(account, "Compte 1", 1);
+        createGamesList(account, "Compte 2", 2);
+        AuthResponseDto guest = guest().getBody();
+        User guestUser = userRepository.findByEmail(guest.user().email()).orElseThrow();
+        // l'invité a supprimé sa liste en position 2 : il reste un trou
+        createGamesList(guestUser, "Invité 3", 3);
+        createGamesList(guestUser, "Invité 1", 1);
+
+        ResponseEntity<AuthResponseDto> response = login(EMAIL, PASSWORD, guest.token());
+
+        // les positions sont décalées (pas renumérotées) : 1 -> 3, 3 -> 5 ; l'ordre de l'invité est conservé
+        GamesListDto[] lists = getGamesLists(response.getBody().token()).getBody();
+        assertEquals(4, lists.length);
+        assertEquals("Compte 1", lists[0].name());
+        assertEquals("Compte 2", lists[1].name());
+        assertEquals("Invité 1", lists[2].name());
+        assertEquals("Invité 3", lists[3].name());
+        assertEquals(3, lists[2].position());
+        assertEquals(5, lists[3].position());
+    }
+
+    @Test
     public void loginTest_invite_sans_liste_est_supprime() {
         register(USERNAME, EMAIL, PASSWORD);
         AuthResponseDto guest = guest().getBody();

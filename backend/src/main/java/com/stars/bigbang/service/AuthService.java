@@ -4,7 +4,6 @@ import com.stars.bigbang.dto.payload.LoginRequestDto;
 import com.stars.bigbang.dto.payload.RegisterRequestDto;
 import com.stars.bigbang.dto.response.AuthResponseDto;
 import com.stars.bigbang.dto.response.UserDto;
-import com.stars.bigbang.entity.GamesList;
 import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.UserRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -72,8 +70,8 @@ public class AuthService {
         }
 
         if(userPrincipal != null && userPrincipal.isGuest()){
-            User guestUser  = userRepository.findByEmail(userPrincipal.getEmail()).orElseThrow();
-            transfertData(guestUser,user.get());
+            User guestUser = userRepository.getReferenceById(userPrincipal.getId());
+            transferData(guestUser, user.get());
             userRepository.delete(guestUser);
         }
 
@@ -81,20 +79,12 @@ public class AuthService {
     }
 
     /**
-     * Transfert all data from a user to another user
-     * The data = gamesLists
-     * The methode start by reorganize the order of the gamesList of the guest
-     * then set the new user of each gamesLists
-     * */
-    private void transfertData(User userFrom, User userTo) {
-        int maxPosition = gamesListRepository.findMaxOrder(userTo.getId());
-        List<GamesList> gamesLists = gamesListRepository.findAllByUserOrderByPosition(userFrom.getId());
-        for(int position = 0; position < gamesLists.size(); position++) {
-            var gameList = gamesLists.get(position);
-            gameList.setPosition(maxPosition+1);
-            gameList.setUser(userTo);
-        }
-        //Pas besoin de saveAll() car hibernate enregistre leurs modifiactions tout seul au commit
+     * Déplace toutes les listes de {@code userFrom} vers {@code userTo}, à la suite de celles de {@code userTo}.
+     * Les positions sont décalées, pas renumérotées : l'ordre est conservé, un trou éventuel aussi.
+     */
+    private void transferData(User userFrom, User userTo) {
+        int offset = gamesListRepository.findMaxOrder(userTo.getId());
+        gamesListRepository.transferAllGamesLists(userFrom, userTo, offset);
     }
 
     public UserDto getMe(UserPrincipal principal) {
