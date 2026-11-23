@@ -17,12 +17,13 @@ Contrairement à la roadmap du compte, il n'y a **pas de commit de référence**
 
 | Phase | Sujet | Estimation |
 |---|---|---|
-| 0 | Finir le système de compte (0a ✅, 0b → 0f à faire) | 1–2 j |
+| 0 | Finir le système de compte (0a → 0c ✅, 0d à faire) | 1–2 j |
 | 1 | Règle de création d'une liste | 1–2 h |
 | 2 | Commentaires sur les jeux | 1–2 j |
 | 3 | Fond d'écran personnel (gamesWallet) | ½–1 j |
 | 4 | Partage en lecture seule | 2–3 j |
 | 5 | Mettre le wiki à jour | 30 min |
+| 6 | Nettoyer les comptes invités orphelins | ½ j |
 | Après | Idées de `Future ideas` (types de listes, liste coop) | — |
 
 **Total estimé : 6 à 9 jours**, à ton rythme.
@@ -39,7 +40,7 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 
 ### 0b. Un invité qui se connecte à un compte existant garde ses listes
 
-**État** : ❌ à faire (au 19/11/2026, `AuthService.login` ne regarde pas encore le principal). **Prochaine étape.**
+**État** : ✅ fait et commité
 
 **Problème** : un invité crée des listes, puis se connecte à son compte existant (`/login`). Le front remplace le token : les listes de l'invité sont perdues (toujours en base, mais rattachées à un compte que plus personne ne peut ouvrir).
 
@@ -62,9 +63,9 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 - Back : login invité avec mauvais mot de passe → 401, l'invité et ses listes sont intacts.
 - E2E : un invité crée une liste, se connecte à un compte existant, retrouve sa liste (et après rechargement).
 
-### 0d. Une réponse tardive de `/guest` ne doit pas écraser un vrai compte
+### 0c. Une réponse tardive de `/guest` ne doit pas écraser un vrai compte
 
-**État** : ❌ à faire.
+**État** : ✅ fait et commité
 
 **Problème** : au chargement sans token, le front appelle `/guest`. Si l'utilisateur se connecte avant la réponse (réseau lent), la réponse de `/guest` arrive après et remplace son vrai compte par un invité.
 
@@ -72,7 +73,7 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 
 **Test** : difficile en e2e (il faut ralentir `/guest` avec `page.route`). C'est un bon exercice : intercepter `/api/auth/guest`, attendre la connexion, puis laisser passer la réponse, et vérifier que le pseudo est toujours affiché. Une fois corrigé, l'attente de l'invité dans `openRegisterForm` (`e2e/helpers.ts`), qui contourne ce bug, pourra être retirée.
 
-### 0e. Points de sécurité de l'audit (auth)
+### 0d. Points de sécurité de l'audit (auth)
 
 **État** : ❌ à faire. Le merge de `claude/improvements` (#44) a appliqué l'audit **sauf** la partie auth, volontairement laissée de côté. Le détail de chaque point (problème, piste de correction) est dans `docs/AUDIT.md`.
 
@@ -88,34 +89,6 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 
 **Conseil d'ordre** : `SEC-04`, `SEC-08` et `SEC-09` sont de la configuration (rapides). `SEC-03` est le plus formateur (révocation : colonne `token_version` ou table de tokens révoqués : **décision à prendre**). `SEC-05` à `SEC-07` peuvent attendre l'ouverture au public, mais doivent être faits **avant**.
 > Ma décision (SEC-03) :
-
-### 0f. Nettoyer les comptes invités orphelins
-
-**État** : ❌ à faire. Couvre le point (3) de `SEC-05` dans `docs/AUDIT.md`.
-
-**Problème** : certains invités restent en base alors que plus personne n'a leur token :
-- la réponse tardive de `/guest` ignorée depuis la phase 0d (le back a déjà créé l'invité) ;
-- un navigateur qui perd son `localStorage` (navigation privée, données effacées, autre appareil) ;
-- les visiteurs qui ouvrent la page une fois et ne reviennent jamais.
-
-La table `users` grossit donc sans fin. (Un invité qui se connecte ou s'inscrit, lui, ne pose plus problème : il est supprimé en 0b, transformé en 0a.)
-
-**Concepts clés** :
-- **Tâche planifiée** : `@EnableScheduling` sur une classe de configuration, puis une méthode `@Scheduled(cron = "...")` dans un service. Elle tourne seule, sans requête HTTP, donc sans utilisateur connecté.
-- **Savoir qu'un invité est abandonné** : on ne peut pas savoir si quelqu'un a encore son token. Il faut un critère basé sur le temps :
-  - `createdAt` existe déjà, mais un invité actif depuis des mois serait supprimé avec ses listes ;
-  - `updateAt` n'est mis à jour que si la ligne `users` change, pas quand l'invité utilise l'app ;
-  - une colonne « dernière activité » (mise à jour par exemple sur `/me`, appelé à chaque chargement de page) est le critère le plus juste.
-- **Ordre de suppression** : les listes référencent l'utilisateur (clé étrangère `user_id`), et les entrées (`games_list_entry`) référencent les listes. Une suppression en masse (`@Modifying @Query("delete ...")`) **ne déclenche pas les cascades JPA** : il faut supprimer les entrées, puis les listes, puis les invités, dans une seule transaction.
-- **Ne jamais toucher un vrai compte** : la requête doit filtrer sur `guest = true`. C'est le point à tester en premier.
-
-**Décisions à prendre** :
-- Quels invités supprimer : seulement ceux **sans aucune liste** (prudent, ne perd jamais de données), ou aussi ceux **inactifs** avec des listes (nettoie vraiment, mais un invité qui revient après X jours a tout perdu) ?
-- Le délai X (7 jours ? 30 jours ?) et la fréquence de la tâche (une fois par nuit suffit).
-> Ma décision :
-
-**Tests** :
-- Back (appeler directement la méthode de nettoyage, pas attendre le cron) : un invité ancien sans liste est supprimé ; un invité récent est gardé ; un **vrai compte** ancien et inactif est gardé ; selon ta décision, un invité ancien avec des listes est gardé, ou supprimé avec ses listes et leurs entrées.
 
 ---
 
@@ -270,6 +243,36 @@ La page `Gestes métiers` liste encore « delete gamesList » et « account » d
 - Mettre à jour `Gestes métiers` avec tout ce qui est possible dans l'app.
 - Noter dans `V0.1` les décisions prises dans cette roadmap (commentaires, fond, partage).
 - Compléter la phrase coupée de `Future ideas` (« idea of strategy, users can have 10 toke… »).
+
+---
+
+## Phase 6 — Nettoyer les comptes invités orphelins
+
+**État** : ❌ à faire. Couvre le point (3) de `SEC-05` dans `docs/AUDIT.md`.
+
+**Problème** : certains invités restent en base alors que plus personne n'a leur token :
+- la réponse tardive de `/guest` ignorée depuis la phase 0c (le back a déjà créé l'invité) ;
+- un navigateur qui perd son `localStorage` (navigation privée, données effacées, autre appareil) ;
+- les visiteurs qui ouvrent la page une fois et ne reviennent jamais.
+
+La table `users` grossit donc sans fin. (Un invité qui se connecte ou s'inscrit, lui, ne pose plus problème : il est supprimé en 0b, transformé en 0a.)
+
+**Concepts clés** :
+- **Tâche planifiée** : `@EnableScheduling` sur une classe de configuration, puis une méthode `@Scheduled(cron = "...")` dans un service. Elle tourne seule, sans requête HTTP, donc sans utilisateur connecté.
+- **Savoir qu'un invité est abandonné** : on ne peut pas savoir si quelqu'un a encore son token. Il faut un critère basé sur le temps :
+  - `createdAt` existe déjà, mais un invité actif depuis des mois serait supprimé avec ses listes ;
+  - `updateAt` n'est mis à jour que si la ligne `users` change, pas quand l'invité utilise l'app ;
+  - une colonne « dernière activité » (mise à jour par exemple sur `/me`, appelé à chaque chargement de page) est le critère le plus juste.
+- **Ordre de suppression** : les listes référencent l'utilisateur (clé étrangère `user_id`), et les entrées (`games_list_entry`) référencent les listes. Une suppression en masse (`@Modifying @Query("delete ...")`) **ne déclenche pas les cascades JPA** : il faut supprimer les entrées, puis les listes, puis les invités, dans une seule transaction.
+- **Ne jamais toucher un vrai compte** : la requête doit filtrer sur `guest = true`. C'est le point à tester en premier.
+
+**Décisions à prendre** :
+- Quels invités supprimer : seulement ceux **sans aucune liste** (prudent, ne perd jamais de données), ou aussi ceux **inactifs** avec des listes (nettoie vraiment, mais un invité qui revient après X jours a tout perdu) ?
+- Le délai X (7 jours ? 30 jours ?) et la fréquence de la tâche (une fois par nuit suffit).
+> Ma décision :
+
+**Tests** :
+- Back (appeler directement la méthode de nettoyage, pas attendre le cron) : un invité ancien sans liste est supprimé ; un invité récent est gardé ; un **vrai compte** ancien et inactif est gardé ; selon ta décision, un invité ancien avec des listes est gardé, ou supprimé avec ses listes et leurs entrées.
 
 ---
 
