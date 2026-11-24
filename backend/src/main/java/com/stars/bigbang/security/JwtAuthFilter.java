@@ -1,5 +1,6 @@
 package com.stars.bigbang.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserPrincipalService userPrincipalService;
 
     private static final String BEARER = "Bearer ";
+    private static final String TOKEN_VERSION = "ver";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,8 +36,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         String token = headerAuth.substring(BEARER.length());
         try {
-            String email = jwtService.extractEmail(token);
-            UserDetails userDetails = userPrincipalService.loadUserByUsername(email);
+            Claims extractedToken = jwtService.extractClaims(token);
+            String email = extractedToken.getSubject();
+            int tokenVersion = extractedToken.get(TOKEN_VERSION, Integer.class);
+            UserPrincipal userDetails = userPrincipalService.loadUserByUsername(email);
+            if(userDetails.getTokenVersion() != tokenVersion) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }catch (JwtException | UsernameNotFoundException | IllegalArgumentException exception){ //IllegalArgumentException permet de renvoyer un 401  si mauvais token

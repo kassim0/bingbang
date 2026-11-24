@@ -88,7 +88,54 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 | `SEC-09` | `server.error.include-message=always` |
 
 **Conseil d'ordre** : `SEC-04`, `SEC-08` et `SEC-09` sont de la configuration (rapides). `SEC-03` est le plus formateur (révocation : colonne `token_version` ou table de tokens révoqués : **décision à prendre**). `SEC-05` à `SEC-07` peuvent attendre l'ouverture au public, mais doivent être faits **avant**.
-> Ma décision (SEC-03) :
+> Ma décision (SEC-03) : tokenVersion
+
+#### Plan SEC-03 — révocation par `tokenVersion`
+
+**Principe** : chaque utilisateur a un compteur `tokenVersion` en base. Chaque token emporte la valeur du compteur au moment où il a été créé (un claim). Le filtre refuse un token dont la version ne correspond plus à celle en base. Le logout incrémente le compteur : tous les tokens émis avant deviennent inutilisables. Conséquence acceptée : « se déconnecter » déconnecte **tous** les appareils.
+
+**Décisions à prendre avant de coder** :
+1. **Tokens existants sans claim** (tous ceux émis avant ce changement) : on les traite comme version `0`, ou on les refuse ?
+   Conseil : **version `0`**. Les refuser déconnecterait tout le monde, et surtout les **invités perdraient définitivement leurs listes** (leur token est leur seul accès, valable 3 ans).
+   > Ma décision : version 0
+2. **Logout d'un invité** : la navbar n'affiche pas le bouton pour un invité, mais la route sera appelable quand même. On l'accepte (204, sans effet visible), ou on la refuse (403) ?
+   Conseil : la refuser. Un invité qui révoque son token perd ses listes, et ça fabrique un invité orphelin (phase 6).
+   > Ma décision : la refuser
+3. **Échec de l'appel au logout côté front** (réseau coupé, token déjà invalide) : on efface quand même le token local ?
+   Conseil : oui, toujours. L'utilisateur a demandé à partir, il ne doit pas rester « connecté » à l'écran.
+   > Ma décision : oui
+
+**Étapes** :
+
+1. **Entité `User`** : ajouter `tokenVersion` (entier, commence à 0).
+   - ⚠️ `ddl-auto=update` + PostgreSQL : ajouter une colonne `NOT NULL` **sans valeur par défaut** échoue si la table contient déjà des lignes. Mets un `@ColumnDefault("0")`, comme pour `guest`.
+   - Reporter la valeur dans `UserPrincipal`, pour que le filtre puisse la comparer.
+2. **`JwtService`** :
+   - La génération prend la version en paramètre et l'ajoute dans un claim (nom court, par exemple `ver`). Pense à mettre à jour **tous** les appelants : register, login et guest.
+   - Ajouter une méthode qui lit la version d'un token, en appliquant la décision 1 si le claim est absent.
+   - Évite de parser le token deux fois (email puis version) : extrais les claims une seule fois dans le filtre.
+3. **`JwtAuthFilter`** : après `loadUserByUsername`, comparer la version du token à celle du `UserPrincipal`. Si elles diffèrent, **ne pas authentifier** (même comportement qu'un token invalide : la requête continue sans authentification et les routes protégées répondent 401).
+   - À vérifier : avec un token révoqué, `/login` et `/register` reçoivent `principal == null`. Ça reste cohérent avec la fusion de 0b (pas de fusion).
+4. **Service + contrôleur** : `POST /api/auth/logout`.
+   - Authentifié, à vérifier dans `SecurityConfig`.
+   - Incrémente `tokenVersion` en base (`@Transactional`), puis répond `204 No Content`.
+   - Applique la décision 2 pour les invités.
+5. **Front (`AuthService`)** : séparer les deux usages actuels de `logout()`.
+   - `clearSession()` (ou un nom de ton choix) : efface `connectedUser` et le `localStorage`, sans appel réseau. C'est ce qu'il faut utiliser dans les `error` du constructeur, où le token est déjà mauvais : appeler le back serait inutile (401 garanti).
+   - `logout()` : appelle `POST /api/auth/logout`, **puis** efface la session locale, que l'appel réussisse ou non (décision 3). Pense à `finalize` de RxJS. L'ordre compte : si tu effaces le token avant, l'intercepteur n'a plus rien à envoyer.
+   - `navbar.component.ts` doit maintenant s'abonner (`subscribe`) à `logout()`. Sans abonnement, la requête HTTP ne part jamais.
+
+**Tests** :
+- Back (`AuthControllerTest`) :
+  - login → logout (204) → `/me` avec l'**ancien** token → 401 ;
+  - après logout, un nouveau login donne un token qui fonctionne sur `/me` ;
+  - logout sans token → 401 ;
+  - deux tokens du même compte (deux logins) → logout avec l'un → les **deux** reçoivent 401 (c'est le comportement « tous les appareils », choisi volontairement) ;
+  - token sans claim de version : se comporte selon la décision 1 ;
+  - logout d'un invité : selon la décision 2.
+- Back (`JwtServiceTest`) : la version mise dans le token est bien relue.
+- E2E : se connecter, garder le token, se déconnecter, remettre l'ancien token dans le `localStorage`, recharger → l'utilisateur n'est **pas** reconnecté.
+- Manuel : deux navigateurs connectés au même compte. On se déconnecte dans l'un, on recharge l'autre → l'autre est déconnecté aussi.
 
 ---
 

@@ -16,6 +16,8 @@ public class JwtService {
     private final SecretKey key;
     private final long expirationMs;
     private final long expirationGuestMs;
+    private final String EMAIL = "email";
+    private final String TOKEN_VERSION = "ver";
 
     public JwtService(@Value("${jwt.secret}") String key,
                       @Value("${jwt.expiration-ms}") long expirationMs,
@@ -25,28 +27,29 @@ public class JwtService {
         this.expirationGuestMs = expirationGuestMs;
     }
 
-    private String generateToken(String email, long durationMs){
+    private String generateToken(String email, long durationMs, int tokenVersion){
         Date now = new Date();
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime()+durationMs))
                 .signWith(key)
+                .claim("ver",tokenVersion)
                 .compact();
     }
 
-    public String generateToken(String email){
-        return generateToken(email,expirationMs);
+    public String generateToken(String email, int tokenVersion){
+        return generateToken(email,expirationMs, tokenVersion);
     }
 
-    public String generateGuestToken(String email) {
-        return generateToken(email,expirationGuestMs);
+    public String generateGuestToken(String email, int tokenVersion) {
+        return generateToken(email,expirationGuestMs, tokenVersion);
     }
 
     /**
      * Lève une exception JwtException si token invalide
      * */
-    private Claims extractClaims(String token){
+    public Claims extractClaims(String token){
         return  Jwts.parser()
                     .verifyWith(key)
                     .build()
@@ -60,4 +63,13 @@ public class JwtService {
     }
 
 
+    public int extractFromToken(String token, String claim){
+        Claims tokenPayload = extractClaims(token);
+        switch (claim){
+            case EMAIL: return tokenPayload.getSubject();
+        }
+
+        Integer tokenVersion = tokenPayload.get("ver", Integer.class);
+        return tokenVersion == null ? 0 : tokenVersion;
+    }
 }

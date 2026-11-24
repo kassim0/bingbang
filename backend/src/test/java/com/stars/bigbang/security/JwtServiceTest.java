@@ -20,17 +20,17 @@ class JwtServiceTest {
 
     @Test
     void accountTokenLastsTheAccountDuration() {
-        assertEquals(ONE_HOUR_MS, lifetimeMs(jwtService.generateToken(EMAIL)), 1000);
+        assertEquals(ONE_HOUR_MS, lifetimeMs(jwtService.generateToken(EMAIL, 0)), 1000);
     }
 
     @Test
     void guestTokenLastsTheGuestDuration() {
-        assertEquals(THREE_YEARS_MS, lifetimeMs(jwtService.generateGuestToken(EMAIL)), 1000);
+        assertEquals(THREE_YEARS_MS, lifetimeMs(jwtService.generateGuestToken(EMAIL, 0)), 1000);
     }
 
     @Test
     void guestTokenStillIdentifiesTheUserByEmail() {
-        assertEquals(EMAIL, jwtService.extractEmail(jwtService.generateGuestToken(EMAIL)));
+        assertEquals(EMAIL, jwtService.extractEmail(jwtService.generateGuestToken(EMAIL, 0)));
     }
 
     /** Durée de vie du token. Un JWT stocke ses dates à la seconde près, d'où la tolérance d'1 s dans les tests. */

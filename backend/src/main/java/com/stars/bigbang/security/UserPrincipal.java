@@ -17,9 +17,11 @@ public class UserPrincipal implements UserDetails {
     private final String displayName;
     @Getter
     private final String email;
-    private final String password;
     @Getter
     private final boolean guest;
+    @Getter
+    private final int tokenVersion;
+    private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UserPrincipal(User user) {
@@ -29,6 +31,7 @@ public class UserPrincipal implements UserDetails {
         this.password = user.getPassword();
         this.guest = user.isGuest();
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        this.tokenVersion = user.getTokenVersion();
     }
 
     @Override

@@ -125,7 +125,9 @@ public class AuthService {
 
     private AuthResponseDto generateAuthReponse(User user){
         String token;
-        token = user.isGuest() ? jwtService.generateGuestToken(user.getEmail()) : jwtService.generateToken(user.getEmail());
+        token = user.isGuest()
+                ? jwtService.generateGuestToken(user.getEmail(), user.getTokenVersion())
+                : jwtService.generateToken(user.getEmail(), user.getTokenVersion());
         UserDto userDto = new UserDto(user.getEmail(), user.getUsername(),user.isGuest());
 
         return new AuthResponseDto(token, userDto);

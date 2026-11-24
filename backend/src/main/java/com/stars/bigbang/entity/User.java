@@ -35,4 +35,7 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updateAt;
+
+    @ColumnDefault("0")
+    private int tokenVersion;
 }
