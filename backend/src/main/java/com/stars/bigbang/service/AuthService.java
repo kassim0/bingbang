@@ -29,6 +29,7 @@ public class AuthService {
     private final String hashFactice;
 
     private static final String WRONG_AUTH = "wrong auth";
+    private static final String GUEST_LOGOUT = "guest cannot logout";
     private static final String ALREADY_CONNECTED = "already connected";
     private final GamesListRepository gamesListRepository;
 
@@ -144,5 +145,13 @@ public class AuthService {
         String email = "guest-"+UUID.randomUUID()+"@bingbang.invalid";
         String password = UUID.randomUUID().toString();
         return new RegisterRequestDto(username,email,password);
+    }
+
+    @Transactional
+    public void logout(UserPrincipal userPrincipal) {
+        if(userPrincipal.isGuest()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, GUEST_LOGOUT);
+        }
+        userRepository.incrementTokenVersionByUserId(userPrincipal.getId());
     }
 }

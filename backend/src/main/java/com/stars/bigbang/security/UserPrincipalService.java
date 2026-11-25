@@ -3,7 +3,6 @@ package com.stars.bigbang.security;
 import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;

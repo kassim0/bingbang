@@ -30,7 +30,7 @@ class JwtServiceTest {
 
     @Test
     void guestTokenStillIdentifiesTheUserByEmail() {
-        assertEquals(EMAIL, jwtService.extractEmail(jwtService.generateGuestToken(EMAIL, 0)));
+        assertEquals(EMAIL, jwtService.extractClaims(jwtService.generateGuestToken(EMAIL, 0)).getSubject());
     }
 
     /** Durée de vie du token. Un JWT stocke ses dates à la seconde près, d'où la tolérance d'1 s dans les tests. */

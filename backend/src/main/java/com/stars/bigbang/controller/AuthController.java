@@ -33,12 +33,18 @@ public class AuthController {
     }
 
     @GetMapping(value = "/me")
-    public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(authService.getMe(principal));
+    public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(authService.getMe(userPrincipal));
     }
 
     @PostMapping(value="/guest")
     public ResponseEntity<AuthResponseDto> guest() {
         return ResponseEntity.ok(authService.generateGuestUser());
+    }
+
+    @PostMapping(value="/logout")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        authService.logout(userPrincipal);
+        return ResponseEntity.noContent().build();
     }
 }

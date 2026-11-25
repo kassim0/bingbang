@@ -16,8 +16,7 @@ public class JwtService {
     private final SecretKey key;
     private final long expirationMs;
     private final long expirationGuestMs;
-    private final String EMAIL = "email";
-    private final String TOKEN_VERSION = "ver";
+    private final static String TOKEN_VERSION = "ver";
 
     public JwtService(@Value("${jwt.secret}") String key,
                       @Value("${jwt.expiration-ms}") long expirationMs,
@@ -34,7 +33,7 @@ public class JwtService {
                 .issuedAt(now)
                 .expiration(new Date(now.getTime()+durationMs))
                 .signWith(key)
-                .claim("ver",tokenVersion)
+                .claim(TOKEN_VERSION,tokenVersion)
                 .compact();
     }
 
@@ -57,19 +56,8 @@ public class JwtService {
                     .getPayload();
     }
 
-    public String extractEmail(String token){
-        Claims tokenPayload = extractClaims(token);
-        return tokenPayload.getSubject();
-    }
-
-
-    public int extractFromToken(String token, String claim){
-        Claims tokenPayload = extractClaims(token);
-        switch (claim){
-            case EMAIL: return tokenPayload.getSubject();
-        }
-
-        Integer tokenVersion = tokenPayload.get("ver", Integer.class);
+    public int extractTokenVersion(Claims claims){
+        Integer tokenVersion = claims.get(TOKEN_VERSION,Integer.class);
         return tokenVersion == null ? 0 : tokenVersion;
     }
 }

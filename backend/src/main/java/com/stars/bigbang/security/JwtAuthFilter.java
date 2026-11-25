@@ -25,7 +25,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserPrincipalService userPrincipalService;
 
     private static final String BEARER = "Bearer ";
-    private static final String TOKEN_VERSION = "ver";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -36,16 +35,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         String token = headerAuth.substring(BEARER.length());
         try {
-            Claims extractedToken = jwtService.extractClaims(token);
-            String email = extractedToken.getSubject();
-            int tokenVersion = extractedToken.get(TOKEN_VERSION, Integer.class);
+            Claims claims = jwtService.extractClaims(token);
+            String email = claims.getSubject();
+            int tokenVersion = jwtService.extractTokenVersion(claims);
             UserPrincipal userDetails = userPrincipalService.loadUserByUsername(email);
-            if(userDetails.getTokenVersion() != tokenVersion) {
-                filterChain.doFilter(request, response);
-                return;
+            if(userDetails.getTokenVersion() == tokenVersion) {
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
         }catch (JwtException | UsernameNotFoundException | IllegalArgumentException exception){ //IllegalArgumentException permet de renvoyer un 401  si mauvais token
             logger.debug(exception.getMessage());
         }
