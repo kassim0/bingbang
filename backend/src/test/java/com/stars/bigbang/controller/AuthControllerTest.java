@@ -10,6 +10,8 @@ import com.stars.bigbang.entity.User;
 import com.stars.bigbang.repository.GamesListRepository;
 import com.stars.bigbang.repository.UserRepository;
 import com.stars.bigbang.security.JwtService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -53,6 +57,7 @@ public class AuthControllerTest {
     private static final String API_LOGIN = "/api/auth/login";
     private static final String API_ME = "/api/auth/me";
     private static final String API_GUEST = "/api/auth/guest";
+    private static final String API_LOGOUT = "/api/auth/logout";
     private static final String API_GET_GAMES_LISTS = "/api/game/getGamesLists";
 
     /** guest-<uuid>@bingbang.invalid : .invalid est un domaine réservé, aucun mail ne peut y partir. */
@@ -507,7 +512,141 @@ public class AuthControllerTest {
         assertEquals(1, getGamesLists(otherToken).getBody().length);
     }
 
+    // ---------- POST /api/auth/logout (SEC-03, révocation par tokenVersion) ----------
+
+    @Test
+    public void logoutTest_cas_nominal_l_ancien_token_est_refuse() {
+        String token = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+        assertEquals(HttpStatus.OK, me("Bearer " + token, UserDto.class).getStatusCode());
+
+        ResponseEntity<Void> response = logout(token);
+
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(1, userRepository.findByEmail(EMAIL).orElseThrow().getTokenVersion());
+        // le token n'a pas expiré et sa signature est bonne, mais il a été révoqué
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + token, Map.class).getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_un_nouveau_login_donne_un_token_valide() {
+        String oldToken = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+        logout(oldToken);
+
+        String newToken = login(EMAIL, PASSWORD, null).getBody().token();
+
+        assertEquals(HttpStatus.OK, me("Bearer " + newToken, UserDto.class).getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + oldToken, Map.class).getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_revoque_tous_les_tokens_du_compte() {
+        // deux appareils connectés au même compte
+        String firstDevice = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+        String secondDevice = login(EMAIL, PASSWORD, null).getBody().token();
+
+        logout(firstDevice);
+
+        // comportement voulu de tokenVersion : « se déconnecter » déconnecte partout
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + firstDevice, Map.class).getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + secondDevice, Map.class).getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_ne_touche_pas_aux_autres_comptes() {
+        String otherToken = register("autre", "autre@test.com", PASSWORD).getBody().token();
+        String token = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+
+        logout(token);
+
+        assertEquals(HttpStatus.OK, me("Bearer " + otherToken, UserDto.class).getStatusCode());
+        assertEquals(0, userRepository.findByEmail("autre@test.com").orElseThrow().getTokenVersion());
+    }
+
+    @Test
+    public void logoutTest_cas_sans_token() {
+        ResponseEntity<Void> response = logout(null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_cas_token_deja_revoque() {
+        String token = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+        logout(token);
+
+        ResponseEntity<Void> response = logout(token);
+
+        // un token révoqué n'authentifie plus : il ne peut pas incrémenter la version une seconde fois
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(1, userRepository.findByEmail(EMAIL).orElseThrow().getTokenVersion());
+    }
+
+    @Test
+    public void logoutTest_invite_est_refuse() {
+        AuthResponseDto guest = guest().getBody();
+
+        ResponseEntity<Map> response = restTemplate.exchange(API_LOGOUT, HttpMethod.POST,
+                withToken(null, guest.token()), Map.class);
+
+        // un invité qui révoquerait son token perdrait ses listes (décision 2 de SEC-03)
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("guest cannot logout", response.getBody().get("message"));
+        assertEquals(0, userRepository.findByEmail(guest.user().email()).orElseThrow().getTokenVersion());
+        assertEquals(HttpStatus.OK, me("Bearer " + guest.token(), UserDto.class).getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_en_get_est_refuse() {
+        String token = register(USERNAME, EMAIL, PASSWORD).getBody().token();
+
+        ResponseEntity<Map> response = restTemplate.exchange(API_LOGOUT, HttpMethod.GET,
+                withToken(null, token), Map.class);
+
+        assertNotEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        assertEquals(0, userRepository.findByEmail(EMAIL).orElseThrow().getTokenVersion());
+        assertEquals(HttpStatus.OK, me("Bearer " + token, UserDto.class).getStatusCode());
+    }
+
+    @Test
+    public void meTest_token_sans_version_est_accepte_comme_version_0() {
+        // token émis avant SEC-03 : il n'a pas de claim « ver » (décision 1 : traité comme version 0)
+        register(USERNAME, EMAIL, PASSWORD);
+        String legacyToken = tokenWithoutVersion(EMAIL);
+
+        assertEquals(HttpStatus.OK, me("Bearer " + legacyToken, UserDto.class).getStatusCode());
+    }
+
+    @Test
+    public void logoutTest_revoque_aussi_un_token_sans_version() {
+        register(USERNAME, EMAIL, PASSWORD);
+        String legacyToken = tokenWithoutVersion(EMAIL);
+
+        assertEquals(HttpStatus.NO_CONTENT, logout(legacyToken).getStatusCode());
+
+        assertEquals(HttpStatus.UNAUTHORIZED, me("Bearer " + legacyToken, Map.class).getStatusCode());
+    }
+
     // ---------- outils ----------
+
+    /** Déconnexion, avec ou sans token ({@code null}). */
+    private ResponseEntity<Void> logout(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        if (token != null) {
+            headers.setBearerAuth(token);
+        }
+        return restTemplate.exchange(API_LOGOUT, HttpMethod.POST, new HttpEntity<>(headers), Void.class);
+    }
+
+    /** Token tel qu'il était généré avant SEC-03 : même signature, mais sans claim de version. */
+    private String tokenWithoutVersion(String email) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + 86_400_000))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+                .compact();
+    }
 
     /** Connexion, avec le token d'un utilisateur déjà connecté (invité ou non) si {@code token} n'est pas null. */
     private ResponseEntity<AuthResponseDto> login(String email, String password, String token) {

@@ -22,7 +22,7 @@ export class NavbarComponent {
   constructor( private authService: AuthService,public dialog:MatDialog) {}
 
   logout(){
-    this.authService.logout();
+    this.authService.logout().subscribe();
   }
 
   openAuthDialog(){

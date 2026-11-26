@@ -1,7 +1,7 @@
 import {HttpClient} from "@angular/common/http";
 import {AuthResponse, LoginRequest, RegisterRequest, User} from "../models/user.model";
 import {Inject, Injectable, PLATFORM_ID, signal} from "@angular/core";
-import {tap} from "rxjs";
+import {finalize, tap} from "rxjs";
 import {isPlatformBrowser} from "@angular/common";
 
 @Injectable({ providedIn: 'root' })
@@ -11,10 +11,10 @@ export class AuthService{
               ,@Inject(PLATFORM_ID) private platformId: Object) {
     if(isPlatformBrowser(this.platformId)) {
       if(localStorage.getItem('token')) {
-        this.getMe().subscribe({error : () => this.logout()})
+        this.getMe().subscribe({error : () => this.clearSession()})
       }
       else {
-        this.guest().subscribe({error : () => this.logout()})
+        this.guest().subscribe({error : () => this.clearSession()})
       }
     }
   }
@@ -58,11 +58,17 @@ export class AuthService{
     }
   }
 
-  logout(){
+  clearSession(){
     this.connectedUser.set(null);
     if(isPlatformBrowser(this.platformId)){
       localStorage.removeItem('token');
     }
+  }
+
+  logout(){
+    return this.http.post<void>(`${this.base}/logout`,'').pipe(
+      finalize(()=>this.clearSession())
+    )
   }
 
   getToken(){

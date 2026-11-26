@@ -33,6 +33,31 @@ class JwtServiceTest {
         assertEquals(EMAIL, jwtService.extractClaims(jwtService.generateGuestToken(EMAIL, 0)).getSubject());
     }
 
+    @Test
+    void accountTokenCarriesItsVersion() {
+        String token = jwtService.generateToken(EMAIL, 3);
+
+        assertEquals(3, jwtService.extractTokenVersion(jwtService.extractClaims(token)));
+    }
+
+    @Test
+    void guestTokenCarriesItsVersion() {
+        String token = jwtService.generateGuestToken(EMAIL, 2);
+
+        assertEquals(2, jwtService.extractTokenVersion(jwtService.extractClaims(token)));
+    }
+
+    @Test
+    void tokenWithoutVersionIsReadAsVersionZero() {
+        // token émis avant SEC-03 : pas de claim « ver »
+        String legacyToken = Jwts.builder()
+                .subject(EMAIL)
+                .signWith(Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8)))
+                .compact();
+
+        assertEquals(0, jwtService.extractTokenVersion(jwtService.extractClaims(legacyToken)));
+    }
+
     /** Durée de vie du token. Un JWT stocke ses dates à la seconde près, d'où la tolérance d'1 s dans les tests. */
     private long lifetimeMs(String token) {
         Claims claims = Jwts.parser()
