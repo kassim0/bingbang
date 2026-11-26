@@ -137,6 +137,67 @@ Ordre conseillé : 0 → 1 → 2 → 3 → 4. Les commentaires (phase 2) passent
 - E2E : se connecter, garder le token, se déconnecter, remettre l'ancien token dans le `localStorage`, recharger → l'utilisateur n'est **pas** reconnecté.
 - Manuel : deux navigateurs connectés au même compte. On se déconnecte dans l'un, on recharge l'autre → l'autre est déconnecté aussi.
 
+#### Plan SEC-05 — limiter la création d'invités par IP avec Bucket4j
+
+**Périmètre** : uniquement la partie (2) de `SEC-05` dans `docs/AUDIT.md`. La suppression des invités vides par un cron est reportée en phase 6. La création de l'invité dès l'ouverture de la page est gardée telle quelle.
+
+**Principe : le seau à jetons** (*token bucket*) :
+- chaque adresse IP a un seau qui contient au maximum N jetons (la **capacité**) ;
+- créer un invité consomme 1 jeton ; un seau vide → `429 Too Many Requests` ;
+- le seau se remplit tout seul avec le temps (le **refill**), par exemple 5 jetons par heure.
+
+Bucket4j gère tout ce calcul, sans thread ni tâche planifiée : à chaque appel, il calcule le nombre de jetons revenus depuis la dernière fois. Toi, tu gères **un seau par IP**.
+
+**Concepts clés** :
+- **`Bucket`** : l'objet seau, *thread-safe*, créé avec `Bucket.builder().addLimit(...)`. La limite se décrit avec `capacity(...)` et `refillGreedy(...)` ou `refillIntervally(...)` :
+  - `refillGreedy(5, 1 h)` rend les jetons **progressivement** (1 toutes les 12 min) ;
+  - `refillIntervally(5, 1 h)` les rend **d'un coup**, au bout d'une heure.
+  Conseil : `greedy`, plus doux pour un vrai utilisateur.
+- **`tryConsumeAndReturnRemaining(1)`** renvoie une `ConsumptionProbe` : `isConsumed()` dit si c'est accepté, `getNanosToWaitForRefill()` dit combien de temps attendre. Ça sert pour l'en-tête `Retry-After` (en secondes).
+- **Un seau par IP, sans fuite mémoire** : une simple `Map<String, Bucket>` grossit pour toujours, à une entrée par IP jamais revue. Utilise un **cache Caffeine** (déjà dans le projet, voir `GameSearchService`) avec `expireAfterAccess` : une IP inactive depuis plus longtemps que la durée du refill est oubliée. Ça ne pose pas de problème, puisque son seau serait de toute façon redevenu plein.
+
+**Décisions à prendre avant de coder** :
+1. **Les chiffres** : capacité et vitesse de remplissage. Conseil : 5 invités, avec un retour de 5 jetons par heure. C'est assez pour une famille derrière la même box qui ouvre l'app sur plusieurs appareils ou en navigation privée, et ça bloque un script dès la 6e création.
+   > Ma décision : 5 invité avec rendu progressif
+2. **Où vérifier la limite** : dans `AuthController.guest()` (qui reçoit alors la `HttpServletRequest` pour lire l'IP), ou dans un filtre dédié ?
+   Conseil : dans le contrôleur. C'est plus simple, et la limite reste visible à côté de la route qu'elle protège. Un filtre devient intéressant quand plusieurs routes sont concernées : tu pourras y passer au moment de SEC-07.
+   > Ma décision : dans le controller sur guest() et register()
+3. **Comment renvoyer le 429 avec `Retry-After`** :
+   - soit le contrôleur construit lui-même la réponse (`ResponseEntity.status(429).header("Retry-After", ...)`) ;
+   - soit tu crées une exception dédiée, gérée par un `@RestControllerAdvice` (il n'y en a pas encore dans le projet).
+   Conseil : l'exception. Tu la réutiliseras telle quelle pour SEC-07.
+   > Ma décision : créer l'exception dédiée
+
+**Étapes** :
+
+1. **Dépendance Maven** : Bucket4j, partie *core* (la version locale, en mémoire, suffit).
+   - ⚠️ Le nom de l'artefact a changé selon les versions (`com.bucket4j:bucket4j-core`, puis `com.bucket4j:bucket4j_jdk17-core`). Vérifie sur Maven Central le nom et la dernière version compatibles avec Java 17.
+2. **Composant `RateLimiter`** (par exemple dans `security/`), qui ne connaît ni HTTP ni les invités :
+   - une méthode du genre `tryConsume(String key)`, qui renvoie le résultat (accepté ou non, et le temps d'attente) ;
+   - à l'intérieur : le cache Caffeine `clé → Bucket`, et la création du seau à la première utilisation d'une clé (`cache.get(key, k -> newBucket())`) ;
+   - **capacité et durée lues depuis `application.properties`** (`@Value` ou `@ConfigurationProperties`), et pas écrites en dur : voir l'étape 5, c'est indispensable pour les tests.
+   - Préfixe la clé par l'usage (`"guest:" + ip`) : pour SEC-07, il suffira d'utiliser `"login:" + ip` dans le même composant, sans que les deux compteurs se mélangent.
+3. **`AuthController.guest()`** : récupérer l'IP avec `request.getRemoteAddr()`, appeler le limiteur, et répondre 429 si le seau est vide (décisions 2 et 3). L'invité ne doit **pas** être créé dans ce cas : la vérification se fait **avant** `generateGuestUser()`.
+4. **IP derrière un proxy** : en local, `getRemoteAddr()` donne la vraie IP. Une fois déployé derrière un proxy (Nginx, hébergeur), il donnera celle du proxy : **tous les visiteurs partageraient le même seau**, et le 6e visiteur de l'heure serait bloqué. Il faudra alors `server.forward-headers-strategy=native` (ou `framework`), qui lit `X-Forwarded-For`. ⚠️ Ne l'active **que** derrière un proxy de confiance : sans proxy, n'importe qui peut inventer cet en-tête et changer d'IP à chaque requête. Note ce point pour le déploiement, rien à faire maintenant.
+5. **Configuration par environnement** : ⚠️ c'est le piège principal.
+   - `AuthControllerTest` crée des dizaines d'invités, tous depuis `127.0.0.1`. Avec une limite de 5, il casse.
+   - Les e2e aussi : chaque ouverture de page sans token crée un invité, et les tests tournent en parallèle contre ton backend de dev.
+   - Mets donc la **valeur stricte dans `application.properties`** (sûre par défaut, comme pour `JWT_SECRET`), une **valeur très haute dans `src/test/resources/application.properties`**, et une valeur haute dans ton `backend/.env` pour le dev et les e2e.
+6. **Front** : `guest()` peut maintenant échouer en 429. Aujourd'hui, ça tombe dans `clearSession()` et le visiteur reste sans compte. C'est acceptable pour un cas d'abus. Optionnel : afficher un message (« Trop de tentatives, réessaie plus tard »).
+
+**Tests** :
+- Unitaire (`RateLimiterTest`, sans Spring) : crée le limiteur directement avec une petite capacité (par exemple 2).
+  - les N premiers appels passent, le suivant est refusé ;
+  - une **autre clé** n'est pas bloquée : c'est ici qu'on simule « une autre IP », puisque `TestRestTemplate` vient toujours de `127.0.0.1` ;
+  - le temps d'attente renvoyé est positif quand c'est refusé.
+- Intégration (`AuthControllerTest` ou une classe dédiée avec une limite basse via `@TestPropertySource`) :
+  - N appels à `/guest` → 200, le suivant → 429 avec un en-tête `Retry-After` ;
+  - après le 429, le nombre d'invités en base vaut toujours N ;
+  - ⚠️ les seaux survivent d'un test à l'autre (le contexte Spring est partagé) : il faut un moyen de les vider avant chaque test, ou une classe de test à part.
+- Manuel : `curl -X POST http://localhost:8080/api/auth/guest` en boucle (avec la limite de prod) → le 6e reçoit 429.
+
+**Limite connue** : en IPv6, un même foyer dispose souvent de milliers d'adresses (un bloc `/64`), et un attaquant peut en changer à chaque requête. Une parade consiste à utiliser le préfixe `/64` comme clé au lieu de l'adresse complète. C'est à garder en tête, pas nécessaire pour la V0.1.
+
 ---
 
 ## Phase 1 — Règle de création d'une liste
