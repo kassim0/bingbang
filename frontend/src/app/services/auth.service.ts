@@ -11,7 +11,12 @@ export class AuthService{
               ,@Inject(PLATFORM_ID) private platformId: Object) {
     if(isPlatformBrowser(this.platformId)) {
       if(localStorage.getItem('token')) {
-        this.getMe().subscribe({error : () => this.clearSession()})
+        this.getMe().subscribe({
+          error : () => {
+            this.clearSession();
+            this.guest().subscribe({error : () => this.clearSession()})
+          }
+        })
       }
       else {
         this.guest().subscribe({error : () => this.clearSession()})
